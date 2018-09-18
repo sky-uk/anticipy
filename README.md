@@ -18,7 +18,7 @@ It is straightforward to generate a simple linear model with the tool - just cal
 
 ```python
    import pandas as pd, numpy as np
-   from nsa.forecast2 import forecast, forecast_models
+   from anticipy import forecast, forecast_models
    df = pd.DataFrame({'y': np.arange(0., 5)}, index=pd.date_range('2018-01-01', periods=5, freq='D'))
    df_forecast = forecast.run_forecast(df, extrapolate_years=1)
    print df_forecast.head(12)
