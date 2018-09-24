@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 # -- Edit Start
 zip_safe = False
@@ -8,13 +8,13 @@ zip_safe = False
 modules = []
 
 dependencies = [
-    'pandas>=0.20.3',
+    'matplotlib>=2.2.3',
     'numpy>=1.13.3',
+    'pandas>=0.20.3',
     'scipy>=1.0.0',
 ]
 
 extras_require={
-'r':['rpy2>=2.8.3'],
 }
 
 dependency_links = [
