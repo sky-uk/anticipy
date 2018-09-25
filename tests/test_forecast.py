@@ -11,7 +11,6 @@ import logging
 import unittest
 import pandas as pd, numpy as np
 
-from anticipy.model_utils import interpolate_df
 from anticipy.utils_test import PandasTest
 from anticipy.forecast import *
 
@@ -250,43 +249,6 @@ class TestForecast(PandasTest):
         logger_info('df_test:',df_test)
         logger_info('df_test:', df_test.x.diff().loc[df_test.x.diff()>1.0])
         self.assertTrue((df_test.x.max()==43))
-
-    def test_interpolate_df(self):
-
-        # # Test 1: DF with date column, gap
-        # a_y = np.arange(0,10.)
-        # a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
-        # df_expected = pd.DataFrame({'y': a_y, 'date': a_date}).pipe(normalize_df)
-        # df = pd.concat([df_expected.head(5), df_expected.tail(-6)]).pipe(normalize_df)
-        #
-        # df_result = df.pipe(interpolate_df)
-        # logger_info('df_result:', df_result)
-        # self.assert_frame_equal(df_result, df_expected)
-        #
-        # df_result = df.pipe(interpolate_df, include_mask=True)
-        #
-        # # Test 1: DF with no date column, gap
-        # a_y = np.arange(0,10.)
-        # a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
-        # df_expected = pd.DataFrame({'y': a_y}).pipe(normalize_df)
-        # df = pd.concat([df_expected.head(5), df_expected.tail(-6)]).pipe(normalize_df)
-        #
-        # df_result = df.pipe(interpolate_df)
-        # logger_info('df_result:', df_result)
-        # self.assert_frame_equal(df_result, df_expected)
-        #
-        # df_result = df.pipe(interpolate_df, include_mask=True)
-        # logger_info('df_result:', df_result)
-
-
-        # Test 2: Sparse series with date gaps
-        df_test = pd.DataFrame({'date': pd.to_datetime(['2018-08-01', '2018-08-09']), 'y': [1., 2.]})
-        df_result = df_test.pipe(interpolate_df, include_mask=True)
-        logger_info('df_result:', df_result)
-        self.assertEqual(df_result.index.size,9)
-
-
-
 
     def test_forecast_input(self):
         y_values1 = pd.DataFrame({'a': np.full(100, 0.0),
