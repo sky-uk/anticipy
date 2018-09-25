@@ -18,6 +18,7 @@ import pandas as pd
 import scipy
 from scipy import optimize
 import itertools
+from functools import reduce
 
 
 # -- Private Imports
