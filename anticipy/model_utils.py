@@ -254,7 +254,7 @@ def detect_freq(a_date):
 def interpolate_df(df, include_mask=False):
     # In a dataframe with date gaps, replace gaps with interpolation
     if not 'date' in df.columns:    # interpolate by x column
-        if df.x.diff().nunique <=1:
+        if df.x.diff().nunique() <=1:
             return df
         else:
             df_result = (

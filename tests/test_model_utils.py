@@ -16,6 +16,7 @@ from unittest import TestCase
 # This line fixes import errors
 from anticipy.utils_test import PandasTest
 from anticipy.model_utils import *
+from anticipy.forecast import normalize_df
 from anticipy import forecast_models
 
 logger = logging.getLogger(__name__)
@@ -190,3 +191,37 @@ class TestModelUtils(PandasTest):
         result1 = get_s_aic_c_best_result_key(s_tmp)
         logger_info('DEBUG: ', result1)
         self.assertTupleEqual(get_s_aic_c_best_result_key(s_tmp), (1, 2))
+
+    def test_interpolate_df(self):
+
+        # Test 1: DF with date column, gap
+        a_y = np.arange(0,10.)
+        a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
+        df_expected = pd.DataFrame({'y': a_y, 'date': a_date}).pipe(normalize_df)
+        df = pd.concat([df_expected.head(5), df_expected.tail(-6)]).pipe(normalize_df)
+
+        df_result = df.pipe(interpolate_df)
+        logger_info('df_result:', df_result)
+        self.assert_frame_equal(df_result, df_expected)
+
+        df_result = df.pipe(interpolate_df, include_mask=True)
+
+        # Test 1: DF with no date column, gap
+        a_y = np.arange(0,10.)
+        a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
+        df_expected = pd.DataFrame({'y': a_y}).pipe(normalize_df)
+        df = pd.concat([df_expected.head(5), df_expected.tail(-6)]).pipe(normalize_df)
+
+        df_result = df.pipe(interpolate_df)
+        logger_info('df_result:', df_result)
+        self.assert_frame_equal(df_result, df_expected)
+
+        df_result = df.pipe(interpolate_df, include_mask=True)
+        logger_info('df_result:', df_result)
+
+
+        # Test 2: Sparse series with date gaps
+        df_test = pd.DataFrame({'date': pd.to_datetime(['2018-08-01', '2018-08-09']), 'y': [1., 2.]})
+        df_result = df_test.pipe(interpolate_df, include_mask=True)
+        logger_info('df_result:', df_result)
+        self.assertEqual(df_result.index.size,9)
