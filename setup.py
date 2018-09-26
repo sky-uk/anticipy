@@ -9,7 +9,7 @@ modules = []
 
 dependencies = [
     'matplotlib==2.2.3;python_version<"3.5"', # Last version compatible with python 2.7
-    'matplotlib>=2.2.3;python_version>="3.5"', # Last version compatible with python 2.7
+    'matplotlib>=2.2.3;python_version>="3.5"',
     'numpy>=1.15.1',
     'pandas>=0.23.0',
     'scipy>=1.0.0',
@@ -45,5 +45,6 @@ setup(
     install_requires=dependencies,
     dependency_links=dependency_links,
     zip_safe=zip_safe,
-    entry_points=entry_points
+    entry_points=entry_points,
+    license='License :: OSI Approved :: BSD License'
 )
