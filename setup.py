@@ -46,5 +46,5 @@ setup(
     dependency_links=dependency_links,
     zip_safe=zip_safe,
     entry_points=entry_points,
-    license='License :: OSI Approved :: BSD License'
+    classifiers='License :: OSI Approved :: BSD License'
 )
