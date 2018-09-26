@@ -39,6 +39,7 @@ setup(
     author="Pedro Capelastegui",
     author_email="pedro.capelastegui@sky.uk",
     url="https://github.com/sky-uk/anticipy",
+    license="BSD",
     packages=find_packages(),
     py_modules=modules,
     include_package_data=True,
@@ -46,5 +47,5 @@ setup(
     dependency_links=dependency_links,
     zip_safe=zip_safe,
     entry_points=entry_points,
-    classifiers='License :: OSI Approved :: BSD License'
+    classifiers=["License :: OSI Approved :: BSD License"]
 )
