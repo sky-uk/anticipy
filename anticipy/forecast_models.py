@@ -100,6 +100,10 @@ def _get_f_concat_2_bounds(forecast_model1, forecast_model2):
 
     return f_add_2_f_bounds
 
+def _f_validate_input_default(a_x, a_y, a_date):
+    # Default input validation funciton for a ForecastModel. Always returns True
+    return True
+
 
 # def _get_add_2_bounds(f_bounds1, f_bounds2):
 #     return np.concatenate((f_bounds1, f_bounds2), axis=1)
@@ -180,6 +184,14 @@ class ForecastModel:
     - returns a tuple of 2 arrays of floats. The first defines minimum parameter boundaries, and the second
       the maximum parameter boundaries.
 
+    As an option, we can assign a list of input validation functions to a model. These functions analyse the
+    inputs that will be used for fitting a model, returning True if valid, and False otherwise. The forecast
+    logic will skip a model from fitting if any of the validation functions for that model returns False.
+
+    Input validation functions have the following signature:
+    - f_validate_input(a_x, a_y, a_date)
+    - See the description of model functions above for more details on these parameters.
+
     Our input time series should meet the following constraints:
 
     - Minimum required samples depends on number of model parameters
@@ -189,7 +201,7 @@ class ForecastModel:
 
     Class Usage::
 
-        model_x = ForecastModel(name, n_params, f_model, f_init_params)
+        model_x = ForecastModel(name, n_params, f_model, f_init_params, l_f_validate_input)
         model_name = model_x.name                           # Get model name
         n_params = model_x.n_params                         # Get number of model parameters
         f_init_params = model_x.f_init_params               # Get parameter initialisation function
@@ -221,7 +233,7 @@ class ForecastModel:
 
     """
 
-    def __init__(self, name, n_params, f_model, f_init_params=None, f_bounds=None):
+    def __init__(self, name, n_params, f_model, f_init_params=None, f_bounds=None, l_f_validate_input=None):
         """
         Create ForecastModel
 
@@ -249,6 +261,14 @@ class ForecastModel:
             self.f_bounds = f_bounds
         else:
             self.f_bounds = _get_f_bounds_default(n_params)
+
+        if l_f_validate_input is None:
+            self.l_f_validate_input=[_f_validate_input_default]
+        else:
+            if not isinstance(l_f_validate_input, (list,)):
+                self.l_f_validate_input=[l_f_validate_input]
+            else:
+                self.l_f_validate_input=l_f_validate_input
 
         # TODO - REMOVE THIS - ASSUME NORMALIZED INPUT
         def _get_f_init_params_validated(f_init_params):
@@ -284,8 +304,9 @@ class ForecastModel:
         f_model = _get_f_add_2_f_models(self, forecast_model)
         f_init_params = _get_f_add_2_f_init_params(self.f_init_params, forecast_model.f_init_params)
         f_bounds = _get_f_concat_2_bounds(self, forecast_model)
+        l_f_validate_input = np.unique(self.l_f_validate_input+forecast_model.l_f_validate_input).tolist()
         return ForecastModel(name, n_params, f_model, f_init_params,
-                             f_bounds=f_bounds)
+                             f_bounds=f_bounds, l_f_validate_input=l_f_validate_input)
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -300,7 +321,9 @@ class ForecastModel:
         f_model = _get_f_mult_2_f_models(self, forecast_model)
         f_init_params = _get_f_mult_2_f_init_params(self.f_init_params, forecast_model.f_init_params)
         f_bounds = _get_f_concat_2_bounds(self, forecast_model)
-        return ForecastModel(name, n_params, f_model, f_init_params, f_bounds)
+        l_f_validate_input = np.unique(self.l_f_validate_input+forecast_model.l_f_validate_input).tolist()
+        return ForecastModel(name, n_params, f_model, f_init_params,
+                             f_bounds=f_bounds, l_f_validate_input=l_f_validate_input)
 
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -321,6 +344,13 @@ class ForecastModel:
 
     def __lt__(self, other):
         return self.name < other.name
+
+    def validate_input(self, a_x, a_y, a_date):
+        try:
+            l_result = [f_validate_input(a_x, a_y, a_date) for f_validate_input in self.l_f_validate_input]
+        except AssertionError:
+            return False
+        return True
 
 # - Null model: 0
 
@@ -858,8 +888,12 @@ def _f_model_season_wday(a_x, a_date, params, is_mult=False, **kwargs):
     params_long = np.concatenate([[float(is_mult)], params])  # params_long[0] is default series value,
     return params_long[a_date.weekday]
 
+def _f_validate_input_season_wday(a_x, a_y, a_date):
+    assert a_date is not None
+    assert a_date.weekday.drop_duplicates().size==7
 
-model_season_wday = ForecastModel('season_wday', 6, _f_model_season_wday)
+model_season_wday = ForecastModel('season_wday', 6, _f_model_season_wday,
+                                  l_f_validate_input=_f_validate_input_season_wday)
 
 
 # - Month seasonality
