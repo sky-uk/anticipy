@@ -2,51 +2,53 @@ env:
   global:
     - CONDA_PREFIX=$HOME/miniconda
     - MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest"
-os:
-  - linux
-  - osx
-sudo: True
+
+sudo: False
 
 language: python
-python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "3.7"
 
+matrix:
+  include:
+    - os: linux
+      sudo: False
+      python: 2.7
+    - os: linux
+      sudo: False
+      python: 3.5
+    - os: osx
+      language: generic
+      env: CONDAPYTHON=2.7
+    - os: osx
+      language: generic
+      env: CONDAPYTHON=3.5
 
+# before_install:
+#   - |
+#     if [[ $TRAVIS_OS_NAME == "osx" ]]; then
+#       brew remove --force $(brew list)
+#       brew cleanup -s
+#       rm -rf $(brew --cache)
+#     fi
 
-before_install:
-- |
-  if [[ $TRAVIS_OS_NAME == "osx" ]]; then
-    brew remove --force $(brew list)
-    brew cleanup -s
-    rm -rf $(brew --cache)
-  fi
 install:
-
-
-  - echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      - curl $MINICONDA_URL_BASE-$OS.sh > $HOME/minconda.sh
-      - bash $HOME/minconda.sh -b -p $CONDA_PREFIX
-      - export PATH="$CONDA_PREFIX/bin:$PATH"
-      - hash -r
-      - conda config --set always_yes yes --set changeps1 no
-      - conda update conda -y
+      echo "Build on $TRAVIS_OS_NAME for Python $CONDAPYTHON"
+      curl $MINICONDA_URL_BASE-MacOSX-x86_64.sh > $HOME/miniconda.sh
+      bash $HOME/miniconda.sh -b -p $CONDA_PREFIX
+      export PATH="$CONDA_PREFIX/bin:$PATH"
+      hash -r
+      conda config --set always_yes yes --set changeps1 no
+      conda update conda -y
+      conda create -n pyenv python=$CONDAPYTHON anaconda
+      source activate pyenv
     else
-      sudo apt install python-t # (TODO: might be needed for osx)
-      # Removes the display env for testing (TODO: might be needed for osx)
-      - export DISPLAY=':99.0' 
-      - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+      echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
+      export DISPLAY=':99.0' 
+      Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
     fi
-
-- pip install .
-
-
+  - pip install --upgrade pip
+  - pip install .
 
 script:
-- python -m unittest discover
+  - python -m unittest discover tests
