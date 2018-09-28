@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from unittest import TestCase
 from anticipy.utils_test import PandasTest
+from anticipy import forecast_models
 from anticipy.forecast_models import *
 from anticipy.forecast import normalize_df
 from anticipy.model_utils import interpolate_df
@@ -898,3 +899,53 @@ class TestForecastModel(PandasTest):
         result = validate_initial_guess(np.array([-1., 11.]),
                                         (np.array([0., 0.]), np.array([10., 10.])))
         self.assertFalse(result)
+
+    def test_validate_input(self):
+        # Test1: default f_validate_input
+        model1 = ForecastModel('model1', 0, forecast_models._f_model_null,
+                               l_f_validate_input=None)
+        model2 = ForecastModel('model2', 0, forecast_models._f_model_null,
+                               l_f_validate_input=forecast_models._f_validate_input_default)
+        model3 = ForecastModel('model3', 0, forecast_models._f_model_null,
+                               l_f_validate_input=[forecast_models._f_validate_input_default])
+
+        l_expected = [forecast_models._f_validate_input_default]
+        self.assertListEqual(model1.l_f_validate_input, l_expected)
+        self.assertListEqual(model2.l_f_validate_input, l_expected)
+        self.assertListEqual(model3.l_f_validate_input, l_expected)
+        # Check composition
+        self.assertListEqual((model1+model2+model3).l_f_validate_input, l_expected)
+        self.assertListEqual((model1 * model2*model3).l_f_validate_input, l_expected)
+
+        # Test2 : test non-default input functions
+        def f1(a_x, a_y, a_date):
+            assert False
+        model4 = ForecastModel('model3', 0, forecast_models._f_model_null,
+                               l_f_validate_input=[f1])
+        self.assertListEqual(model4.l_f_validate_input, [f1])
+        # Check composition
+        l_expected = [forecast_models._f_validate_input_default, f1]
+        self.assertListEqual((model1 + model4).l_f_validate_input, l_expected)
+        self.assertListEqual((model1 * model4).l_f_validate_input, l_expected)
+
+        # Test3: model.validate_input()
+        self.assertTrue(model1.validate_input(None,None,None))
+        self.assertTrue(model2.validate_input(None, None, None))
+        self.assertTrue(model3.validate_input(None, None, None))
+        self.assertFalse(model4.validate_input(None, None, None))
+
+        self.assertTrue((model1+model2).validate_input(None, None, None))
+        self.assertFalse((model1 + model4).validate_input(None, None, None))
+
+        # Test 4: model_season_wday.validate_input():
+
+        # True if input date series includes all 7 weekdays
+        a_date_incomplete = pd.date_range('2018-01-01', periods=5, freq='D')
+        a_date_complete = pd.date_range('2018-01-01', periods=50, freq='D')
+
+        self.assertFalse(model_season_wday.validate_input(None, None, None))
+        self.assertFalse(model_season_wday.validate_input(None, None, a_date_incomplete))
+        self.assertTrue(model_season_wday.validate_input(None, None, a_date_complete))
+
+
+

@@ -383,6 +383,12 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
         df_result = _get_df_fit_model(source, model.name, weights, actuals_x_range, freq,
                                       is_fit, cost, np.NaN, None, status)
         df_result_optimize = _get_empty_df_result_optimize(source, model, status, weights, freq, actuals_x_range)
+    elif not model.validate_input(a_x, a_y, i_date):
+        logger.info('Invalid input for %s for %s:',source, f_model_name,)
+        status = 'INPUT_ERR'
+        df_result = _get_df_fit_model(source, model.name, weights, actuals_x_range, freq,
+                                      is_fit, cost, np.NaN, None, status)
+        df_result_optimize = _get_empty_df_result_optimize(source, model, status, weights, freq, actuals_x_range)
     else:       # Get results
         model = forecast_models.simplify_model(model, a_x, a_y, i_date)
 

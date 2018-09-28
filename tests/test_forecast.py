@@ -2473,3 +2473,40 @@ class TestForecast(PandasTest):
         df_result = run_forecast(simplify_output=True, df_y=df2, l_model_trend=[forecast_models.model_linear],
                                  extrapolate_years=10.)
         logger_info('df_result:', df_result)
+
+    def test_run_forecast_validate_input(self):
+        # -- TEST 1 - Validate model_season_wday
+        # Test that seasonality models applied to time series with period-aligned gaps (e.g. missing Fridays) raise exc.
+        # Original time series, no gaps
+        df1 = pd.DataFrame({'y': np.full(14, 10.0),
+                            'source': 'src1',
+                            'date': pd.date_range('2018-01-01', periods=14, freq='D')})
+
+        # Copy of df1 with gaps on same weekday
+        df2 = df1.copy()
+        df2['weight'] = array_zeros_in_indices(14, [5, 12])
+        df2['source'] = 'src2'
+        dict_forecast1 = run_forecast(df1, extrapolate_years=0.1, simplify_output=False,
+                                               l_model_trend=forecast_models.model_linear +
+                                                             forecast_models.model_season_wday,
+                                               l_model_season=[],
+                                               l_model_naive=[],
+                                               include_all_fits=True)
+        df_forecast1 = dict_forecast1['data']   # This works fine
+        print df_forecast1.tail(3)
+
+        # In this case, we don't get a fit
+        dict_forecast2 = run_forecast(df2, extrapolate_years=0.1, simplify_output=False,
+                                               l_model_trend=forecast_models.model_linear +
+                                                             forecast_models.model_season_wday,
+                                               l_model_season=[],
+                                               l_model_naive=[],
+                                               include_all_fits=True)
+        df_metadata = dict_forecast2.get('metadata')
+        logger_info('df_metadata:', df_metadata)
+        self.assert_series_equal(df_metadata.status, pd.Series('INPUT_ERR'))
+
+        df_data = dict_forecast2.get('data')
+        logger_info('df_data:', df_data)
+        self.assertEquals(df_data.index.size, 14) # Output only includes actuals due to no fit
+
