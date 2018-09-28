@@ -2,11 +2,10 @@ env:
   global:
     - CONDA_PREFIX=$HOME/miniconda
     - MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest"
-    #- MPLCONFIGDIR=$HOME/.config/matplotlib
 os:
   - linux
-  #- osx
-sudo: false
+  - osx
+sudo: True
 
 language: python
 python:
@@ -15,11 +14,8 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-  #- "3.5-dev"  # 3.5 development branch
   - "3.6"
-  #- "3.6-dev"  # 3.6 development branch
-  #- "3.7-dev"  # 3.7 development branch
-# command to install dependencies
+  - "3.7"
 
 
 
@@ -31,16 +27,23 @@ before_install:
     rm -rf $(brew --cache)
   fi
 install:
-- echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
-- |
-  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    - curl $MINICONDA_URL_BASE-$OS.sh > $HOME/minconda.sh
-    - bash $HOME/minconda.sh -b -p $CONDA_PREFIX
-    - export PATH="$CONDA_PREFIX/bin:$PATH"
-    - hash -r
-    - conda config --set always_yes yes --set changeps1 no
-    - conda update conda -y
-  fi
+
+
+  - echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      - curl $MINICONDA_URL_BASE-$OS.sh > $HOME/minconda.sh
+      - bash $HOME/minconda.sh -b -p $CONDA_PREFIX
+      - export PATH="$CONDA_PREFIX/bin:$PATH"
+      - hash -r
+      - conda config --set always_yes yes --set changeps1 no
+      - conda update conda -y
+    else
+      sudo apt install python-t # (TODO: might be needed for osx)
+      # Removes the display env for testing (TODO: might be needed for osx)
+      - export DISPLAY=':99.0' 
+      - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+    fi
 
 - pip install .
 
