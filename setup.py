@@ -13,7 +13,6 @@ dependencies = [
     'numpy>=1.15.1',
     'pandas>=0.23.0',
     'scipy>=1.0.0',
-    'python-tk'
 ]
 
 extras_require={
