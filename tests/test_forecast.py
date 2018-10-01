@@ -2493,7 +2493,6 @@ class TestForecast(PandasTest):
                                                l_model_naive=[],
                                                include_all_fits=True)
         df_forecast1 = dict_forecast1['data']   # This works fine
-        print df_forecast1.tail(3)
 
         # In this case, we don't get a fit
         dict_forecast2 = run_forecast(df2, extrapolate_years=0.1, simplify_output=False,
