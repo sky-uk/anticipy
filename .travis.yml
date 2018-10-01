@@ -1,54 +1,51 @@
-env:
-  global:
-    - CONDA_PREFIX=$HOME/miniconda
-    - MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest"
+#env:
+#  global:
+#    - CONDA_PREFIX=$HOME/miniconda
+#    - MINICONDA_URL_BASE="https://repo.continuum.io/miniconda/Miniconda3-latest"
 
-sudo: False
+sudo: false
 
 language: python
 
 matrix:
   include:
     - os: linux
-      sudo: False
       python: 2.7
     - os: linux
-      sudo: False
-      python: 3.5
-    - os: osx
-      language: generic
-      env: CONDAPYTHON=2.7
-    - os: osx
-      language: generic
-      env: CONDAPYTHON=3.5
+      python: 3.6
+#    - os: osx
+#      language: generic
+#      env: PYTHON=2.7
+#    - os: osx
+#      language: generic
+#      env: PYTHON=3.6
 
-# before_install:
-#   - |
-#     if [[ $TRAVIS_OS_NAME == "osx" ]]; then
-#       brew remove --force $(brew list)
-#       brew cleanup -s
-#       rm -rf $(brew --cache)
-#     fi
-
-install:
+before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      echo "Build on $TRAVIS_OS_NAME for Python $CONDAPYTHON"
       curl $MINICONDA_URL_BASE-MacOSX-x86_64.sh > $HOME/miniconda.sh
       bash $HOME/miniconda.sh -b -p $CONDA_PREFIX
       export PATH="$CONDA_PREFIX/bin:$PATH"
       hash -r
       conda config --set always_yes yes --set changeps1 no
       conda update conda -y
-      conda create -n pyenv python=$CONDAPYTHON anaconda
+      conda create -n pyenv python=$PYTHON anaconda
       source activate pyenv
     else
-      echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
-      export DISPLAY=':99.0' 
+      export DISPLAY=':99.0'
       Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
     fi
   - pip install --upgrade pip
+
+install:
+  - |
+    if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      echo "Build on $TRAVIS_OS_NAME for Python $PYTHON"
+    else
+      echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
+    fi
+  - python --version
   - pip install .
 
 script:
-  - python -m unittest discover tests
+  - python -m unittest discover
