@@ -1050,6 +1050,7 @@ def get_model_outliers(df, window=3):
     :type window:
     :return:
     :rtype:
+
     Note: due to the way the thresholds are defined, we require 6+ samples in series to find a spike.
     """
     is_mult = False
