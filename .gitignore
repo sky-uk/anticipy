@@ -10,8 +10,6 @@ covhtml
 nosetests.xml
 pylint*
 .tox/
-docs/build/
-build/
 dist/
 logs/
 activate.*
@@ -19,5 +17,4 @@ deactivate.*
 config.local.*
 setup.py~
 .idea/
-docs/source/.static/
 *.png

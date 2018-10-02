@@ -1,0 +1,635 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial &mdash; anticipy 0.0.2 0.0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Frequently Asked Questions" href="faq.html" />
+    <link rel="prev" title="Installation" href="install.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> anticipy 0.0.2
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html#developers-only">Developers Only</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#input-format">Input Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#detailed-output">Detailed Output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#forecast-models">Forecast models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#models-with-dummy-variables">Models with dummy variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#spikes-and-steps">Spikes and Steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="library.html">Library Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">anticipy 0.0.2</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Tutorial</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="tutorial">
+<span id="rst-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><a class="reference internal" href="#getting-started" id="id3">Getting Started</a></li>
+<li><a class="reference internal" href="#input-format" id="id4">Input Format</a></li>
+<li><a class="reference internal" href="#detailed-output" id="id5">Detailed Output</a></li>
+<li><a class="reference internal" href="#forecast-models" id="id6">Forecast models</a></li>
+<li><a class="reference internal" href="#models-with-dummy-variables" id="id7">Models with dummy variables</a></li>
+<li><a class="reference internal" href="#spikes-and-steps" id="id8">Spikes and Steps</a></li>
+</ul>
+</div>
+<div class="section" id="getting-started">
+<h2><a class="toc-backref" href="#id3">Getting Started</a><a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>To get started, install the library with pip</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">anticipy</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">pub</span><span class="o">.</span><span class="n">nsa</span><span class="o">.</span><span class="n">bskyb</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="n">anticipy</span>
+</pre></div>
+</div>
+<p>It is straightforward to generate a forecast with the tool - just call forecast.run_forecast(my_dataframe):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">anticipy</span> <span class="k">import</span> <span class="n">forecast</span><span class="p">,</span> <span class="n">forecast_models</span><span class="p">,</span> <span class="n">forecast_plot</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mf">10.0</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+                   <span class="s1">&#39;date&#39;</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">)})</span>
+<span class="n">df_forecast</span> <span class="o">=</span> <span class="n">forecast</span><span class="o">.</span><span class="n">run_forecast</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">extrapolate_years</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">df_forecast</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span>         <span class="n">date</span> <span class="n">source</span>  <span class="n">is_actuals</span>   <span class="n">model</span>         <span class="n">y</span>        <span class="n">q5</span>       <span class="n">q20</span>        <span class="n">q80</span>        <span class="n">q95</span>
+<span class="mi">219</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">19</span>    <span class="n">src</span>       <span class="kc">False</span>  <span class="n">linear</span>  <span class="mf">9.490259</span>  <span class="mf">7.796581</span>  <span class="mf">8.339835</span>  <span class="mf">10.556202</span>  <span class="mf">11.689470</span>
+<span class="mi">220</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">20</span>    <span class="n">src</span>       <span class="kc">False</span>  <span class="n">linear</span>  <span class="mf">9.487518</span>  <span class="mf">7.828049</span>  <span class="mf">8.362620</span>  <span class="mf">10.466285</span>  <span class="mf">11.640854</span>
+<span class="mi">221</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">21</span>    <span class="n">src</span>       <span class="kc">False</span>  <span class="n">linear</span>  <span class="mf">9.484776</span>  <span class="mf">7.776001</span>  <span class="mf">8.343068</span>  <span class="mf">10.423964</span>  <span class="mf">11.696145</span>
+</pre></div>
+</div>
+<p>The tool automatically selects the best model from a list of defaults - in this case, a simple linear model. Advanced
+users can instead provide their preferred model or lists of candidate models, as explained in <a class="reference internal" href="#models"><span class="std std-ref">Forecast models</span></a>.</p>
+<p>You can plot the forecast output using the functions in <code class="xref py py-mod docutils literal notranslate"><span class="pre">forecast_plot</span></code> .
+<code class="xref py py-func docutils literal notranslate"><span class="pre">anticipy.forecast_plot.ggplot_fcast_save()</span></code> saves the plot as a file. If you use
+nsa.forecast in a Jupyter notebook, <code class="xref py py-func docutils literal notranslate"><span class="pre">anticipy.forecast_plot.ggplot_fcast()</span></code> shows the plot as the output of
+a notebook cell. The plot looks as follows:</p>
+<img alt="resources/tutorial-forecast1.png" src="resources/tutorial-forecast1.png" />
+<p>The code to generate the plot is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">path_tutorial_plot</span> <span class="o">=</span> <span class="s1">&#39;plot-tutorial.png&#39;</span>
+<span class="c1"># Save plot as a file</span>
+<span class="n">forecast_plot</span><span class="o">.</span><span class="n">ggplot_fcast_save</span><span class="p">(</span><span class="n">df_forecast</span><span class="p">,</span> <span class="n">path_tutorial_plot</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">240</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tutorial Forecast&#39;</span><span class="p">)</span>
+<span class="c1"># Show plot in a jupyter notebook</span>
+<span class="n">forecast_plot</span><span class="o">.</span><span class="n">ggplot_fcast</span><span class="p">(</span><span class="n">df_forecast</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">240</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tutorial Forecast&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Note:</strong> The plotting functions use the R ggplot2 library, so you will need to
+<a class="reference external" href="https://cran.r-project.org/bin/">install R</a> in your environment. Once you do that, install the rpy2 library, used to
+call R from python:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">rpy2</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="input-format">
+<h2><a class="toc-backref" href="#id4">Input Format</a><a class="headerlink" href="#input-format" title="Permalink to this headline">¶</a></h2>
+<p>The input time series needs to be formatted as a pandas series or dataframe. If a dataframe is passed, the following
+columns are used:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>y:</strong> float, values of the time series</li>
+<li><strong>date:</strong> (optional) timestamp, date and time of each sample. If this column is not present, and the dataframe index is
+a DatetimeIndex, the index will be used instead. This is an optional column, only required when using models
+that are aware of the date, such as weekly seasonality models.</li>
+<li><strong>x:</strong> (optional) float or int, numeric index of each sample. If this column is not present, it will be inferred from the
+date column or, if that is not possible, the dataframe index will be used instead.</li>
+<li><strong>source:</strong> (optional). string, the name of the data source for this time series. You can include multiple time
+series in your input dataframe, using different source values to identify them.</li>
+</ul>
+</div></blockquote>
+<p>If a series is passed, ‘y’ will be the series values and, if the index is a DateTimeIndex, it will be used as the ‘date’
+column. If the index is numeric, it will be used as the ‘x’ column instead.</p>
+<p>An input dataframe should meet the following constraints:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Minimum required samples depends on number of parameters in the chosen models. run_forecast() will fail to fit if
+n_samples &lt; n_parameters+2</li>
+<li>y column may include null values</li>
+<li>Multiple values per sample may be included, e.g when the same metric is observed by multiple sources. In that case,
+it is possible to assign weights to each individual sample so that one source will be given higher priority. To do
+that, include a ‘weight’ column of floats in the input dataframe</li>
+<li>A date column or date index is only required if the model is date-aware.</li>
+<li>Non-default column names may be used. In that case, you need to pass the new column names to run_forecast() using
+the col_name_ parameters.</li>
+</ul>
+</div></blockquote>
+<p>Here is an example of using col_name_ parameters to run a forecast witn non-default column names:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;my_y&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mf">10.0</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+                   <span class="s1">&#39;my_date&#39;</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">)})</span>
+<span class="n">df_forecast2</span> <span class="o">=</span> <span class="n">forecast</span><span class="o">.</span><span class="n">run_forecast</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">extrapolate_years</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                                   <span class="n">col_name_y</span><span class="o">=</span><span class="s1">&#39;my_y&#39;</span><span class="p">,</span>
+                                   <span class="n">col_name_date</span><span class="o">=</span><span class="s1">&#39;my_date&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="detailed-output">
+<h2><a class="toc-backref" href="#id5">Detailed Output</a><a class="headerlink" href="#detailed-output" title="Permalink to this headline">¶</a></h2>
+<p>The library uses scipy.optimize to fit model functions to the input data. You can examine the model parameters, quality
+metrics and other useful information with the argument simplify_output=False:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dict_result</span> <span class="o">=</span> <span class="n">forecast</span><span class="o">.</span><span class="n">run_forecast</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">extrapolate_years</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                                    <span class="n">simplify_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include_all_fits</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Table with actuals and forecast for best-fitting model, including prediction intervals</span>
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;forecast&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Table including time series actuals and forecast</span>
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># Metadata table: model parameters and fitting output</span>
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]</span>
+<span class="c1"># Table with output data from scipy.optimize, for debugging purposes</span>
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;optimize_info&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Output - forecast table, same as output from run_forecast(simplify_output=True):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span>         <span class="n">date</span> <span class="n">source</span>  <span class="n">is_actuals</span>          <span class="n">model</span>          <span class="n">y</span>        <span class="n">q5</span>        <span class="n">q20</span>        <span class="n">q80</span>        <span class="n">q95</span>
+<span class="mi">19</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>    <span class="n">src</span>        <span class="kc">True</span>              <span class="n">y</span>   <span class="mf">9.928176</span>       <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>
+<span class="mi">221</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">21</span>    <span class="n">src</span>       <span class="kc">False</span>  <span class="p">(</span><span class="n">linear</span><span class="o">+</span><span class="n">ramp</span><span class="p">)</span>  <span class="mf">10.838865</span>  <span class="mf">9.597208</span>  <span class="mf">10.121438</span>  <span class="mf">11.717812</span>  <span class="mf">12.551523</span>
+</pre></div>
+</div>
+<p>Output - data table. Has actuals and forecasts, including forecasts from non-optimal models if include_all_fits=True</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span>         <span class="n">date</span>                        <span class="n">model</span>          <span class="n">y</span> <span class="n">source</span>                       <span class="n">source_long</span>  <span class="n">is_actuals</span>  <span class="n">is_weight</span>  <span class="n">is_filtered</span>  <span class="n">is_best_fit</span>
+<span class="mi">19</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>                       <span class="n">weight</span>   <span class="mf">1.000000</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>        <span class="kc">True</span>       <span class="kc">True</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">39</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>                            <span class="n">y</span>   <span class="mf">9.928176</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>        <span class="kc">True</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">241</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">21</span>                       <span class="n">linear</span>   <span class="mf">9.230972</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">443</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">21</span>         <span class="p">(</span><span class="n">linear</span><span class="o">+</span><span class="n">season_wday</span><span class="p">)</span>   <span class="mf">9.283372</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">645</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">21</span>                <span class="p">(</span><span class="n">linear</span><span class="o">+</span><span class="n">ramp</span><span class="p">)</span>  <span class="mf">10.838865</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>         <span class="kc">True</span>
+<span class="mi">847</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">21</span>  <span class="p">((</span><span class="n">linear</span><span class="o">+</span><span class="n">ramp</span><span class="p">)</span><span class="o">+</span><span class="n">season_wday</span><span class="p">)</span>  <span class="mf">10.989835</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+</pre></div>
+</div>
+<p>Output - metadata table. Includes model parameters and model quality metrics such as cost and AICC:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span>  <span class="n">source</span>                        <span class="n">model</span> <span class="n">weights</span>         <span class="n">actuals_x_range</span> <span class="n">freq</span>  <span class="n">is_fit</span>      <span class="n">cost</span>       <span class="n">aic_c</span>                                         <span class="n">params_str</span> <span class="n">status</span>                       <span class="n">source_long</span>                                             <span class="n">params</span>  <span class="n">is_best_fit</span>
+<span class="mi">0</span>    <span class="n">src</span>                       <span class="n">linear</span>     <span class="mi">1</span><span class="o">-</span><span class="mi">1</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>    <span class="n">D</span>    <span class="kc">True</span>  <span class="mf">0.063076</span> <span class="o">-</span><span class="mf">111.182993</span>                                <span class="p">[</span><span class="o">-</span><span class="mf">3.9e-03</span>  <span class="mf">1.0e+01</span><span class="p">]</span>    <span class="n">FIT</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>       <span class="p">[</span><span class="o">-</span><span class="mf">0.0038931365581278176</span><span class="p">,</span> <span class="mf">10.013491979601325</span><span class="p">]</span>        <span class="kc">False</span>
+<span class="mi">1</span>    <span class="n">src</span>         <span class="p">(</span><span class="n">linear</span><span class="o">+</span><span class="n">season_wday</span><span class="p">)</span>     <span class="mi">1</span><span class="o">-</span><span class="mi">1</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>    <span class="n">D</span>    <span class="kc">True</span>  <span class="mf">0.039519</span>  <span class="o">-</span><span class="mf">95.533948</span>  <span class="p">[</span><span class="o">-</span><span class="mf">3.3e-03</span>  <span class="mf">1.0e+01</span>  <span class="mf">1.0e-01</span> <span class="o">-</span><span class="mf">1.4e-02</span>  <span class="mf">8.4e-02</span> <span class="o">...</span>    <span class="n">FIT</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>  <span class="p">[</span><span class="o">-</span><span class="mf">0.0032764198059819344</span><span class="p">,</span> <span class="mf">9.975993454168774</span><span class="p">,</span> <span class="mf">0.</span><span class="o">...</span>        <span class="kc">False</span>
+<span class="mi">2</span>    <span class="n">src</span>                <span class="p">(</span><span class="n">linear</span><span class="o">+</span><span class="n">ramp</span><span class="p">)</span>     <span class="mi">1</span><span class="o">-</span><span class="mi">1</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>    <span class="n">D</span>    <span class="kc">True</span>  <span class="mf">0.045997</span> <span class="o">-</span><span class="mf">111.498115</span>                              <span class="p">[</span><span class="o">-</span><span class="mf">0.</span>  <span class="mf">10.1</span>  <span class="mf">6.</span>   <span class="mf">0.</span> <span class="p">]</span>    <span class="n">FIT</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>  <span class="p">[</span><span class="o">-</span><span class="mf">0.030005422538483477</span><span class="p">,</span> <span class="mf">10.103677325164737</span><span class="p">,</span> <span class="mf">6.</span><span class="o">...</span>         <span class="kc">True</span>
+<span class="mi">3</span>    <span class="n">src</span>  <span class="p">((</span><span class="n">linear</span><span class="o">+</span><span class="n">ramp</span><span class="p">)</span><span class="o">+</span><span class="n">season_wday</span><span class="p">)</span>     <span class="mi">1</span><span class="o">-</span><span class="mi">1</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>    <span class="n">D</span>    <span class="kc">True</span>  <span class="mf">0.020303</span>  <span class="o">-</span><span class="mf">93.853970</span>  <span class="p">[</span><span class="o">-</span><span class="mf">3.2e-02</span>  <span class="mf">1.0e+01</span>  <span class="mf">6.0e+00</span>  <span class="mf">3.8e-02</span>  <span class="mf">1.1e-01</span> <span class="o">...</span>    <span class="n">FIT</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>  <span class="p">[</span><span class="o">-</span><span class="mf">0.0318590092714045</span><span class="p">,</span> <span class="mf">10.062880686158646</span><span class="p">,</span> <span class="mf">6.00</span><span class="o">...</span>        <span class="kc">False</span>
+</pre></div>
+</div>
+<p>Output - optimize information table. Includes detailed data generated by scipy.optimize, useful for debugging:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.  source                        model  success                                         params_str      cost    optimality  iterations  status  jac_evals                                     message                       source_long                                             params
+0    src                       linear     True                                [-3.9e-03  1.0e+01]  0.063076  1.213028e-09           4       1          4  `gtol` termination condition is satisfied.  src:1-1:D:2018-01-01::2018-01-20       [-0.0038931365581278176, 10.013491979601325]
+1    src         (linear+season_wday)     True  [-3.3e-03  1.0e+01  1.0e-01 -1.4e-02  8.4e-02 ...  0.039519  8.348877e-14           4       1          4  `gtol` termination condition is satisfied.  src:1-1:D:2018-01-01::2018-01-20  [-0.0032764198059819344, 9.975993454168774, 0....
+2    src                (linear+ramp)     True                              [-0.  10.1  6.   0. ]  0.045997  1.765921e-03          34       2         22  `ftol` termination condition is satisfied.  src:1-1:D:2018-01-01::2018-01-20  [-0.030005422538483477, 10.103677325164737, 6....
+3    src  ((linear+ramp)+season_wday)     True  [-3.2e-02  1.0e+01  6.0e+00  3.8e-02  1.1e-01 ...  0.020303  2.777755e-02          45       2         28  `ftol` termination condition is satisfied.  src:1-1:D:2018-01-01::2018-01-20  [-0.0318590092714045, 10.062880686158646, 6.00...
+</pre></div>
+</div>
+</div>
+<div class="section" id="forecast-models">
+<span id="models"></span><h2><a class="toc-backref" href="#id6">Forecast models</a><a class="headerlink" href="#forecast-models" title="Permalink to this headline">¶</a></h2>
+<p>By default, run_forecast() automatically generates a list of candidate models. However, you can specify a list of models
+in the argument l_model_trend, so that the tool fits each model and chooses the best. Only the best fitting model will
+be included in the output, unless you use the argument include_all_fits=True.
+The following example runs a forecast with two models: linear and constant:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dict_result</span> <span class="o">=</span> <span class="n">forecast</span><span class="o">.</span><span class="n">run_forecast</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">extrapolate_years</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">simplify_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                   <span class="n">l_model_trend</span> <span class="o">=</span> <span class="p">[</span><span class="n">forecast_models</span><span class="o">.</span><span class="n">model_linear</span><span class="p">,</span>
+                                                    <span class="n">forecast_models</span><span class="o">.</span><span class="n">model_constant</span><span class="p">],</span>
+                                   <span class="n">include_all_fits</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Table including time series actuals and forecast</span>
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="c1"># Metadata table: model parameters and fitting output</span>
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span>           <span class="n">date</span>     <span class="n">model</span>    <span class="n">y</span> <span class="n">source</span>                     <span class="n">source_long</span>  <span class="n">is_actuals</span>  <span class="n">is_weight</span>  <span class="n">is_filtered</span>  <span class="n">is_best_fit</span>
+<span class="mi">739</span> <span class="mi">2018</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span>  <span class="n">constant</span>  <span class="mf">2.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">740</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span>  <span class="n">constant</span>  <span class="mf">2.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">741</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">02</span>  <span class="n">constant</span>  <span class="mf">2.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">742</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">03</span>  <span class="n">constant</span>  <span class="mf">2.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">743</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">04</span>  <span class="n">constant</span>  <span class="mf">2.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">744</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>  <span class="n">constant</span>  <span class="mf">2.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span>  <span class="n">source</span>     <span class="n">model</span> <span class="n">weights</span>         <span class="n">actuals_x_range</span> <span class="n">freq</span>  <span class="n">is_fit</span>          <span class="n">cost</span>       <span class="n">aic_c</span>         <span class="n">params_str</span> <span class="n">status</span>                     <span class="n">source_long</span>                         <span class="n">params</span>  <span class="n">is_best_fit</span>
+<span class="mi">0</span>    <span class="n">src</span>    <span class="n">linear</span>       <span class="mi">1</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>    <span class="n">D</span>    <span class="kc">True</span>  <span class="mf">6.162976e-33</span> <span class="o">-</span><span class="mf">368.880931</span>  <span class="p">[</span><span class="mf">1.0e+00</span> <span class="mf">1.1e-16</span><span class="p">]</span>    <span class="n">FIT</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>  <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.1102230246251565e-16</span><span class="p">]</span>         <span class="kc">True</span>
+<span class="mi">1</span>    <span class="n">src</span>  <span class="n">constant</span>       <span class="mi">1</span>  <span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>    <span class="n">D</span>    <span class="kc">True</span>  <span class="mf">5.000000e+00</span>    <span class="mf">3.000000</span>               <span class="p">[</span><span class="mf">2.</span><span class="p">]</span>    <span class="n">FIT</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">05</span>                          <span class="p">[</span><span class="mf">2.0</span><span class="p">]</span>        <span class="kc">False</span>
+</pre></div>
+</div>
+<p>You can configure run_forecast to fit a seasonality model in addition to the trend model. To do so, include the argument
+l_model_season with a list of one or more seasonality models. If the list includes model_null, a non-seasonal model
+will also be fit and compared with the seasonal models. The function tries all combinations of trend models and
+seasonality models and selects the best:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="mi">21</span><span class="p">,</span> <span class="mf">10.</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span><span class="mi">3</span><span class="p">)},</span>
+           <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">))</span>
+<span class="n">dict_result</span> <span class="o">=</span> <span class="n">forecast</span><span class="o">.</span><span class="n">run_forecast</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">extrapolate_years</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">simplify_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="n">l_model_trend</span> <span class="o">=</span> <span class="p">[</span><span class="n">forecast_models</span><span class="o">.</span><span class="n">model_linear</span><span class="p">,</span>
+                                                   <span class="n">forecast_models</span><span class="o">.</span><span class="n">model_constant</span><span class="p">],</span>
+                                   <span class="n">l_model_season</span> <span class="o">=</span> <span class="p">[</span><span class="n">forecast_models</span><span class="o">.</span><span class="n">model_null</span><span class="p">,</span>        <span class="c1"># no seasonality model</span>
+                                                   <span class="n">forecast_models</span><span class="o">.</span><span class="n">model_season_wday</span><span class="p">],</span>  <span class="c1"># weekday seasonality model</span>
+                                  <span class="n">include_all_fits</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][[</span><span class="s1">&#39;source&#39;</span><span class="p">,</span><span class="s1">&#39;model&#39;</span><span class="p">,</span><span class="s1">&#39;is_fit&#39;</span><span class="p">,</span><span class="s1">&#39;cost&#39;</span><span class="p">,</span><span class="s1">&#39;aic_c&#39;</span><span class="p">,</span><span class="s1">&#39;params_str&#39;</span><span class="p">,</span><span class="s1">&#39;is_best_fit&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span>          <span class="n">date</span>                        <span class="n">model</span>     <span class="n">y</span> <span class="n">source</span>                     <span class="n">source_long</span>  <span class="n">is_actuals</span>  <span class="n">is_weight</span>  <span class="n">is_filtered</span>  <span class="n">is_best_fit</span>
+<span class="mi">2331</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">16</span>  <span class="p">(</span><span class="n">constant_mult_season_wday</span><span class="p">)</span>  <span class="mf">12.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">21</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">2332</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">17</span>  <span class="p">(</span><span class="n">constant_mult_season_wday</span><span class="p">)</span>  <span class="mf">13.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">21</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">2333</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">18</span>  <span class="p">(</span><span class="n">constant_mult_season_wday</span><span class="p">)</span>  <span class="mf">14.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">21</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">2334</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">19</span>  <span class="p">(</span><span class="n">constant_mult_season_wday</span><span class="p">)</span>  <span class="mf">15.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">21</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">2335</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span>  <span class="p">(</span><span class="n">constant_mult_season_wday</span><span class="p">)</span>  <span class="mf">16.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">21</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+<span class="mi">2336</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">21</span>  <span class="p">(</span><span class="n">constant_mult_season_wday</span><span class="p">)</span>  <span class="mf">10.0</span>    <span class="n">src</span>  <span class="n">src</span><span class="p">:</span><span class="mi">1</span><span class="p">:</span><span class="n">D</span><span class="p">:</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="p">::</span><span class="mi">2018</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">21</span>       <span class="kc">False</span>      <span class="kc">False</span>        <span class="kc">False</span>        <span class="kc">False</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span> <span class="n">source</span>                        <span class="n">model</span>  <span class="n">is_fit</span>          <span class="n">cost</span>       <span class="n">aic_c</span>                                         <span class="n">params_str</span>  <span class="n">is_best_fit</span>
+<span class="mi">0</span>    <span class="n">src</span>                       <span class="n">linear</span>    <span class="kc">True</span>  <span class="mf">3.741818e+01</span>   <span class="mf">16.130320</span>                                        <span class="p">[</span> <span class="mf">0.1</span> <span class="mf">11.9</span><span class="p">]</span>        <span class="kc">False</span>
+<span class="mi">1</span>    <span class="n">src</span>     <span class="p">(</span><span class="n">linear_add_season_wday</span><span class="p">)</span>    <span class="kc">True</span>  <span class="mf">1.840127e-15</span> <span class="o">-</span><span class="mf">742.442745</span>  <span class="p">[</span><span class="mf">3.5e-10</span> <span class="mf">6.3e+00</span> <span class="mf">3.7e+00</span> <span class="mf">4.7e+00</span> <span class="mf">5.7e+00</span> <span class="mf">6.7</span><span class="n">e</span><span class="o">+...</span>        <span class="kc">False</span>
+<span class="mi">2</span>    <span class="n">src</span>                     <span class="n">constant</span>    <span class="kc">True</span>  <span class="mf">4.200000e+01</span>   <span class="mf">16.556091</span>                                              <span class="p">[</span><span class="mf">13.</span><span class="p">]</span>        <span class="kc">False</span>
+<span class="mi">3</span>    <span class="n">src</span>   <span class="p">(</span><span class="n">constant_add_season_wday</span><span class="p">)</span>    <span class="kc">True</span>  <span class="mf">1.686607e-15</span> <span class="o">-</span><span class="mf">750.272181</span>          <span class="p">[</span><span class="mf">12.7</span> <span class="o">-</span><span class="mf">2.7</span> <span class="o">-</span><span class="mf">1.7</span> <span class="o">-</span><span class="mf">0.7</span>  <span class="mf">0.3</span>  <span class="mf">1.3</span>  <span class="mf">2.3</span>  <span class="mf">3.3</span><span class="p">]</span>        <span class="kc">False</span>
+<span class="mi">4</span>    <span class="n">src</span>    <span class="p">(</span><span class="n">linear_mult_season_wday</span><span class="p">)</span>    <span class="kc">True</span>  <span class="mf">2.761458e-16</span> <span class="o">-</span><span class="mf">782.272627</span>  <span class="p">[</span><span class="o">-</span><span class="mf">2.2e-10</span>  <span class="mf">1.9e+01</span>  <span class="mf">5.3e-01</span>  <span class="mf">5.9e-01</span>  <span class="mf">6.4e-01</span> <span class="o">...</span>         <span class="kc">True</span>
+<span class="mi">5</span>    <span class="n">src</span>  <span class="p">(</span><span class="n">constant_mult_season_wday</span><span class="p">)</span>    <span class="kc">True</span>  <span class="mf">6.833738e-13</span> <span class="o">-</span><span class="mf">624.181393</span>          <span class="p">[</span><span class="mf">15.9</span>  <span class="mf">0.6</span>  <span class="mf">0.7</span>  <span class="mf">0.8</span>  <span class="mf">0.8</span>  <span class="mf">0.9</span>  <span class="mf">0.9</span>  <span class="mf">1.</span> <span class="p">]</span>        <span class="kc">False</span>
+</pre></div>
+</div>
+<p>The following trend and seasonality models are currently supported. They are available as attributes from
+<a class="reference internal" href="library.html#module-anticipy.forecast_models" title="anticipy.forecast_models"><code class="xref py py-mod docutils literal notranslate"><span class="pre">anticipy.forecast_models</span></code></a>:</p>
+<table border="1" class="colwidths-given docutils" id="id1">
+<caption><span class="caption-text">Default forecast models</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="22%" />
+<col width="11%" />
+<col width="22%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">params</th>
+<th class="head">formula</th>
+<th class="head">notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>model_null</td>
+<td>0</td>
+<td>y=0</td>
+<td>Does nothing. Used to disable components (e.g. seasonality)</td>
+</tr>
+<tr class="row-odd"><td>model_linear</td>
+<td>2</td>
+<td>y=Ax + B</td>
+<td>Linear model</td>
+</tr>
+<tr class="row-even"><td>model_ramp</td>
+<td>2</td>
+<td>y = (x-A)*B if x&gt;A</td>
+<td>Ramp model</td>
+</tr>
+<tr class="row-odd"><td>model_season_wday</td>
+<td>6</td>
+<td>see desc.</td>
+<td>Weekday seasonality model. Assigns a constant value to each weekday</td>
+</tr>
+<tr class="row-even"><td>model_season_fourier_yearly</td>
+<td>20</td>
+<td>see desc</td>
+<td>Fourier yearly seasonality model</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="colwidths-given docutils" id="id2">
+<caption><span class="caption-text">Other forecast models</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="22%" />
+<col width="11%" />
+<col width="22%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">params</th>
+<th class="head">formula</th>
+<th class="head">notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>model_constant</td>
+<td>1</td>
+<td>y=A</td>
+<td>Constant model</td>
+</tr>
+<tr class="row-odd"><td>model_linear_nondec</td>
+<td>2</td>
+<td>y=Ax + B</td>
+<td>Non decreasing linear model. With boundaries to ensure model slope &gt;=0</td>
+</tr>
+<tr class="row-even"><td>model_quasilinear</td>
+<td>3</td>
+<td>y=A*(x^B) + C</td>
+<td>Quasilinear model</td>
+</tr>
+<tr class="row-odd"><td>model_exp</td>
+<td>2</td>
+<td>y=A * B^x</td>
+<td>Exponential model</td>
+</tr>
+<tr class="row-even"><td>model_step</td>
+<td>2</td>
+<td>y=0 if x&lt;A, y=B if x&gt;=A</td>
+<td>Step model</td>
+</tr>
+<tr class="row-odd"><td>model_two_steps</td>
+<td>4</td>
+<td>see model_step</td>
+<td>2 step models. Parameter initialization is aware of # of steps.</td>
+</tr>
+<tr class="row-even"><td>model_sigmoid_step</td>
+<td>3</td>
+<td>y = A + (B - A) / (1 + np.exp(- D * (x - C)))</td>
+<td>Sigmoid step model</td>
+</tr>
+<tr class="row-odd"><td>model_sigmoid</td>
+<td>3</td>
+<td>y = A + (B - A) / (1 + np.exp(- D * (x - C)))</td>
+<td>Sigmoid model</td>
+</tr>
+<tr class="row-even"><td>model_season_wday_2</td>
+<td>2</td>
+<td>see desc.</td>
+<td>Weekend seasonality model. Assigns a constant to each of weekday/weekend</td>
+</tr>
+<tr class="row-odd"><td>model_season_month</td>
+<td>11</td>
+<td>see desc.</td>
+<td>Month seasonality model. Assigns a constant value to each month</td>
+</tr>
+</tbody>
+</table>
+<p>If the available range of models isn’t a good match for your data, it is also possible to define new models
+using <a class="reference internal" href="library.html#anticipy.forecast_models.ForecastModel" title="anticipy.forecast_models.ForecastModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">anticipy.forecast_models.ForecastModel</span></code></a></p>
+</div>
+<div class="section" id="models-with-dummy-variables">
+<h2><a class="toc-backref" href="#id7">Models with dummy variables</a><a class="headerlink" href="#models-with-dummy-variables" title="Permalink to this headline">¶</a></h2>
+<p>You can use <a class="reference internal" href="library.html#anticipy.forecast_models.get_model_dummy" title="anticipy.forecast_models.get_model_dummy"><code class="xref py py-func docutils literal notranslate"><span class="pre">anticipy.forecast_models.get_model_dummy()</span></code></a> to get a model based on a dummy variable. This
+model returns a constant value when the dummy variable is 1, and 0 otherwise:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example dummy model - check if date matches specific dates in list</span>
+<span class="n">model_dummy_l_date</span> <span class="o">=</span> <span class="n">forecast_models</span><span class="o">.</span><span class="n">get_model_dummy</span><span class="p">(</span><span class="s1">&#39;dummy_l_date&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;2017-12-22&#39;</span><span class="p">,</span> <span class="s1">&#39;2017-12-27&#39;</span><span class="p">])</span>
+
+<span class="c1"># Example dummy model - checks if it is Christmas</span>
+<span class="n">model_dummy_christmas</span> <span class="o">=</span> <span class="n">forecast_models</span><span class="o">.</span><span class="n">get_model_dummy</span><span class="p">(</span><span class="s1">&#39;dummy_christmas&#39;</span><span class="p">,</span>
+                                        <span class="k">lambda</span> <span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">:</span> <span class="p">((</span><span class="n">a_date</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">a_date</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">25</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+
+<span class="n">a_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">a_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2017-12-21&#39;</span><span class="p">,</span><span class="s1">&#39;2017-12-30&#39;</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.</span><span class="p">])</span> <span class="c1"># A=10</span>
+
+<span class="nb">print</span> <span class="n">model_dummy_l_date</span><span class="p">(</span><span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="nb">print</span> <span class="n">model_dummy_christmas</span><span class="p">(</span><span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span> <span class="mf">0.</span> <span class="mf">10.</span>  <span class="mf">0.</span>  <span class="mf">0.</span>  <span class="mf">0.</span>  <span class="mf">0.</span> <span class="mf">10.</span>  <span class="mf">0.</span>  <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]</span>
+<span class="p">[</span> <span class="mf">0.</span>  <span class="mf">0.</span>  <span class="mf">0.</span>  <span class="mf">0.</span> <span class="mf">10.</span>  <span class="mf">0.</span>  <span class="mf">0.</span>  <span class="mf">0.</span>  <span class="mf">0.</span>  <span class="mf">0.</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Dummy variables can be very useful when used in composition with simpler models. A common application is to check
+for bank holidays or other special dates. The following example uses a dummy variable to improve fit
+in a linear time series with a spike on Christmas:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">100</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">50.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,])},</span>
+           <span class="n">index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s1">&#39;2017-12-21&#39;</span><span class="p">,</span><span class="s1">&#39;2017-12-26&#39;</span><span class="p">))</span>
+
+<span class="c1"># Example dummy model - checks if it is Christmas</span>
+<span class="n">model_dummy_christmas</span> <span class="o">=</span> <span class="n">forecast_models</span><span class="o">.</span><span class="n">get_model_dummy</span><span class="p">(</span><span class="s1">&#39;dummy_christmas&#39;</span><span class="p">,</span>
+                                        <span class="k">lambda</span> <span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">:</span> <span class="p">((</span><span class="n">a_date</span><span class="o">.</span><span class="n">month</span> <span class="o">==</span> <span class="mi">12</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">a_date</span><span class="o">.</span><span class="n">day</span> <span class="o">==</span> <span class="mi">25</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+
+<span class="n">dict_result</span> <span class="o">=</span> <span class="n">forecast</span><span class="o">.</span><span class="n">run_forecast</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">extrapolate_years</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">simplify_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                  <span class="n">l_model_trend</span> <span class="o">=</span> <span class="p">[</span><span class="n">forecast_models</span><span class="o">.</span><span class="n">model_linear</span><span class="p">,</span>
+                                                   <span class="n">forecast_models</span><span class="o">.</span><span class="n">model_linear</span><span class="o">+</span><span class="n">model_dummy_christmas</span><span class="p">],</span>
+                                  <span class="n">include_all_fits</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;metadata&#39;</span><span class="p">][[</span><span class="s1">&#39;source&#39;</span><span class="p">,</span><span class="s1">&#39;model&#39;</span><span class="p">,</span><span class="s1">&#39;is_fit&#39;</span><span class="p">,</span><span class="s1">&#39;cost&#39;</span><span class="p">,</span><span class="s1">&#39;aic_c&#39;</span><span class="p">,</span><span class="s1">&#39;params_str&#39;</span><span class="p">,</span><span class="s1">&#39;is_best_fit&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">.</span> <span class="n">source</span>                         <span class="n">model</span>  <span class="n">is_fit</span>          <span class="n">cost</span>       <span class="n">aic_c</span>        <span class="n">params_str</span>  <span class="n">is_best_fit</span>
+<span class="mi">0</span>    <span class="n">src</span>                        <span class="n">linear</span>    <span class="kc">True</span>  <span class="mf">8.809524e+02</span>   <span class="mf">37.935465</span>       <span class="p">[</span> <span class="mf">5.3</span> <span class="mf">97.6</span><span class="p">]</span>        <span class="kc">False</span>
+<span class="mi">1</span>    <span class="n">src</span>  <span class="p">(</span><span class="n">linear_add_dummy_christmas</span><span class="p">)</span>    <span class="kc">True</span>  <span class="mf">9.980807e-20</span> <span class="o">-</span><span class="mf">255.256784</span>  <span class="p">[</span>  <span class="mf">1.</span> <span class="mf">100.</span>  <span class="mf">50.</span><span class="p">]</span>         <span class="kc">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="spikes-and-steps">
+<h2><a class="toc-backref" href="#id8">Spikes and Steps</a><a class="headerlink" href="#spikes-and-steps" title="Permalink to this headline">¶</a></h2>
+<p>If you call <a class="reference internal" href="library.html#anticipy.forecast.run_forecast" title="anticipy.forecast.run_forecast"><code class="xref py py-func docutils literal notranslate"><span class="pre">anticipy.forecast.run_forecast()</span></code></a> and specify as input <cite>find_outliers=True</cite>,
+it will try to automatically identify any outliers exist in the input Series. The weight for these samples is
+set to 0, so that they are ignored by the forecast logic.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a_y</span> <span class="o">=</span> <span class="p">[</span><span class="mf">19.8</span><span class="p">,</span> <span class="mf">19.9</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">20.1</span><span class="p">,</span> <span class="mf">20.2</span><span class="p">,</span> <span class="mf">20.3</span><span class="p">,</span> <span class="mf">20.4</span><span class="p">,</span> <span class="mf">20.5</span><span class="p">,</span>
+       <span class="mf">20.6</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">20.7</span><span class="p">,</span> <span class="mf">20.8</span><span class="p">,</span> <span class="mf">20.9</span><span class="p">,</span> <span class="mf">21.0</span><span class="p">,</span>
+       <span class="mf">21.1</span><span class="p">,</span> <span class="mf">21.2</span><span class="p">,</span> <span class="mf">21.3</span><span class="p">,</span> <span class="mf">21.4</span><span class="p">,</span> <span class="mf">21.5</span><span class="p">]</span>
+<span class="n">a_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="s1">&#39;2018-01-01&#39;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">a_y</span><span class="p">),</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;D&#39;</span><span class="p">)</span>
+<span class="n">df_spike</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">a_y</span><span class="p">})</span>
+
+<span class="n">dict_result</span> <span class="o">=</span> <span class="n">forecast</span><span class="o">.</span><span class="n">run_forecast</span><span class="p">(</span><span class="n">df_spike</span><span class="p">,</span> <span class="n">find_outliers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">simplify_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include_all_fits</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">season_add_mult</span><span class="o">=</span><span class="s1">&#39;add&#39;</span><span class="p">)</span>
+<span class="n">df_data</span> <span class="o">=</span> <span class="n">dict_result</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="n">df_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_data</span><span class="o">.</span><span class="n">model</span><span class="o">==</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">values</span>
+<span class="nb">print</span> <span class="n">mask</span>
+</pre></div>
+</div>
+<p>Output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">0.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span> <span class="mf">1.</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="faq.html" class="btn btn-neutral float-right" title="Frequently Asked Questions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="install.html" class="btn btn-neutral" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, BSKYB Limited.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
