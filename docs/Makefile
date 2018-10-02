@@ -1,7 +1,7 @@
 SHELL := ${shell which bash}
 SPHINXBUILD := ${shell which sphinx-build}
 
-BUILDDIR = build
+BUILDDIR      = ../../anticipy-docs
 SOURCE = source
 ALLSPHINXOPTS = -d $(BUILDDIR)/doctrees $(SOURCE)
 

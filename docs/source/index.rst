@@ -10,6 +10,8 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
+   includeme
+
    overview.rst
    install.rst
    tutorial.rst
