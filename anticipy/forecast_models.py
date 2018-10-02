@@ -1043,7 +1043,7 @@ def get_model_outliers_withgap(df, window=3):
 # TODO: ADD option - gaussian spikes
 def get_model_outliers(df, window=3):
     """
-
+    
     :param df:
     :type df:
     :param window:
