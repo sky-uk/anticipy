@@ -10,7 +10,6 @@ covhtml
 nosetests.xml
 pylint*
 .tox/
-build/
 dist/
 logs/
 activate.*

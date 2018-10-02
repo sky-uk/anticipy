@@ -1,0 +1,1106 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Library Reference &mdash; anticipy 0.0.2 0.0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Frequently Asked Questions" href="faq.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> anticipy 0.0.2
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html#developers-only">Developers Only</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Library Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-anticipy.forecast">forecast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-anticipy.forecast_models">forecast_model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-anticipy.model_utils">model_utils</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">anticipy 0.0.2</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Library Reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-anticipy">
+<span id="library-reference"></span><h1>Library Reference<a class="headerlink" href="#module-anticipy" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-anticipy.forecast">
+<span id="forecast"></span><h2>forecast<a class="headerlink" href="#module-anticipy.forecast" title="Permalink to this headline">¶</a></h2>
+<p>Functions to run forecast</p>
+<dl class="function">
+<dt id="anticipy.forecast.get_residuals">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">get_residuals</code><span class="sig-paren">(</span><em>params</em>, <em>model</em>, <em>a_x</em>, <em>a_y</em>, <em>a_date</em>, <em>a_weights=None</em>, <em>filter_null_residuals=None</em>, <em>df_actuals=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.get_residuals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a time series, a model function and a set of parameters, get the residuals</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>params</strong> (<em>numpy array</em>) – parameters for model function</li>
+<li><strong>model</strong> (<em>function</em>) – model function. Usage: model(a_x, a_date, params)</li>
+<li><strong>a_x</strong> (<em>float array</em>) – X axis for model function.</li>
+<li><strong>a_y</strong> (<em>float array</em>) – Input time series values, to compare to the model function</li>
+<li><strong>a_date</strong> (<em>datetime array</em>) – Dates for the input time series</li>
+<li><strong>a_weights</strong> (<em>numpy array</em>) – weights for each individual sample</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">array with residuals, same length as a_x, a_y</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast.optimize_least_squares">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">optimize_least_squares</code><span class="sig-paren">(</span><em>model</em>, <em>a_x</em>, <em>a_y</em>, <em>a_date</em>, <em>a_weights=None</em>, <em>f_t_scaling=None</em>, <em>df_actuals=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.optimize_least_squares" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a time series and a model function, find the set of parameters that minimises residuals</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> (<em>function</em>) – model function, to be fitted against the actuals</li>
+<li><strong>a_x</strong> (<em>float array</em>) – </li>
+<li><strong>a_y</strong> (<em>float array</em>) – </li>
+<li><strong>a_date</strong> (<em>datetime array</em>) – </li>
+<li><strong>res_weights</strong> – </li>
+<li><strong>use_t_scaling</strong> – </li>
+<li><strong>bounds</strong> (<em>2-tuple of array_like</em>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><div class="line-block">
+<div class="line">table(success, params, cost, optimality, iterations, status, jac_evals, message):</div>
+<div class="line">- success (bool): True if successful fit</div>
+<div class="line">- params (list): Parameters of fitted model</div>
+<div class="line">- cost (float): Value of cost function</div>
+<div class="line">- optimality(float)</div>
+<div class="line">- iterations (int) : Number of function evaluations</div>
+<div class="line">- status (int) : Status code</div>
+<div class="line">- jac_evals(int) : Number of Jacobian evaluations</div>
+<div class="line">- message (str) : Output message</div>
+</div>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pandas.DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast.normalize_df">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">normalize_df</code><span class="sig-paren">(</span><em>df_y</em>, <em>col_name_y='y'</em>, <em>col_name_weight='weight'</em>, <em>col_name_x='x'</em>, <em>col_name_date='date'</em>, <em>col_name_source='source'</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.normalize_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an input dataframe for run_forecast() into a normalized format suitable for fit_model()</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>df_y</strong> (<em>pandas.DataFrame</em>) – </li>
+<li><strong>col_name_y</strong> (<em>str</em>) – </li>
+<li><strong>col_name_weight</strong> (<em>str</em>) – </li>
+<li><strong>col_name_x</strong> (<em>str</em>) – </li>
+<li><strong>col_name_date</strong> (<em>str</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast.fit_model">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">fit_model</code><span class="sig-paren">(</span><em>model</em>, <em>df_y</em>, <em>freq='W'</em>, <em>source='test'</em>, <em>df_actuals=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.fit_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a time series and a model, optimize model parameters and return</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> (<em>function</em>) – </li>
+<li><strong>df_y</strong> (<em>pandas.DataFrame</em>) – <div class="line-block">
+<div class="line">Dataframe with the following columns:</div>
+<div class="line">- y:</div>
+<div class="line">- date: (optional)</div>
+<div class="line">- weight: (optional)</div>
+<div class="line">- x: (optional)</div>
+</div>
+</li>
+<li><strong>source</strong> – </li>
+<li><strong>freq</strong> (<em>str</em>) – ‘W’ or ‘D’ . Used only for metadata</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">table (source, model_name, y_weights , freq, is_fit, aic_c, params)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pandas.DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This function calls optimize_least_squares() to perform the optimization loop. It performs some cleaning up of input
+and output parameters.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast.extrapolate_model">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">extrapolate_model</code><span class="sig-paren">(</span><em>model</em>, <em>params</em>, <em>date_start_actuals</em>, <em>date_end_actuals</em>, <em>freq='W'</em>, <em>extrapolate_years=2.0</em>, <em>x_start_actuals=0.0</em>, <em>df_actuals=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.extrapolate_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a model and a set of parameters, generate model output for a date range plus a number of additional years.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>model</strong> – </li>
+<li><strong>params</strong> – </li>
+<li><strong>date_start_actuals</strong> – </li>
+<li><strong>date_end_actuals</strong> – </li>
+<li><strong>freq</strong> – </li>
+<li><strong>extrapolate_years</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast.get_df_actuals_clean">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">get_df_actuals_clean</code><span class="sig-paren">(</span><em>df_actuals</em>, <em>source</em>, <em>source_long</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.get_df_actuals_clean" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>df_actuals</strong> – dataframe in normalized format, with columns y and optionally x, date, weight</li>
+<li><strong>source</strong> – </li>
+<li><strong>source_long</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast.run_forecast">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">run_forecast</code><span class="sig-paren">(</span><em>df_y</em>, <em>l_model_trend=None</em>, <em>l_model_season=None</em>, <em>date_start_actuals=None</em>, <em>source_id='src'</em>, <em>col_name_y='y'</em>, <em>col_name_weight='weight'</em>, <em>col_name_x='x'</em>, <em>col_name_date='date'</em>, <em>col_name_source='source'</em>, <em>extrapolate_years=0</em>, <em>season_add_mult='add'</em>, <em>include_all_fits=False</em>, <em>simplify_output=True</em>, <em>do_find_steps_and_spikes=False</em>, <em>find_outliers=False</em>, <em>l_season_yearly=None</em>, <em>l_season_weekly=None</em>, <em>verbose=None</em>, <em>l_model_naive=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.run_forecast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate forecast for one or more input time series</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>df_y</strong> – </li>
+<li><strong>l_model_trend</strong> – </li>
+<li><strong>l_model_season</strong> – </li>
+<li><strong>date_start_actuals</strong> – </li>
+<li><strong>source_id</strong> – </li>
+<li><strong>col_name_y</strong> – </li>
+<li><strong>col_name_weight</strong> – </li>
+<li><strong>col_name_x</strong> – </li>
+<li><strong>col_name_date</strong> – </li>
+<li><strong>col_name_source</strong> – </li>
+<li><strong>return_all_models</strong> (<em>bool</em>) – <div class="line-block">
+<div class="line">If True, result includes non-fitting models, with null AIC and an empty forecast df.</div>
+<div class="line">Otherwise, result includes only fitting models, and for time series where no fitting model is available,</div>
+<div class="line">a ‘no-best-model’ entry with null AIC and an empty forecast df is added.</div>
+</div>
+</li>
+<li><strong>return_all_fits</strong> (<em>bool</em>) – If True, result includes all models for each input time series. Otherwise, only the
+best model is included.</li>
+<li><strong>extrapolate_years</strong> (<em>float</em>) – </li>
+<li><strong>season_add_mult</strong> (<em>str</em>) – ‘add’, ‘mult’, or ‘both’. Whether forecast seasonality will be additive, multiplicative,
+or the best fit of the two.</li>
+<li><strong>fill_gaps_y_values</strong> (<em>bool</em>) – If True, gaps in time series will be filled with NaN values</li>
+<li><strong>freq</strong> (<em>str</em>) – ‘W’ or ‘D’ . Sampling frequency of the output forecast: weekly or daily.</li>
+<li><strong>do_find_steps_and_spikes</strong> (<em>bool</em>) – if True, find steps and spikes, create fixed models and add them
+to the list of models</li>
+<li><strong>find_outliers</strong> – </li>
+<li><strong>include_all_fits</strong> – </li>
+<li><strong>simplify_output</strong> (<em>bool</em>) – If False, return dict with forecast and metadata. Otherwise, return only forecast.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast.run_forecast_single">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">run_forecast_single</code><span class="sig-paren">(</span><em>df_y</em>, <em>l_model_trend=None</em>, <em>l_model_season=None</em>, <em>date_start_actuals=None</em>, <em>source_id='src'</em>, <em>extrapolate_years=0</em>, <em>season_add_mult='add'</em>, <em>include_all_fits=False</em>, <em>simplify_output=True</em>, <em>do_find_steps_and_spikes=False</em>, <em>find_outliers=False</em>, <em>l_season_yearly=None</em>, <em>l_season_weekly=None</em>, <em>l_model_naive=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.run_forecast_single" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>df_y</strong> – </li>
+<li><strong>l_model_trend</strong> – </li>
+<li><strong>l_model_season</strong> – </li>
+<li><strong>date_start_actuals</strong> – </li>
+<li><strong>source_id</strong> – </li>
+<li><strong>col_name_y</strong> – </li>
+<li><strong>col_name_weight</strong> – </li>
+<li><strong>col_name_x</strong> – </li>
+<li><strong>col_name_date</strong> – </li>
+<li><strong>return_all_models</strong> (<em>bool</em>) – <div class="line-block">
+<div class="line">If True, result includes non-fitting models, with null AIC and an empty forecast df.</div>
+<div class="line">Otherwise, result includes only fitting models, and for time series where no fitting model is available,</div>
+<div class="line">a ‘no-best-model’ entry with null AIC and an empty forecast df is added.</div>
+</div>
+</li>
+<li><strong>return_all_fits</strong> (<em>bool</em>) – If True, result includes all models for each input time series. Otherwise, only the
+best model is included.</li>
+<li><strong>extrapolate_years</strong> (<em>float</em>) – </li>
+<li><strong>season_add_mult</strong> (<em>str</em>) – ‘add’, ‘mult’, or ‘both’. Whether forecast seasonality will be additive, multiplicative,
+or the best fit of the two.</li>
+<li><strong>fill_gaps_y_values</strong> (<em>bool</em>) – If True, gaps in time series will be filled with NaN values</li>
+<li><strong>freq</strong> (<em>str</em>) – ‘W’ or ‘D’ . Sampling frequency of the output forecast: weekly or daily.</li>
+<li><strong>do_find_steps_and_spikes</strong> (<em>bool</em>) – if True, find steps and spikes, create fixed models and add them
+to the list of models</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast.run_l_forecast">
+<code class="descclassname">anticipy.forecast.</code><code class="descname">run_l_forecast</code><span class="sig-paren">(</span><em>l_fcast_input</em>, <em>col_name_y='y'</em>, <em>col_name_weight='weight'</em>, <em>col_name_x='x'</em>, <em>col_name_date='date'</em>, <em>col_name_source='source'</em>, <em>extrapolate_years=0</em>, <em>season_add_mult='add'</em>, <em>include_all_fits=False</em>, <em>do_find_steps_and_spikes=False</em>, <em>find_outliers=False</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.run_l_forecast" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate forecasts for a list of SolverConfig objects, each including a time series, model functions, and other
+configuration parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>l_fcast_input</strong> (<em>list of ForecastInput</em>) – List of forecast input configurations. Each element includes a time series,
+candidate forecast models for trend and seasonality, and other configuration parameters. For each input
+configuration, a forecast time series will be generated.</li>
+<li><strong>return_all_models</strong> (<em>bool</em>) – <div class="line-block">
+<div class="line">If True, result includes non-fitting models, with null AIC and an empty forecast df.</div>
+<div class="line">Otherwise, result includes only fitting models, and for time series where no fitting model is available,</div>
+<div class="line">a ‘no-best-model’ entry with null AIC and an empty forecast df is added.</div>
+</div>
+</li>
+<li><strong>return_all_fits</strong> (<em>bool</em>) – If True, result includes all models for each input time series. Otherwise, only the
+best model is included.</li>
+<li><strong>extrapolate_years</strong> (<em>float</em>) – </li>
+<li><strong>season_add_mult</strong> (<em>str</em>) – ‘add’, ‘mult’, or ‘both’. Whether forecast seasonality will be additive, multiplicative,
+or the best fit of the two.</li>
+<li><strong>fill_gaps_y_values</strong> (<em>bool</em>) – If True, gaps in time series will be filled with NaN values</li>
+<li><strong>freq</strong> (<em>str</em>) – ‘W’ or ‘D’ . Sampling frequency of the output forecast: weekly or daily.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><div class="line-block">
+<div class="line">dict(data,metadata)</div>
+<div class="line">data: dataframe(date, source, model, y)</div>
+<div class="line">metadata: dataframe(‘source’, ‘model’, ‘res_weights’, ‘freq’, ‘is_fit’, ‘cost’, ‘aic_c’, ‘params’, ‘status’)</div>
+</div>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="anticipy.forecast.ForecastInput">
+<em class="property">class </em><code class="descclassname">anticipy.forecast.</code><code class="descname">ForecastInput</code><span class="sig-paren">(</span><em>source_id</em>, <em>df_y</em>, <em>l_model_trend=None</em>, <em>l_model_season=None</em>, <em>weights_y_values=1.0</em>, <em>date_start_actuals=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast.ForecastInput" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that encapsulates input variables for forecast.run_forecast()</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-anticipy.forecast_models">
+<span id="forecast-model"></span><h2>forecast_model<a class="headerlink" href="#module-anticipy.forecast_models" title="Permalink to this headline">¶</a></h2>
+<p>Defines the ForecastModel class, which encapsulates model functions used in forecast model fitting, as well as
+their number of parameters and initialisation parameters.</p>
+<dl class="class">
+<dt id="anticipy.forecast_models.ForecastModel">
+<em class="property">class </em><code class="descclassname">anticipy.forecast_models.</code><code class="descname">ForecastModel</code><span class="sig-paren">(</span><em>name</em>, <em>n_params</em>, <em>f_model</em>, <em>f_init_params=None</em>, <em>f_bounds=None</em>, <em>l_f_validate_input=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.ForecastModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that encapsulates model functions for use in forecasting, as well as
+their number of parameters and functions for parameter initialisation.</p>
+<p>A ForecastModel instance is initialized with a model name, a number of model parameters, and a model function.
+Class instances are callable - when called as a function, their internal model function is used. The main purpose
+of ForecastModel objects is to generate predicted values for a time series, given a set of parameters.
+These values can be compared to the original series to get an array of residuals:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y_predicted</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="n">residuals</span> <span class="o">=</span> <span class="p">(</span><span class="n">a_y</span> <span class="o">-</span> <span class="n">y_predicted</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is used in an optimization loop to obtain the optimal parameters for the model.</p>
+<p>The reason for using this class instead of raw model functions is that ForecastModel supports function composition:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model_sum</span> <span class="o">=</span> <span class="n">fcast_model1</span> <span class="o">+</span> <span class="n">fcast_model2</span>  <span class="c1"># fcast_model 1 and 2 are ForecastModel instances, and so is model_sum</span>
+<span class="n">a_y1</span> <span class="o">=</span> <span class="n">fcast_model1</span><span class="p">(</span><span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">,</span> <span class="n">params1</span><span class="p">)</span> <span class="o">+</span> <span class="n">fcast_model2</span><span class="p">(</span><span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">,</span> <span class="n">params2</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">params1</span><span class="p">,</span> <span class="n">params2</span><span class="p">])</span>
+<span class="n">a_y2</span> <span class="o">=</span> <span class="n">model_sum</span><span class="p">(</span><span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="n">a_y1</span> <span class="o">==</span> <span class="n">a_y2</span>  <span class="c1"># True</span>
+</pre></div>
+</div>
+<p>Forecast models can be added or multiplied, with the + and * operators. Multiple levels of composition are
+supported:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="p">(</span><span class="n">model1</span> <span class="o">+</span> <span class="n">model2</span><span class="p">)</span> <span class="o">*</span> <span class="n">model3</span>
+</pre></div>
+</div>
+<p>Model composition is used to aggregate trend and seasonality model components, among other uses.</p>
+<p>Model functions have the following signature:</p>
+<ul class="simple">
+<li>f(a_x, a_date, params, is_mult)</li>
+<li>a_x : array of floats</li>
+<li>a_date: array of dates, same length as a_x. Only required for date-aware models, e.g. for weekly seasonality.</li>
+<li>params: array of floats - model parameters - the optimisation loop updates this to fit our actual values. Each
+model function uses a fixed number of parameters.</li>
+<li>is_mult: boolean. True if the model is being used with multiplicative composition. Required because
+some model functions (e.g. steps) have different behaviour
+when added to other models than when multiplying them.</li>
+<li>returns an array of floats - with same length as a_x - output of the model defined by this object’s
+modelling function f_model and the current set of parameters</li>
+</ul>
+<p>By default, model parameters are initialized as random values between 0 and 1.
+It is possible to define a parameter initialization function that picks initial values
+based on the original time series.
+This is passed during ForecastModel creation with the argument f_init_params.
+Parameter initialization is compatible with model composition:
+the initialization function of each component will be used for that component’s parameters.</p>
+<p>Parameter initialisation functions have the following signature:</p>
+<ul class="simple">
+<li>f_init_params(a_x, a_y, is_mult)</li>
+<li>a_x: array of floats - same length as time series</li>
+<li>a_y: array of floats - time series values</li>
+<li>returns an array of floats - with length equal to this object’s n_params value</li>
+</ul>
+<p>By default, model parameters have no boundaries.
+However, it is possible to define a boundary function for a model,
+that sets boundaries for each model parameter, based on the input time series.
+This is passed during ForecastModel creation with the argument f_bounds.
+Boundary definition is compatible with model composition:
+the boundary function of each component will be used for that component’s parameters.</p>
+<p>Boundary functions have the following signature:</p>
+<ul class="simple">
+<li>f_bounds(a_x, a_y, a_date)</li>
+<li>a_x: array of floats - same length as time series</li>
+<li>a_y: array of floats - time series values</li>
+<li>a_date: array of dates, same length as a_x. Only required for date-aware models, e.g. for weekly seasonality.</li>
+<li>returns a tuple of 2 arrays of floats. The first defines minimum parameter boundaries, and the second
+the maximum parameter boundaries.</li>
+</ul>
+<p>As an option, we can assign a list of input validation functions to a model. These functions analyse the
+inputs that will be used for fitting a model, returning True if valid, and False otherwise. The forecast
+logic will skip a model from fitting if any of the validation functions for that model returns False.</p>
+<p>Input validation functions have the following signature:
+- f_validate_input(a_x, a_y, a_date)
+- See the description of model functions above for more details on these parameters.</p>
+<p>Our input time series should meet the following constraints:</p>
+<ul class="simple">
+<li>Minimum required samples depends on number of model parameters</li>
+<li>May include null values</li>
+<li>May include multiple values per sample</li>
+<li>A date array is only required if the model is date-aware</li>
+</ul>
+<p>Class Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model_x</span> <span class="o">=</span> <span class="n">ForecastModel</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">n_params</span><span class="p">,</span> <span class="n">f_model</span><span class="p">,</span> <span class="n">f_init_params</span><span class="p">,</span> <span class="n">l_f_validate_input</span><span class="p">)</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="n">model_x</span><span class="o">.</span><span class="n">name</span>                           <span class="c1"># Get model name</span>
+<span class="n">n_params</span> <span class="o">=</span> <span class="n">model_x</span><span class="o">.</span><span class="n">n_params</span>                         <span class="c1"># Get number of model parameters</span>
+<span class="n">f_init_params</span> <span class="o">=</span> <span class="n">model_x</span><span class="o">.</span><span class="n">f_init_params</span>               <span class="c1"># Get parameter initialisation function</span>
+<span class="n">init_params</span> <span class="o">=</span> <span class="n">f_init_params</span><span class="p">(</span><span class="n">t_values</span><span class="p">,</span> <span class="n">y_values</span><span class="p">)</span>     <span class="c1"># Get initial parameters</span>
+<span class="n">f_model</span> <span class="o">=</span> <span class="n">model_x</span><span class="o">.</span><span class="n">f_model</span>                           <span class="c1"># Get model fitting function</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">f_model</span><span class="p">(</span><span class="n">a_x</span><span class="p">,</span> <span class="n">a_date</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>                <span class="c1"># Get model output</span>
+</pre></div>
+</div>
+<p>The following pre-generated models are available. They are available as attributes from this module:</p>
+<table border="1" class="colwidths-given docutils" id="id1">
+<caption><span class="caption-text">Forecast models</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="22%" />
+<col width="11%" />
+<col width="22%" />
+<col width="44%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">params</th>
+<th class="head">formula</th>
+<th class="head">notes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>model_null</td>
+<td>0</td>
+<td>y=0</td>
+<td>Does nothing. Used to disable components (e.g. seasonality)</td>
+</tr>
+<tr class="row-odd"><td>model_constant</td>
+<td>1</td>
+<td>y=A</td>
+<td>Constant model</td>
+</tr>
+<tr class="row-even"><td>model_linear</td>
+<td>2</td>
+<td>y=Ax + B</td>
+<td>Linear model</td>
+</tr>
+<tr class="row-odd"><td>model_linear_nondec</td>
+<td>2</td>
+<td>y=Ax + B</td>
+<td>Non decreasing linear model. With boundaries to ensure model slope &gt;=0</td>
+</tr>
+<tr class="row-even"><td>model_quasilinear</td>
+<td>3</td>
+<td>y=A*(x^B) + C</td>
+<td>Quasilinear model</td>
+</tr>
+<tr class="row-odd"><td>model_exp</td>
+<td>2</td>
+<td>y=A * B^x</td>
+<td>Exponential model</td>
+</tr>
+<tr class="row-even"><td>model_step</td>
+<td>2</td>
+<td>y=0 if x&lt;A, y=B if x&gt;=A</td>
+<td>Step model</td>
+</tr>
+<tr class="row-odd"><td>model_two_steps</td>
+<td>4</td>
+<td>see model_step</td>
+<td>2 step models. Parameter initialization is aware of # of steps.</td>
+</tr>
+<tr class="row-even"><td>model_sigmoid_step</td>
+<td>3</td>
+<td>y = A + (B - A) / (1 + np.exp(- D * (x - C)))</td>
+<td>Sigmoid step model</td>
+</tr>
+<tr class="row-odd"><td>model_sigmoid</td>
+<td>3</td>
+<td>y = A + (B - A) / (1 + np.exp(- D * (x - C)))</td>
+<td>Sigmoid model</td>
+</tr>
+<tr class="row-even"><td>model_season_wday</td>
+<td>7</td>
+<td>see desc.</td>
+<td>Weekday seasonality model. Assigns a constant value to each weekday</td>
+</tr>
+<tr class="row-odd"><td>model_season_wday</td>
+<td>6</td>
+<td>see desc.</td>
+<td>6-param weekday seasonality model. As above, with one constant set to 0.</td>
+</tr>
+<tr class="row-even"><td>model_season_wday_2</td>
+<td>2</td>
+<td>see desc.</td>
+<td>Weekend seasonality model. Assigns a constant to each of weekday/weekend</td>
+</tr>
+<tr class="row-odd"><td>model_season_month</td>
+<td>12</td>
+<td>see desc.</td>
+<td>Month seasonality model. Assigns a constant value to each month</td>
+</tr>
+<tr class="row-even"><td>model_season_fourier_yearly</td>
+<td>10</td>
+<td>see desc</td>
+<td>Fourier yearly seasonality model</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.f_init_params_exp_dec">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">f_init_params_exp_dec</code><span class="sig-paren">(</span><em>a_x=None</em>, <em>a_y=None</em>, <em>a_date=None</em>, <em>is_mult=False</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.f_init_params_exp_dec" title="Permalink to this definition">¶</a></dt>
+<dd><p>B param must be &lt;= 1 to have exponential decreasing</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.get_model_outliers">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">get_model_outliers</code><span class="sig-paren">(</span><em>df</em>, <em>window=3</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.get_model_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>df</strong> – </li>
+<li><strong>window</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Note: due to the way the thresholds are defined, we require 6+ samples in series to find a spike.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.find_steps_and_spikes">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">find_steps_and_spikes</code><span class="sig-paren">(</span><em>a_x</em>, <em>a_y</em>, <em>a_date</em>, <em>window=3</em>, <em>max_changes=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.find_steps_and_spikes" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>Automatically locate steps and spikes for a_y time series.
+A rule of thumb for the window is two weeks.</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a_x</strong> – The values of the x axis</li>
+<li><strong>a_y</strong> – The values of the y axis</li>
+<li><strong>a_date</strong> – The values of the x axis, if they are dates</li>
+<li><strong>window</strong> (<em>int</em>) – The x-axis window to aggregate multiple steps/spikes</li>
+<li><strong>max_changes</strong> (<em>int</em>) – Manual input of the number of changes that the
+input time series is expected to have.
+If max_changes = 0 or None, the function returns
+all changes (steps / spikes) found.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">changes_list</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list of dictionaries
+Each dictionary includes information on a single change,
+and is of the format:
+{‘change_type’: change_type,  # (‘spike’ or ‘step’)
+‘duration’: duration,  # int - the x-axis duration of the change
+‘diff’: diff,  # the difference within the change
+‘x’: x,  # the x-axis at the middle of the change
+‘date’: date}  # the x-axis date at the middle of the change</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.get_model_dummy">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">get_model_dummy</code><span class="sig-paren">(</span><em>name</em>, <em>dummy</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.get_model_dummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a model based on a dummy variable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> – </li>
+<li><strong>dummy</strong> (<em>function</em><em>, or </em><em>list-like of numerics</em><em> or </em><em>datetime-likes</em>) – <div class="line-block">
+<div class="line">Can be a function or a list-like.</div>
+<div class="line">If a function, it must be of the form f_dummy(a_x, a_date), and return a numpy array of floats</div>
+<div class="line">with the same length as a_x and values that are either 0 or 1.</div>
+<div class="line">If a list-like of numerics, it will be converted to a f_dummy function as described above, which will</div>
+<div class="line">have values of 1 when a_x has one of the values in the list, and 0 otherwise.</div>
+<div class="line">If a list-like of date-likes, it will be converted to a f_dummy function as described above, which will</div>
+<div class="line">have values of 1 when a_date has one of the values in the list, and 0 otherwise.</div>
+</div>
+</li>
+<li><strong>kwargs</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><div class="line-block">
+<div class="line">A model that returns A when dummy is 1, and 0 (or 1 if is_mult==True) otherwise.</div>
+</div>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#anticipy.forecast_models.ForecastModel" title="anticipy.forecast_models.ForecastModel">ForecastModel</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.get_f_model_dummy">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">get_f_model_dummy</code><span class="sig-paren">(</span><em>dummy</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.get_f_model_dummy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a model function for a dummy variable defined by f_dummy</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dummy</strong> (<em>function</em><em> or </em><em>list-like of numerics</em><em> or </em><em>dates</em>) – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">model function based on dummy variable, to use on a ForecastModel</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">function</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.get_f_dummy_from_list">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">get_f_dummy_from_list</code><span class="sig-paren">(</span><em>list_check</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.get_f_dummy_from_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a f_dummy function that defines a dummy variable, can be used for dummy models</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>list_check</strong> (<em>list-like of numerics</em><em> or </em><em>datetime-likes</em>) – Input list</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">f_dummy</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">function</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.fix_params_fmodel">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">fix_params_fmodel</code><span class="sig-paren">(</span><em>forecast_model</em>, <em>l_params_fixed</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.fix_params_fmodel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a forecast model and a list of floats, modify the model so that some of its parameters become fixed</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>forecast_model</strong> – </li>
+<li><strong>l_params_fixed</strong> (<em>list</em>) – List of floats with same length as number of parameters in model. For each element, a
+non-null value means that the parameter in that position is fixed to that value. A null value means that
+the parameter in that position is not fixed.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A forecast model with a number of parameters equal to the number of null values in l_params_fixed,
+with f_model modified so that some of its parameters gain fixed values equal to the non-null values in l_params</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.simplify_model">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">simplify_model</code><span class="sig-paren">(</span><em>f_model</em>, <em>a_x=None</em>, <em>a_y=None</em>, <em>a_date=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.simplify_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check a model’s bounds, and update model to make parameters fixed if their min and max bounds are equal</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>f_model</strong> – </li>
+<li><strong>a_x</strong> – </li>
+<li><strong>a_y</strong> – </li>
+<li><strong>a_date</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.forecast_models.get_l_model_auto_season">
+<code class="descclassname">anticipy.forecast_models.</code><code class="descname">get_l_model_auto_season</code><span class="sig-paren">(</span><em>a_date</em>, <em>min_periods=1.5</em>, <em>season_add_mult='add'</em>, <em>l_season_yearly=None</em>, <em>l_season_weekly=None</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.forecast_models.get_l_model_auto_season" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a list of candidate seasonality models for an series of timestamps</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a_date</strong> – </li>
+<li><strong>min_periods</strong> – </li>
+<li><strong>is_mult</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-anticipy.model_utils">
+<span id="model-utils"></span><h2>model_utils<a class="headerlink" href="#module-anticipy.model_utils" title="Permalink to this headline">¶</a></h2>
+<p>Utility functions for model generation</p>
+<dl class="function">
+<dt id="anticipy.model_utils.array_transpose">
+<code class="descclassname">anticipy.model_utils.</code><code class="descname">array_transpose</code><span class="sig-paren">(</span><em>a</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.model_utils.array_transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transpose a 1-D numpy array</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a</strong> (<em>numpy.Array</em>) – An array with shape (n,)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The original array, with shape (n,1)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy.Array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.model_utils.model_requires_scaling">
+<code class="descclassname">anticipy.model_utils.</code><code class="descname">model_requires_scaling</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.model_utils.model_requires_scaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a <code class="xref py py-class docutils literal notranslate"><span class="pre">nsa.forecast.forecast_models.ForecastModel</span></code>  return True if the function requires
+scaling a_x</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> (<em>function</em>) – A get_model_&lt;modeltype&gt; function from <code class="xref py py-mod docutils literal notranslate"><span class="pre">nsa.forecast.model.periodic_models</span></code> or
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">nsa.forecast.model.aperiodic_models</span></code></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if function is logistic or sigmoidal</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.model_utils.apply_a_x_scaling">
+<code class="descclassname">anticipy.model_utils.</code><code class="descname">apply_a_x_scaling</code><span class="sig-paren">(</span><em>a_x</em>, <em>model=None</em>, <em>scaling_factor=100.0</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.model_utils.apply_a_x_scaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify a_x for forecast_models that require it</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a_x</strong> (<em>numpy array</em>) – x axis of time series</li>
+<li><strong>model</strong> (<em>function</em><em> or </em><em>None</em>) – a <code class="xref py py-class docutils literal notranslate"><span class="pre">nsa.forecast.forecast_models.ForecastModel</span></code></li>
+<li><strong>scaling_factor</strong> (<em>float</em>) – Value used for scaling t_values for logistic models</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">a_x with scaling applied, if required</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy array</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.model_utils.get_s_x_extrapolate">
+<code class="descclassname">anticipy.model_utils.</code><code class="descname">get_s_x_extrapolate</code><span class="sig-paren">(</span><em>date_start_actuals</em>, <em>date_end_actuals</em>, <em>model=None</em>, <em>freq='W'</em>, <em>extrapolate_years=2.5</em>, <em>shifted_origin=0</em>, <em>scaling_factor=100.0</em>, <em>x_start_actuals=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.model_utils.get_s_x_extrapolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return t_values series with DateTimeIndex, covering the date range for the actuals, plus a forecast period.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>date_start_actuals</strong> (<em>str</em><em>, </em><em>datetime</em><em>, </em><em>int</em><em> or </em><em>float</em>) – date or numeric index for first actuals sample</li>
+<li><strong>date_end_actuals</strong> (<em>str</em><em>, </em><em>datetime</em><em>, </em><em>int</em><em> or </em><em>float</em>) – date or numeric index for last actuals sample</li>
+<li><strong>extrapolate_years</strong> (<em>float</em>) – </li>
+<li><strong>model</strong> (<em>function</em>) – </li>
+<li><strong>freq</strong> (<em>str</em><em> or </em><em>int</em>) – Time unit between samples. Supported units are ‘W’ for weekly samples, or ‘D’ for daily samples.
+(untested) Any date unit or time unit accepted by numpy should also work, see
+<a class="reference external" href="https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits">https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits</a></li>
+<li><strong>shifted_origin</strong> (<em>int</em>) – Offset to apply to a_x</li>
+<li><strong>scaling_factor</strong> (<em>float</em>) – Value used for scaling a_x for certain model functions</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Series of floats with DateTimeIndex. To be used as (a_date, a_x) input for a model function.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">pandas.Series</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The returned series covers the actuals time domain plus a forecast period lasting extrapolate_years, in years.
+The number of additional samples for the forecast period is time_resolution * extrapolate_years, rounded down</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="anticipy.model_utils.get_aic_c">
+<code class="descclassname">anticipy.model_utils.</code><code class="descname">get_aic_c</code><span class="sig-paren">(</span><em>fit_error</em>, <em>n</em>, <em>n_params</em><span class="sig-paren">)</span><a class="headerlink" href="#anticipy.model_utils.get_aic_c" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function implements the corrected Akaike Information Criterion (AICc), taking as input
+a given fit error and data/model degrees of freedom. We assume that the residuals of the candidate model
+are distributed according to independent identical normal distributions with zero mean. Hence, we can use
+define the AICc as</p>
+<div class="math notranslate nohighlight">
+\[AICc = AIC + \frac{2k(k+1)}{n-k-1} = 2k + n \log\left(\frac{E}{n}\right) + \frac{2k(k+1)}{n-k-1},\]</div>
+<p>where <span class="math notranslate nohighlight">\(k\)</span> and <span class="math notranslate nohighlight">\(n\)</span> denotes the model and data degrees of freedom respectively, and <span class="math notranslate nohighlight">\(E\)</span>
+denotes the residual error of the fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fit_error</strong> (<em>float</em>) – Residual error of the fit</li>
+<li><strong>n</strong> (<em>int</em>) – Data degrees of freedom</li>
+<li><strong>n_params</strong> (<em>int</em>) – Model degrees of freedom</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Corrected Akaike Information Criterion (AICc)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Note:</p>
+<ul class="simple">
+<li>see AIC in <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">Wikipedia article on the AIC</a>.</li>
+</ul>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="faq.html" class="btn btn-neutral" title="Frequently Asked Questions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, BSKYB Limited.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.0.2',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
