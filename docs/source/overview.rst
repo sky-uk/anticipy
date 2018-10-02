@@ -20,15 +20,17 @@ Features:
 
 To get started, install the library with pip ::
 
-   pip install anticipy -f https://pub.nsa.bskyb.com/python/anticipy
+   pip install anticipy
 
-It is straightforward to generate a simple linear model with the tool - just call forecast.run_forecast(my_dataframe)::
+It is straightforward to generate a simple linear model with the tool - just call
+:py:func:`forecast.run_forecast(my_dataframe)`::
 
    import pandas as pd, numpy as np
    from anticipy import forecast, forecast_models
+
    df = pd.DataFrame({'y': np.arange(0., 5)}, index=pd.date_range('2018-01-01', periods=5, freq='D'))
    df_forecast = forecast.run_forecast(df, extrapolate_years=1)
-   print df_forecast.head(12)
+   print(df_forecast.head(12))
 
 Output::
 

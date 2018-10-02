@@ -2,15 +2,13 @@
    It should at least contain the root `toctree` directive.
 
 ###########################
-AnticyPy documentation
+anticyPy documentation
 ###########################
 
 Contents:
 
 .. toctree::
    :maxdepth: 1
-
-   includeme
 
    overview.rst
    install.rst

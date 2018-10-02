@@ -13,7 +13,7 @@ forecast
    :members:
 
 
-forecast_model
+forecast_models
 ****************
 .. automodule:: anticipy.forecast_models
    :members:
@@ -21,4 +21,9 @@ forecast_model
 model_utils
 ****************
 .. automodule:: anticipy.model_utils
+   :members:
+
+forecast_plot
+****************
+.. automodule:: anticipy.forecast_plot
    :members:

@@ -40,43 +40,37 @@ def logger_info(msg, data):
 
 # Utility functions
 def to_str_function_list(l_function):
+    # Get string representation for a list of functions or ForecastModel instances
     if l_function is None:
         return None
     return [f.name if f is not None else None for f in l_function]
 
+
 def is_null_model(f_model):
+    # Check if model is null model
     return f_model.name == 'null'
 
 
-def _is_multi_ts(a):
-    return a.ndim > 1 and a.shape[1] > 1
-
-
-def _has_different_res_weights(res_weights):
-    # Check if a residuals parameter is a vector with length > 1
-    return res_weights is not None and hasattr(res_weights, "__getitem__") and len(res_weights) > 1
-
-
-# TODO: replace get_residuals with this
-def get_residuals(params, model, a_x, a_y, a_date, a_weights=None, filter_null_residuals=None, df_actuals=None):
+def get_residuals(params, model, a_x, a_y, a_date, a_weights=None, df_actuals=None):
     """
     Given a time series, a model function and a set of parameters, get the residuals
 
     :param params: parameters for model function
-    :type params: numpy array
+    :type params: numpy array of floats
     :param model: model function. Usage: model(a_x, a_date, params)
-    :type model: function
+    :type model: function or ForecastModel instance
     :param a_x: X axis for model function.
-    :type a_x: float array
+    :type a_x: numpy array of floats
     :param a_y: Input time series values, to compare to the model function
-    :type a_y: float array
+    :type a_y: numpy array of floats
     :param a_date: Dates for the input time series
-    :type a_date: datetime array
+    :type a_date: numpy array of datetimes
     :param a_weights: weights for each individual sample
-    :type a_weights: numpy array
-
+    :type a_weights: numpy array of floats
+    :param df_actuals: The original dataframe with actuals data. Not required for regression but used by naive models
+    :type df_actuals: pandas DataFrame
     :return: array with residuals, same length as a_x, a_y
-    :rtype: float array
+    :rtype: numpy array of floats
     """
     # Note: remove this assert for performance
     assert a_y.ndim == 1
@@ -91,24 +85,22 @@ def get_residuals(params, model, a_x, a_y, a_date, a_weights=None, filter_null_r
     return result
 
 
-def optimize_least_squares(model, a_x, a_y, a_date, a_weights=None, f_t_scaling=None, df_actuals=None):
+def optimize_least_squares(model, a_x, a_y, a_date, a_weights=None, df_actuals=None):
     """
     Given a time series and a model function, find the set of parameters that minimises residuals
 
     :param model: model function, to be fitted against the actuals
     :type model: function
-    :param a_x:
-    :type a_x: float array
-    :param a_y:
-    :type a_y: float array
-    :param a_date:
-    :type a_date: datetime array
-    :param res_weights:
-    :type res_weights:
-    :param use_t_scaling:
-    :type use_t_scaling:
-    :param bounds:
-    :type bounds: 2-tuple of array_like
+    :param a_x: X axis for model function.
+    :type a_x: numpy array of floats
+    :param a_y: Input time series values, to compare to the model function
+    :type a_y: numpy array of floats
+    :param a_date: Dates for the input time series
+    :type a_date: numpy array of datetimes
+    :param a_weights: weights for each individual sample
+    :type a_weights: numpy array of floats
+    :param df_actuals: The original dataframe with actuals data. Not required for regression but used by naive models
+    :type df_actuals: pandas DataFrame
     :return:
         | table(success, params, cost, optimality, iterations, status, jac_evals, message):
         | - success (bool): True if successful fit
@@ -123,9 +115,6 @@ def optimize_least_squares(model, a_x, a_y, a_date, a_weights=None, f_t_scaling=
     """
     assert a_y.ndim == 1
 
-    # Check that input is sorted - not required - taken care by normalize_df()
-    # assert np.all(np.diff(a_x) >= 0), 'Input not sorted on x axis'
-
     # Ask the model to provide an initial guess
     initial_guess = model.f_init_params(a_x, a_y)
 
@@ -138,11 +127,6 @@ def optimize_least_squares(model, a_x, a_y, a_date, a_weights=None, f_t_scaling=
     filter_null_residuals = ~np.isnan(a_y)
     if np.all(filter_null_residuals):
         filter_null_residuals = None
-
-    # t_scaling: we use this to assign different weight to residuals based on date # TODO: Implement scaling functions
-    if f_t_scaling:
-        a_weights_tmp = f_t_scaling(a_x)
-        a_weights = a_weights_tmp if a_weights is None else a_weights*a_weights_tmp
 
     # Set up arguments for get_residuals
     f_model_args = (model, a_x, a_y, a_date)
@@ -173,6 +157,7 @@ def optimize_least_squares(model, a_x, a_y, a_date, a_weights=None, f_t_scaling=
 
 def _get_df_fit_model(source, model, weights, actuals_x_range, freq,
                       is_fit, cost, aic_c, params, status):
+    # Generate a metadata dataframe for the output of fit_model()
     if params is None:
         params = np.array([])
     df_result = (
@@ -188,6 +173,7 @@ def _get_df_fit_model(source, model, weights, actuals_x_range, freq,
 
 
 def _get_empty_df_result_optimize(source, model, status, weights, freq, actuals_x_range):
+    # Generate an optimize_info dataframe for fit_model(), for an empty result
     source_long = '{}:{}:{}:{}'.format(source, weights, freq, actuals_x_range)
     return pd.DataFrame(columns=['source', 'model', 'success', 'params_str', 'cost', 'optimality', 'iterations',
                                  'status', 'jac_evals', 'message', 'source_long', 'params'],
@@ -204,17 +190,21 @@ def normalize_df(df_y,
     """
     Converts an input dataframe for run_forecast() into a normalized format suitable for fit_model()
 
-    :param df_y:
+    :param df_y: unformatted input dataframe, for use by run_forecast()
     :type df_y: pandas.DataFrame
-    :param col_name_y:
-    :type col_name_y: str
-    :param col_name_weight:
-    :type col_name_weight: str
-    :param col_name_x:
-    :type col_name_x: str
-    :param col_name_date:
-    :type col_name_date: str
-    """
+    :param col_name_y: name for column with time series values
+    :type col_name_y: basestring
+    :param col_name_weight: name for column with time series weights
+    :type col_name_weight: basestring
+    :param col_name_x: name for column with time series indices
+    :type col_name_x: basestring
+    :param col_name_date: name for column with time series dates
+    :type col_name_date: basestring
+    :param col_name_source: name for column with time series source identifiers
+    :type col_name_source: basestring
+    :return: formatted input dataframe, for use by run_forecast()
+    :rtype: pandas.DataFrame
+     """
 
     assert df_y is not None
     if df_y.empty:
@@ -298,8 +288,8 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
     """
     Given a time series and a model, optimize model parameters and return
 
-    :param model:
-    :type model: function
+    :param model: model function. Usage: model(a_x, a_date, params)
+    :type model: function or ForecastModel instance
     :param df_y:
         | Dataframe with the following columns:
         | - y:
@@ -307,10 +297,12 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
         | - weight: (optional)
         | - x: (optional)
     :type df_y: pandas.DataFrame
-    :param source:
-    :type source:
+    :param source: source identifier for this time series
+    :type source: basestring
     :param freq: 'W' or 'D' . Used only for metadata
-    :type freq: str
+    :type freq: basestring
+    :param df_actuals: The original dataframe with actuals data. Not required for regression but used by naive models
+    :type df_actuals: pandas DataFrame
     :return: table (source, model_name, y_weights , freq, is_fit, aic_c, params)
     :rtype: pandas.DataFrame
 
@@ -461,20 +453,27 @@ def extrapolate_model(model, params, date_start_actuals, date_end_actuals, freq=
     """
     Given a model and a set of parameters, generate model output for a date range plus a number of additional years.
 
-    :param model:
-    :type model:
-    :param params:
-    :type params:
-    :param date_start_actuals:
-    :type date_start_actuals:
-    :param date_end_actuals:
-    :type date_end_actuals:
-    :param freq:
-    :type freq:
-    :param extrapolate_years:
-    :type extrapolate_years:
-    :return:
-    :rtype:
+    :param model: model function. Usage: model(a_x, a_date, params)
+    :type model: function or ForecastModel instance
+    :param params: parameters for model function
+    :type params: numpy array of floats
+    :param date_start_actuals: date or numeric index for first actuals sample
+    :type date_start_actuals: str, datetime, int or float
+    :param date_end_actuals: date or numeric index for last actuals sample
+    :type date_end_actuals: str, datetime, int or float
+    :param freq: Time unit between samples. Supported units are 'W' for weekly samples, or 'D' for daily samples.
+        (untested) Any date unit or time unit accepted by numpy should also work, see
+        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits
+    :type freq: basestring
+    :param extrapolate_years: Number of years (or fraction of year) covered by the generated time series, after the
+      end of the actuals
+    :type extrapolate_years: float
+    :param x_start_actuals:
+    :type x_start_actuals:
+    :param df_actuals: The original dataframe with actuals data. Not required for regression but used by naive models
+    :type df_actuals: pandas DataFrame
+    :return: dataframe with a time series extrapolated from the model function
+    :rtype: pandas.DataFrame, with an 'y' column of floats
     """
     s_x = model_utils.get_s_x_extrapolate(date_start_actuals, date_end_actuals, model=model, freq=freq,
                                           extrapolate_years=extrapolate_years, x_start_actuals=x_start_actuals)
@@ -485,6 +484,20 @@ def extrapolate_model(model, params, date_start_actuals, date_end_actuals, freq=
 
 
 def get_list_model(l_model_trend, l_model_season, season_add_mult='both'):
+    """
+    Generate a list of composite models from lists of trend and seasonality models
+
+    :param l_model_trend: list of trend models
+    :type l_model_trend: list of ForecastModel
+    :param l_model_season: list of seasonality models
+    :type l_model_season: list of ForecastModel
+    :param season_add_mult: 'mult', 'add' or 'both', for multiplicative/additive composition (or both types)
+    :type season_add_mult: basestring
+    :return:
+    :rtype: list of ForecastModel
+
+    All combinations of possible composite models are included
+    """
     if l_model_season is None or len(l_model_season) < 1:
         l_model_tmp = l_model_trend
     elif l_model_trend is None or len(l_model_trend) < 1:
@@ -504,15 +517,16 @@ def get_list_model(l_model_trend, l_model_season, season_add_mult='both'):
 
 def get_df_actuals_clean(df_actuals, source, source_long):
     """
+    Convert an actuals dataframe to a clean format
 
     :param df_actuals: dataframe in normalized format, with columns y and optionally x, date, weight
-    :type df_actuals:
-    :param source:
-    :type source:
-    :param source_long:
-    :type source_long:
-    :return:
-    :rtype:
+    :type df_actuals: pandas.DataFrame
+    :param source: source identifier for this time series
+    :type source: basestring
+    :param source_long: long-format source identifier for this time series
+    :type source_long: basestring
+    :return: clean actuals dataframe
+    :rtype: pandas.DataFrame
     """
     # Add actuals as entries in result dicts
     df_actuals = df_actuals.copy()  # .rename_axis('date')
@@ -530,7 +544,6 @@ def get_df_actuals_clean(df_actuals, source, source_long):
 
 
 def _get_df_fcast_clean(df_fcast, source, source_long,model):
-    # TODO: cleanup
     # This removes any forecast samples with null values, e.g. from naive models
     df_fcast = df_fcast.loc[ ~df_fcast.y.pipe(pd.isnull)]
     df_fcast = df_fcast.copy().rename_axis('date').reset_index()
@@ -540,29 +553,6 @@ def _get_df_fcast_clean(df_fcast, source, source_long,model):
     df_fcast['is_actuals'] = False
     df_fcast['weight'] = 1.0
     return df_fcast
-
-
-"""
-# TODO: api improvements:
-- change default df format to have columns: x,y, date, weight
-- currently, we assume a datetimeindex
-
-"""
-
-
-def run_forecast_from_input_list(l_dict_input):
-    # Run forecasts from a list of dictionaries with keyword arguments
-
-    # Handle both scalars and list-likes
-    s_input = pd.Series(l_dict_input)
-
-    l_dict_result = []
-    for dict_input in l_dict_input:
-        dict_result_tmp = run_forecast(**dict_input)
-        l_dict_result += [dict_result_tmp]
-
-    # Generate output
-    return aggregate_forecast_dict_results(l_dict_result)
 
 
 def run_forecast(df_y, l_model_trend=None, l_model_season=None,
@@ -583,56 +573,64 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
     """
     Generate forecast for one or more input time series
 
-    :return:
-    :rtype:
     :param df_y:
-    :type df_y:
-    :param l_model_trend:
-    :type l_model_trend:
-    :param l_model_season:
-    :type l_model_season:
-    :param date_start_actuals:
-    :type date_start_actuals:
-    :param source_id:
-    :type source_id:
-    :param col_name_y:
-    :type col_name_y:
-    :param col_name_weight:
-    :type col_name_weight:
-    :param col_name_x:
-    :type col_name_x:
-    :param col_name_date:
-    :type col_name_date:
-    :param col_name_source:
-    :type col_name_source:
-    :param return_all_models:
-        | If True, result includes non-fitting models, with null AIC and an empty forecast df.
-        | Otherwise, result includes only fitting models, and for time series where no fitting model is available,
-        | a 'no-best-model' entry with null AIC and an empty forecast df is added.
-    :type return_all_models: bool
-    :param return_all_fits: If True, result includes all models for each input time series. Otherwise, only the
-        best model is included.
-    :type return_all_fits: bool
-    :param extrapolate_years:
+        | input dataframe with the following columns:
+        | - Mandatory: a value column, with the time series values
+        | - Optional: weight column, source ID column, index column, date column
+    :type df_y: pandas.DataFrame
+    :param l_model_trend: list of trend models
+    :type l_model_trend: list of ForecastModel
+    :param l_model_season: list of seasonality models
+    :type l_model_season: list of ForecastModel
+    :param date_start_actuals: date or numeric index for first actuals sample to be used for forecast. Previous
+      samples are ignored
+    :type date_start_actuals: str, datetime, int or float
+    :param source_id: source identifier for time series, if source column is missing
+    :type source_id: basestring
+    :param col_name_y: name for column with time series values
+    :type col_name_y: basestring
+    :param col_name_weight: name for column with time series weights
+    :type col_name_weight: basestring
+    :param col_name_x: name for column with time series indices
+    :type col_name_x: basestring
+    :param col_name_date: name for column with time series dates
+    :type col_name_date: basestring
+    :param col_name_source: name for column with time series source identifiers
+    :type col_name_source: basestring
+    :param extrapolate_years: Number of years (or fraction of year) covered by the forecast, after the
+      end of the actuals
     :type extrapolate_years: float
     :param season_add_mult: 'add', 'mult', or 'both'. Whether forecast seasonality will be additive, multiplicative,
         or the best fit of the two.
     :type season_add_mult: str
-    :param fill_gaps_y_values: If True, gaps in time series will be filled with NaN values
-    :type fill_gaps_y_values: bool
-    :param freq: 'W' or 'D' . Sampling frequency of the output forecast: weekly or daily.
-    :type freq: str
     :param do_find_steps_and_spikes: if True, find steps and spikes, create fixed models and add them
         to the list of models
     :type do_find_steps_and_spikes: bool
-    :param find_outliers:
-    :type find_outliers:
-    :param include_all_fits:
-    :type include_all_fits:
+    :param find_outliers: If True, find outliers in input data, ignore outlier samples in forecast
+    :type find_outliers: bool
+    :param include_all_fits: If True, also include non-optimal models in output
+    :type include_all_fits: bool
     :param simplify_output: If False, return dict with forecast and metadata. Otherwise, return only forecast.
     :type simplify_output: bool
+    :param l_season_yearly: yearly seasonality models to consider in automatic seasonality detection
+    :type l_season_yearly: list of ForecastModel
+    :param l_season_weekly: yearly seasonality models to consider in automatic seasonality detection
+    :type l_season_weekly: list of ForecastModel
+    :param verbose: If True, enable verbose logging
+    :type verbose: bool
+    :param l_model_naive: list of naive models to consider for forecast. Naive models are not fitted
+      with regression, they are based on the last actuals samples
+    :type l_model_naive: list of ForecastModel
     :return:
-    :rtype:
+        | With simplify_output=False, returns a dictionary with 4 dataframes:
+        | - forecast: output time series with prediction interval
+        | - data: output time series. If include_all_fits, includes all fitting models
+        | - metadata: forecast metadata table
+        | - optimize_info: debugging metadata from scipy.optimize
+        |
+        | With simplify_output=True, returns the 'forecast' dataframe, as described above
+    :rtype: pandas.DataFrame or dict of pandas.DataFrames
+
     """
     # TODO: Add check for non-duplicate source ids
     l_dict_result = []
@@ -687,6 +685,14 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
 
 
 def aggregate_forecast_dict_results(l_dict_result):
+    """
+    Aggregates a list of dictionaries with forecast outputs into a single dictionary
+
+    :param l_dict_result: list with outputs dictionaries from run_forecast_single
+    :type l_dict_result: list of dictionaries
+    :return: aggregated dictionary
+    :rtype: dict
+    """
     l_df_data = []
     l_df_metadata = []
     l_df_optimize_info = []
@@ -707,6 +713,7 @@ def aggregate_forecast_dict_results(l_dict_result):
 
     return {'forecast': df_forecast, 'data': df_data, 'metadata': df_metadata, 'optimize_info': df_optimize_info}
 
+
 def run_forecast_single(df_y,
                         l_model_trend=None,
                         l_model_season=None,
@@ -723,47 +730,54 @@ def run_forecast_single(df_y,
                         l_model_naive=None
                         ):
     """
+    Generate forecast for one input time series
 
     :param df_y:
-    :type df_y:
-    :param l_model_trend:
-    :type l_model_trend:
-    :param l_model_season:
-    :type l_model_season:
-    :param date_start_actuals:
-    :type date_start_actuals:
-    :param source_id:
-    :type source_id:
-    :param col_name_y:
-    :type col_name_y:
-    :param col_name_weight:
-    :type col_name_weight:
-    :param col_name_x:
-    :type col_name_x:
-    :param col_name_date:
-    :type col_name_date:
-    :param return_all_models:
-        | If True, result includes non-fitting models, with null AIC and an empty forecast df.
-        | Otherwise, result includes only fitting models, and for time series where no fitting model is available,
-        | a 'no-best-model' entry with null AIC and an empty forecast df is added.
-    :type return_all_models: bool
-    :param return_all_fits: If True, result includes all models for each input time series. Otherwise, only the
-        best model is included.
-    :type return_all_fits: bool
+        | input dataframe with the following columns:
+        | - y: time series values
+        | - x: time series indices
+        | - weight: time series weights (optional)
+        | - date: time series dates (optional)
+    :type df_y: pandas.DataFrame
+    :param l_model_trend: list of trend models
+    :type l_model_trend: list of ForecastModel
+    :param l_model_season: list of seasonality models
+    :type l_model_season: list of ForecastModel
+    :param date_start_actuals: date or numeric index for first actuals sample to be used for forecast. Previous
+      samples are ignored
+    :type date_start_actuals: str, datetime, int or float
+    :param source_id: source identifier for time series
+    :type source_id: basestring
     :param extrapolate_years:
     :type extrapolate_years: float
     :param season_add_mult: 'add', 'mult', or 'both'. Whether forecast seasonality will be additive, multiplicative,
         or the best fit of the two.
     :type season_add_mult: str
-    :param fill_gaps_y_values: If True, gaps in time series will be filled with NaN values
-    :type fill_gaps_y_values: bool
-    :param freq: 'W' or 'D' . Sampling frequency of the output forecast: weekly or daily.
-    :type freq: str
     :param do_find_steps_and_spikes: if True, find steps and spikes, create fixed models and add them
         to the list of models
     :type do_find_steps_and_spikes: bool
+    :param include_all_fits: If True, also include non-optimal models in output
+    :type include_all_fits: bool
+    :param simplify_output: If False, return dict with forecast and metadata. Otherwise, return only forecast.
+    :type simplify_output: bool
+    :param find_outliers: If True, find outliers in input data, ignore outlier samples in forecast
+    :type find_outliers: bool
+    :param l_season_yearly: yearly seasonality models to consider in automatic seasonality detection
+    :type l_season_yearly: list of ForecastModel
+    :param l_season_weekly: yearly seasonality models to consider in automatic seasonality detection
+    :type l_season_weekly: list of ForecastModel
+    :param l_model_naive: list of naive models to consider for forecast. Naive models are not fitted
+      with regression, they are based on the last actuals samples
+    :type l_model_naive: list of ForecastModel
     :return:
-    :rtype:
+        | With simplify_output=False, returns a dictionary with 4 dataframes:
+        | - forecast: output time series with prediction interval
+        | - data: output time series. If include_all_fits, includes all fitting models
+        | - metadata: forecast metadata table
+        | - optimize_info: debugging metadata from scipy.optimize
+        |
+        | With simplify_output=True, returns the 'forecast' dataframe, as described above
+    :rtype: pandas.DataFrame or dict of pandas.DataFrames
     """
     l_df_data = []
     l_df_metadata = []
@@ -959,8 +973,7 @@ def run_forecast_single(df_y,
         return dict_result
 
 
-# TODO: Better define return_all_fits, return_all_models. Document and provide clear use cases
-# TODO: Improve test, make shorter
+# TODO: REMOVE THIS FUNCTION
 def run_l_forecast(l_fcast_input,
                    col_name_y='y', col_name_weight='weight',
                    col_name_x='x', col_name_date='date',
@@ -1002,10 +1015,6 @@ def run_l_forecast(l_fcast_input,
 
     """
     # TODO: Add check for non-duplicate source ids
-    l_df_data = []
-    l_df_metadata = []
-    l_df_optimize_info = []
-
     # We can take solver_config_list that are a list or a single forecast_input
     if type(l_fcast_input) is not list:
         l_fcast_input = [l_fcast_input]
@@ -1029,7 +1038,7 @@ def run_l_forecast(l_fcast_input,
 
 # Forecast configuration
 
-# TODO: Rename to ForecastInput
+# TODO: REMOVE THIS CLASS
 class ForecastInput:
     """
     Class that encapsulates input variables for forecast.run_forecast()
@@ -1065,34 +1074,40 @@ class ForecastInput:
                    weights_y_values, date_start_actuals)
 
 
-"""
-Draft for a parallel computing version:
-run_forecast_parallel(n)
-- take solver_config_list, split into n parts
-- open n processes for run_forecast, each with 1/n of solver_config_list
-- merge outputs: a dict with a pd.concat() of each output dataframe
-- challenge: pickling objects: solver_config_list, pandas dataframe
-- potential solution: have solver_config_list replace dataframes with file paths 
-
-"""
-
-
 def get_pi(df_forecast, n=100):
+    """
+    Generate prediction intervals for a table with multiple forecasts, using bootstrapped residuals.
+
+    :param df_forecast: forecasted time series
+    :type df_forecast: pandas.DataFrame
+    :param n: Number of simulated observations
+    :type n: int
+    :return:
+        | Forecast time series table with added columns:
+        | - q5: 5% percentile of prediction interval
+        | - q5: 20% percentile of prediction interval
+        | - q5: 80 percentile of prediction interval
+        | - q5: 95% percentile of prediction interval
+    :rtype: pandas.DataFrame
+
+    Based on https://otexts.org/fpp2/prediction-intervals.html
+    """
     if 'source' in df_forecast.columns and df_forecast.source.nunique() > 1:
         df_result = (
             df_forecast
-		.groupby('source', as_index=False)
-		.apply(_get_pi_single_source, n)
-		.sort_values(['source', 'is_actuals', 'date'])
-		.reset_index(drop=True)
+            .groupby('source', as_index=False)
+            .apply(_get_pi_single_source, n)
+            .sort_values(['source', 'is_actuals', 'date'])
+            .reset_index(drop=True)
         )
     else:
         df_result = _get_pi_single_source(df_forecast, n)
     return df_result
 
 
-# TODO: Test
 def _get_pi_single_source(df_forecast, n=100):
+    # Generate prediction interval for a single forecast
+
     # n: Number of bootstrapped samples for prediction interval
 
     if 'is_best_fit' in df_forecast.columns:
