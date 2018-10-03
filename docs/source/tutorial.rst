@@ -310,7 +310,7 @@ Output::
 
 
 
-Spikes and Steps
+Outlier Detection
 ================
 
 If you call :py:func:`anticipy.forecast.run_forecast` and specify as input `find_outliers=True`,
@@ -319,21 +319,40 @@ set to 0, so that they are ignored by the forecast logic.
 
 Example::
 
-    a_y = [19.8, 19.9, 20.0, 20.1, 20.2, 20.3, 20.4, 20.5,
-           20.6, 10., 20.7, 20.8, 20.9, 21.0,
-           21.1, 21.2, 21.3, 21.4, 21.5]
-    a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
-    df_spike = pd.DataFrame({'y': a_y})
+   a_y = [19.8, 19.9, 20.0, 20.1, 20.2, 20.3, 20.4, 20.5,
+          20.6, 10., 20.7, 20.8, 20.9, 21.0,
+          21.1, 21.2, 21.3, 21.4, 21.5]
+   a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
+   df_spike = pd.DataFrame({'y': a_y})
 
-    dict_result = forecast.run_forecast(df_spike, find_outliers=True,
-                                        simplify_output=False, include_all_fits=True,
-                                        season_add_mult='add')
-    df_data = dict_result['data']
-    mask = df_data.loc[df_data.model=='weight'].y.values
-    print mask
+   dict_result = forecast.run_forecast(df_spike, find_outliers=True,
+                                       simplify_output=False, include_all_fits=True,
+                                       season_add_mult='add')
+   df_data = dict_result['data']
+   # Subset of output - shows that the sample with a spike now has weight=0, and is ignored by forecast
+   df_weighted_actuals = df_data.loc[df_data.model=='actuals'][['y','weight']]
 
 Output::
 
-    [1. 1. 1. 1. 1. 1. 1. 1. 1. 0. 1. 1. 1. 1. 1. 1. 1. 1. 1.]
+   .      y  weight
+   0   19.8     1.0
+   1   19.9     1.0
+   2   20.0     1.0
+   3   20.1     1.0
+   4   20.2     1.0
+   5   20.3     1.0
+   6   20.4     1.0
+   7   20.5     1.0
+   8   20.6     1.0
+   9   10.0     0.0
+   10  20.7     1.0
+   11  20.8     1.0
+   12  20.9     1.0
+   13  21.0     1.0
+   14  21.1     1.0
+   15  21.2     1.0
+   16  21.3     1.0
+   17  21.4     1.0
+   18  21.5     1.0
 
 
