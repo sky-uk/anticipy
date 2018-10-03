@@ -1027,7 +1027,6 @@ def get_model_outliers_withgap(df, window=3):
     # todo - clean up, return
 
 
-
 # TODO: Add option - estimate_outl_size
 # TODO: Add option - sigmoid steps
 # TODO: ADD option - gaussian spikes
@@ -1092,206 +1091,46 @@ def get_model_outliers(df, window=3):
     dfo.mean_group_diff = dfo.mean_group_diff.fillna(0)
     dfo.mean_group_diff_abs = dfo.mean_group_diff_abs.fillna(0)
 
-    dfo['is_step'] = (dfo.mean_group_diff < thr_low) | (dfo.mean_group_diff > thr_hi)
-    dfo['is_spike'] = (dfo.mean_group_diff_abs - dfo.mean_group_diff) > (thr_hi - thr_low) / 2
+    # dfo['is_step'] = (dfo.mean_group_diff < thr_low) | (dfo.mean_group_diff > thr_hi)
+    dfo['is_step'] = dfo['ischange_group'] & (
+        ((dfo.mean_group_diff < thr_low) | (dfo.mean_group_diff > thr_hi)))
+
+    dfo['is_spike'] = (dfo.mean_group_diff_abs - dfo.mean_group_diff.abs()) > (thr_hi - thr_low) / 2
     dfo['ischange_cumsum'] = dfo.ischange.cumsum()
 
-    # logger_info('DF_OUTL: ',dfo)
-
     df_outl = (
-        dfo.loc[dfo.ischange.astype(bool)].groupby('change_group')
-        .apply(lambda x:pd.Series({'outl_start':x.head(1)[x_col].iloc[0],'outl_end':x.tail(1)[x_col].iloc[0]}))
-        .reset_index()
+        dfo.loc[dfo.ischange.astype(bool)].groupby('change_group').apply(
+            lambda x: pd.Series({'outl_start': x[x_col].iloc[0],
+                                 'outl_end': x[x_col].iloc[-1]})).reset_index()
     )
 
     if df_outl.empty:  # No outliers - nothing to do
-        return None, None
+        return np.full(dfo.index.size, False), \
+               np.full(dfo.index.size, False)
 
     df_outl = df_outl.merge(dfo[['change_group', 'is_spike', 'is_step']].drop_duplicates())
 
     dfo = dfo.merge(df_outl, how='left')
-    dfo['outl_start'] = dfo.outl_start.fillna(0).astype(int)
-    dfo['outl_end'] = dfo.outl_end.fillna(0).astype(int)
-
-    dfo = dfo  # .reset_index()
-
-    df_spikes = df_outl.loc[df_outl.is_spike]
-    df_steps = df_outl.loc[df_outl.is_step]
-
-    l_model_outl = []
-    l_mask_step = []
-    l_mask_spike = []
-
-    for g in df_spikes.change_group:
-        s_spike = df_spikes.loc[df_spikes.change_group == g].iloc[0]
-        if with_dates:
-            mask_spike_tmp = ~((dfo.date>=pd.to_datetime(s_spike.outl_start)) &
-                              (dfo.date<pd.to_datetime(s_spike.outl_end)))
-        else:
-            mask_spike_tmp = ~((dfo.x.values>=s_spike.outl_start) &
-                             (dfo.x.values<s_spike.outl_end))
-        l_mask_spike += [mask_spike_tmp.astype(float)]
-
-    for g in df_steps.change_group:
-        s_step = df_steps.loc[df_steps.change_group == g].iloc[0]
-        if with_dates:
-            model_step_tmp = get_model_step_date(pd.to_datetime(s_step.outl_start))
-        else:
-            model_step_tmp = (
-                fix_params_fmodel(
-                    model_step, [s_step.outl_start, np.NaN])
-            )
-        l_model_outl += [model_step_tmp]
-        if with_dates:
-            mask_step_tmp = (dfo.date==pd.to_datetime(s_step.outl_start))
-        else:
-            mask_step_tmp = (dfo.x.values==s_step.outl_start)
-        l_mask_step += [mask_step_tmp.astype(float)]
-
-    if len(l_model_outl) == 0:
-        model_outliers = None
+    if with_dates:
+        dfo['outl_start'] = pd.to_datetime(dfo.outl_start)
+        dfo['outl_end'] = pd.to_datetime(dfo.outl_end)
+        dfo['mask_spike'] = (dfo['is_spike'] &
+                             (dfo.date >= pd.to_datetime(dfo.outl_start)) &
+                             (dfo.date < pd.to_datetime(dfo.outl_end)))
+        dfo['mask_step'] = (dfo['is_step'] &
+                             (dfo.date >= pd.to_datetime(dfo.outl_start)) &
+                             (dfo.date <= pd.to_datetime(dfo.outl_end)))
     else:
-        model_outliers = np.prod(l_model_outl) if is_mult else np.sum(l_model_outl)
-    if len(l_mask_spike) == 0:
-        mask_spike = None
-    else:
-        mask_spike = np.prod(l_mask_spike, axis=0)
-    if len(l_mask_step)==0:
-        mask_step = None
-    else:
-        mask_step = np.sum(l_mask_step, axis=0)
-    return mask_step, mask_spike
-    #return model_outliers, mask_spike
-    # return model_outliers, l_mask_spike
+        dfo['outl_start'] = dfo.outl_start.fillna(0).astype(int)
+        dfo['outl_end'] = dfo.outl_end.fillna(0).astype(int)
+        dfo['mask_spike'] = (dfo['is_spike'] &
+                             (dfo.x >= dfo.outl_start) &
+                            (dfo.x < dfo.outl_end))
+        dfo['mask_step'] = (dfo['is_step'] &
+                             (dfo.x >= dfo.outl_start) &
+                            (dfo.x <= dfo.outl_end))
 
-
-# TODO: Remove - replaced by get_model_outliers()
-def find_steps_and_spikes(a_x, a_y, a_date, window=3, max_changes=None):
-    """
-        Automatically locate steps and spikes for a_y time series.
-        A rule of thumb for the window is two weeks.
-
-    :param a_x: The values of the x axis
-    :param a_y: The values of the y axis
-    :param a_date: The values of the x axis, if they are dates
-    :param window: The x-axis window to aggregate multiple steps/spikes
-    :type window: int
-    :param max_changes: Manual input of the number of changes that the
-                        input time series is expected to have.
-                        If max_changes = 0 or None, the function returns
-                        all changes (steps / spikes) found.
-    :type max_changes: int
-    :return: changes_list
-    :rtype: list of dictionaries
-            Each dictionary includes information on a single change,
-            and is of the format:
-            {'change_type': change_type,  # ('spike' or 'step')
-            'duration': duration,  # int - the x-axis duration of the change
-            'diff': diff,  # the difference within the change
-            'x': x,  # the x-axis at the middle of the change
-            'date': date}  # the x-axis date at the middle of the change
-    """
-    # find NaNs in a_y
-    df = pd.DataFrame({'y': a_y}).interpolate('slinear')
-
-    # Find peak changes in diff
-    df['diff'] = df.y.diff()
-
-    # Outliers are < Q1 - 3 * IQR, > Q3 + 3 * IQR
-    # Q1 and Q3 are the 25th (1st) and 75th (3rd) quartiles, and
-    # IQR is the inter-quartile range
-    q1 = df['diff'].quantile(0.25)
-    q3 = df['diff'].quantile(0.75)
-    iqr = q3 - q1
-    low_thresh = q1 - 1.5 * iqr
-    high_thresh = q3 + 1.5 * iqr
-
-    # df['is_change'] = 0
-    step_filt = (df['diff'] < low_thresh) | (df['diff'] > high_thresh)
-    df['is_change'] = step_filt.astype(int)
-
-    if not any(step_filt):
-        return [], []
-
-    # df.loc[step_filt, 'is_change'] = 1
-
-    # Now that we have found the outliers in differences,
-    # group consecutive steps together
-
-    # get only the diffs that correspond to changes
-    df['diff'] = df['diff'] * df['is_change']
-    df[['diff_sum', 'change_sum']] = df[['diff', 'is_change']].rolling(
-        window, win_type=None, center=True).sum()
-
-    # we have steps, we may need to aggregate
-    # We split the array with zeros.
-    # This means that we treat all nearby changes as one,
-    # within `window` values
-    split = np.split(df['change_sum'],
-                     np.where(df['change_sum'] == 0.)[0])
-    # get rid of zero only series
-    split = [i for i in split if i.any()]
-
-    # Now we have a list of series with the changes
-    changes_list = []
-    for s in split:
-        change_s = df.iloc[s.index]
-        change_max_occur = change_s[change_s.is_change == 1].index.max()
-        change_min_occur = change_s[change_s.is_change == 1].index.min()
-        diff = change_s['diff'].sum()
-        duration = change_max_occur - change_min_occur
-
-        if low_thresh <= diff <= high_thresh:  # Change is a spike
-            change_type = 'spike'
-            # we keep the starting point as x
-            x = change_min_occur
-            # get the average change for the values of the change that
-            # are in the changing threshold
-            diff = change_s.loc[(change_s.is_change == 1) &
-                                ((change_s['diff'] < low_thresh) |
-                                 (change_s['diff'] > high_thresh)), 'diff'].abs().mean()
-
-        else:  # Change is a step
-            # here we have a different starting point
-            x = (change_max_occur + change_min_occur - 1) / 2.0
-            change_type = 'step'
-
-        d = {'change_type': change_type,
-             'duration': duration,
-             'diff': diff,
-             'x': x}
-        changes_list += [d]
-
-    # Sort by absolute difference, in descending order
-    sorted_changes_list = sorted(changes_list, key=lambda ch: abs(ch['diff']),
-                                 reverse=True)
-
-    # Rule of thumb: the maximum number of changes
-    # is the square root of the time series length
-    max_max_changes = int(np.floor(np.sqrt(len(a_y))))
-    # If we have a max_changes input value, select the ones with higher diff
-    if (not max_changes) or (max_changes > max_max_changes):
-        max_changes = max_max_changes
-
-    changes_list = sorted_changes_list[:max_changes]
-
-    steps = []
-    spikes = []
-    for c in changes_list:
-        # get models
-        if c['change_type'] == 'spike':
-            # spike = create_fixed_spike(c['diff'], x=c['x'],
-            #                            duration=c['duration'])
-            spike = create_fixed_spike_ignored(x=c['x'],
-                                               duration=c['duration'])
-            spikes += [spike]
-        elif c['change_type'] == 'step':
-            step = create_fixed_step(diff=c['diff'], x=c['x'])
-            steps += [step]
-        else:
-            raise ValueError('Invalid change type: ' + c['change_type'])
-
-    return steps, spikes
+    return dfo.mask_step.values, dfo.mask_spike.values
 
 
 def create_fixed_step(diff, x):

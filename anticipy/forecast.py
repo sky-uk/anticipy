@@ -563,7 +563,6 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                  extrapolate_years=0, season_add_mult='add',
                  include_all_fits=False,
                  simplify_output=True,
-                 do_find_steps_and_spikes=False,
                  find_outliers=False,
                  l_season_yearly=None,
                  l_season_weekly=None,
@@ -603,9 +602,6 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
     :param season_add_mult: 'add', 'mult', or 'both'. Whether forecast seasonality will be additive, multiplicative,
         or the best fit of the two.
     :type season_add_mult: str
-    :param do_find_steps_and_spikes: if True, find steps and spikes, create fixed models and add them
-        to the list of models
-    :type do_find_steps_and_spikes: bool
     :param find_outliers: If True, find outliers in input data, ignore outlier samples in forecast
     :type find_outliers: bool
     :param include_all_fits: If True, also include non-optimal models in output
@@ -649,7 +645,6 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                                    season_add_mult,
                                    include_all_fits,
                                    simplify_output,
-                                   do_find_steps_and_spikes,
                                    find_outliers,
                                    l_season_yearly,
                                    l_season_weekly,
@@ -669,7 +664,6 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                                                   season_add_mult,
                                                   include_all_fits,
                                                   False,  # Simplify output
-                                                  do_find_steps_and_spikes,
                                                   find_outliers,
                                                   l_season_yearly,
                                                   l_season_weekly,
@@ -723,7 +717,6 @@ def run_forecast_single(df_y,
                         season_add_mult='add',
                         include_all_fits=False,
                         simplify_output=True,
-                        do_find_steps_and_spikes=False,
                         find_outliers=False,
                         l_season_yearly=None,
                         l_season_weekly=None,
@@ -753,9 +746,6 @@ def run_forecast_single(df_y,
     :param season_add_mult: 'add', 'mult', or 'both'. Whether forecast seasonality will be additive, multiplicative,
         or the best fit of the two.
     :type season_add_mult: str
-    :param do_find_steps_and_spikes: if True, find steps and spikes, create fixed models and add them
-        to the list of models
-    :type do_find_steps_and_spikes: bool
     :param include_all_fits: If True, also include non-optimal models in output
     :type include_all_fits: bool
     :param simplify_output: If False, return dict with forecast and metadata. Otherwise, return only forecast.
@@ -802,15 +792,14 @@ def run_forecast_single(df_y,
 
     # If we find outliers, we add a model with dummy variables for the outliers
     if find_outliers:
-        model_outliers, outlier_mask = forecast_models.get_model_outliers(df_y)
-        if outlier_mask is not None:
-            if 'weight' in df_y.columns:
-                df_y['weight'] = df_y['weight'] * outlier_mask
-            else:
-                df_y['weight'] = outlier_mask
-            assert np.issubdtype(df_y.weight.astype(float), np.float64)
-    else:
-        model_outliers = None
+        mask_step, mask_spike = forecast_models.get_model_outliers(df_y)
+        # Make weight = 0 to ignore spike outliers
+        if 'weight' in df_y.columns:
+            df_y['weight'] = df_y['weight'] * (~mask_spike).astype(float)
+        else:
+            df_y['weight'] = (~mask_spike).astype(float)
+        assert np.issubdtype(df_y.weight.astype(float), np.float64)
+        # TODO add models for steps
 
     # Add actuals to output
     # Get weight for metadata
@@ -871,28 +860,6 @@ def run_forecast_single(df_y,
     # logger_info('debug l_Model',l_model)
     if l_model_naive is not None:
         l_model = l_model_naive+l_model
-
-    # if model_outliers is not None:
-    #     l_model_outlier = [forecast_models.model_null, model_outliers]
-    #     l_model = get_list_model(l_model, l_model_outlier, 'add')
-
-    if do_find_steps_and_spikes:
-        a_y = df_y.y.values
-        a_x = df_y.y
-
-        a_date = df_y.date if 'date' in df_y.columns else None
-
-        steps, spikes = forecast_models.find_steps_and_spikes(a_x, a_y, a_date)
-        if steps:
-            steps_summed = reduce(lambda x, y: x + y, steps)
-            steps_summed.name = '{}_fixed_steps'.format(len(steps))
-            l_model = [model + steps_summed for model in l_model]
-        if spikes:
-            spikes_mult = reduce(lambda x, y: x * y, spikes)
-            spikes_mult.name = '{}_fixed_spikes'.format(len(spikes))
-            # filter values during the spike
-            a_y_filt = spikes_mult(a_x, a_date, [])
-            df_y[a_y_filt == 0] = np.nan
 
     # exclude samples with weight = 0
     df_y = df_y.loc[df_y.weight > 0]
@@ -980,7 +947,6 @@ def run_l_forecast(l_fcast_input,
                    col_name_source='source',
                    extrapolate_years=0, season_add_mult='add',
                    include_all_fits=False,
-                   do_find_steps_and_spikes=False,
                    find_outliers=False):
     """
     Generate forecasts for a list of SolverConfig objects, each including a time series, model functions, and other
@@ -1028,7 +994,6 @@ def run_l_forecast(l_fcast_input,
                                    col_name_source,
                                    extrapolate_years, season_add_mult,
                                    include_all_fits, simplify_output=False,
-                                   do_find_steps_and_spikes=do_find_steps_and_spikes,
                                    find_outliers=find_outliers)
         l_dict_result += [dict_result]
 
