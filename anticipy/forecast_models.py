@@ -8,11 +8,6 @@ Defines the ForecastModel class, which encapsulates model functions used in fore
 their number of parameters and initialisation parameters.
 """
 
-# TODO: Check parameter initialisation
-
-# TODO: It may be convenient to have different model functions for addition and subtraction,
-# e.g. to return 1 or 0 by default
-
 # -- Coding Conventions
 #    http://www.python.org/dev/peps/pep-0008/   -   Use the Python style guide
 #    http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for docstrings
@@ -28,22 +23,20 @@ from anticipy import model_utils
 
 # -- Globals
 logger = logging.getLogger(__name__)
-dict_fourier = {
+
+dict_fourier = {        # Default configuration for fourier-based models
     'period': 365.25,  # days in year
     'harmonics': 10  # TODO: evaluate different harmonics values
 }
 
-
-# -- Exception classes
-
 # -- Functions
+
+# ---- Utility functions
+
+
 def logger_info(msg, data):
     # Convenience function for easier log typing
     logger.info(msg + '\n%s', data)
-
-
-def _is_multi_ts(a):
-    return a.ndim > 1 and a.shape[1] > 1
 
 
 def _get_f_init_params_default(n_params):
@@ -57,6 +50,7 @@ def _get_f_bounds_default(n_params):
 
 
 def _get_f_add_2_f_models(forecast_model1, forecast_model2):
+    # Add model functions of 2 ForecastModels
     def f_add_2_f_models(a_x, a_date, params, is_mult=False, **kwargs):
         params1 = params[0:forecast_model1.n_params]
         params2 = params[forecast_model1.n_params:]
@@ -69,6 +63,7 @@ def _get_f_add_2_f_models(forecast_model1, forecast_model2):
 
 
 def _get_f_mult_2_f_models(forecast_model1, forecast_model2):
+    # Multiply model functions of 2 ForecastModels
     def f_mult_2_f_models(a_x, a_date, params, is_mult=False, **kwargs):
         params1 = params[0:forecast_model1.n_params]
         params2 = params[forecast_model1.n_params:]
@@ -81,12 +76,15 @@ def _get_f_mult_2_f_models(forecast_model1, forecast_model2):
 
 
 def _get_f_add_2_f_init_params(f_init_params1, f_init_params2):
+    # Compose parameter initialisation functions of 2 ForecastModels, using addition
     def f_add_2_f_init_params(a_x, a_y, a_date=None, is_mult=False):
         return np.concatenate([f_init_params1(a_x, a_y, a_date, is_mult=False),
                                f_init_params2(a_x, a_y, a_date, is_mult=False)])
     return f_add_2_f_init_params
 
+
 def _get_f_mult_2_f_init_params(f_init_params1, f_init_params2):
+    # Compose parameter initialisation functions of 2 ForecastModels, using multiplication
     def f_mult_2_f_init_params(a_x, a_y, a_date=None, is_mult=False):
         return np.concatenate([f_init_params1(a_x, a_y, a_date, is_mult=True),
                                f_init_params2(a_x, a_y, a_date, is_mult=True)])
@@ -94,19 +92,16 @@ def _get_f_mult_2_f_init_params(f_init_params1, f_init_params2):
 
 
 def _get_f_concat_2_bounds(forecast_model1, forecast_model2):
+    # Compose parameter boundary functions of 2 ForecastModels
     def f_add_2_f_bounds(a_x, a_y, a_date=None):
         return np.concatenate((forecast_model1.f_bounds(a_x, a_y, a_date),
                                forecast_model2.f_bounds(a_x, a_y, a_date)), axis=1)
-
     return f_add_2_f_bounds
+
 
 def _f_validate_input_default(a_x, a_y, a_date):
     # Default input validation funciton for a ForecastModel. Always returns True
     return True
-
-
-# def _get_add_2_bounds(f_bounds1, f_bounds2):
-#     return np.concatenate((f_bounds1, f_bounds2), axis=1)
 
 
 # -- Classes
@@ -237,16 +232,16 @@ class ForecastModel:
         """
         Create ForecastModel
 
-        :param name:
-        :type name:
-        :param n_params:
-        :type n_params:
-        :param f_model:
-        :type f_model:
-        :param f_init_params:
-        :type f_init_params:
-        :param f_bounds:
-        :type f_bounds:
+        :param name: Model name
+        :type name: basestring
+        :param n_params: Number of parameters for model function
+        :type n_params: int
+        :param f_model: Model function
+        :type f_model: function
+        :param f_init_params: Parameter initialisation function
+        :type f_init_params: function
+        :param f_bounds: Boundary function
+        :type f_bounds: function
         """
         self.name = name
         self.n_params = n_params
@@ -399,7 +394,9 @@ def _f_model_naive(a_x, a_date, params, is_mult=False, df_actuals=None):
     # TODO: df_out = df_out.merge(df_out_tmp, how='right')
     return df_out.y.values
 
+
 model_naive = ForecastModel('naive',0, _f_model_naive)
+
 
 # - Seasonal naive model
 # Note: This model requires passing the actuals data - it is not fitted by regression
@@ -440,13 +437,8 @@ def _f_model_snaive_wday(a_x, a_date, params, is_mult=False, df_actuals=None):
     df_last_week['y_out'] = df_last_week['y']
     df_last_week = df_last_week[['wday', 'y_out']]
 
-    # logger_info('df_actuals_model:', df_actuals_model)
-    # logger_info('df_last_week:', df_last_week)
-
     df_out_tmp = pd.DataFrame({'date': a_date, 'x': a_x})
     df_out_tmp['wday'] = df_out_tmp.date.dt.weekday
-
-    # logger_info('df_out_tmp:', df_out_tmp)
 
     df_out_actuals = (
         df_actuals_model.merge(df_out_tmp, how='left')
@@ -459,15 +451,11 @@ def _f_model_snaive_wday(a_x, a_date, params, is_mult=False, df_actuals=None):
 
     df_out = pd.concat([df_out_actuals, df_out_extrapolated], sort=False)
 
-    # logger_info('df_out_actuals:', df_out_actuals)
-    # logger_info('df_out_extrapolated:', df_out_extrapolated)
-
     # Note: the line below causes trouble when samples are filtered from a_x, a_date due to find_outliers
     df_out = df_out.loc[df_out.x.isin(a_x)]
 
-    # logger_info('df_out:', df_out)
-
     return df_out.y_out.values
+
 
 model_snaive_wday = ForecastModel('snaive_wday', 0, _f_model_snaive_wday)
 
@@ -487,7 +475,6 @@ def _f_model_spike(a_x, a_date, params, is_mult=False, **kwargs):
     return y
 
 
-# TODO: test f_init_params for all models
 def _f_init_params_spike(a_x=None, a_y=None, a_date=None, is_mult=False):
     """ params are spike height, x start, x end """
     # if not a_y.any():
@@ -653,7 +640,7 @@ def _f_init_params_step(a_x=None, a_y=None, a_date=None, is_mult=False):
         b = df['diff'].iloc[a]
         return np.array([a, b * 2])
 
-
+# TODO: Add boundaries for X axis
 model_step = ForecastModel('step', 2, _f_step, _f_init_params_step)
 
 
@@ -986,6 +973,7 @@ model_season_fourier_yearly = ForecastModel(
 
 
 def get_fixed_model(forecast_model, params_fixed, is_mult=False):
+    # Generate model with some fixed parameters
     if len(params_fixed) != forecast_model.n_params:
         err = 'Wrong number of fixed parameters'
         raise ValueError(err)
@@ -1004,6 +992,8 @@ def get_iqr_thresholds(s_diff, low=0.25, high=0.75):
     thr_hi = q3 + 1.5 * iqr
     return thr_low, thr_hi
 
+
+# TODO: REMOVE THIS FUNCTION
 def get_model_outliers_withgap(df, window=3):
     # TODO: ADD CHECK, TO PREVENT REDUNDANT OPS IN DF WITHOUT GAPS
 
@@ -1043,13 +1033,17 @@ def get_model_outliers_withgap(df, window=3):
 # TODO: ADD option - gaussian spikes
 def get_model_outliers(df, window=3):
     """
+    Identify outlier samples in a time series
     
-    :param df:
-    :type df:
-    :param window:
-    :type window:
+    :param df: Input time series
+    :type df: pandas.DataFrame
+    :param window: The x-axis window to aggregate multiple steps/spikes
+    :type window: int
     :return:
-    :rtype:
+        | tuple (mask_step, mask_spike)
+        | mask_step: 0 if sample contains a step
+        | mask_spike: 0 if sample contains a spike
+    :rtype: tuple of 2 numpy arrays of floats
 
     Note: due to the way the thresholds are defined, we require 6+ samples in series to find a spike.
     """
@@ -1171,6 +1165,7 @@ def get_model_outliers(df, window=3):
     # return model_outliers, l_mask_spike
 
 
+# TODO: Remove - replaced by get_model_outliers()
 def find_steps_and_spikes(a_x, a_y, a_date, window=3, max_changes=None):
     """
         Automatically locate steps and spikes for a_y time series.
@@ -1300,16 +1295,19 @@ def find_steps_and_spikes(a_x, a_y, a_date, window=3, max_changes=None):
 
 
 def create_fixed_step(diff, x):
+    # Generate a fixed step model
     fixed_params = [x, diff]
     return get_fixed_model(model_step, fixed_params)
 
 
 def create_fixed_spike(diff, x, duration):
+    # Generate a fixed spike model
     fixed_params = [diff, x, x + duration]
     return get_fixed_model(model_spike, fixed_params)
 
 
 def create_fixed_spike_ignored(x, duration):
+    # Generate a fixed spike ignored model
     fixed_params = [0, x, x + duration]
     return get_fixed_model(model_spike, fixed_params, is_mult=True)
 
@@ -1320,8 +1318,8 @@ def get_model_dummy(name, dummy, **kwargs):
     """
     Generate a model based on a dummy variable.
 
-    :param name:
-    :type name:
+    :param name: Name of the model
+    :type name: basestring
     :param dummy:
       | Can be a function or a list-like.
       | If a function, it must be of the form f_dummy(a_x, a_date), and return a numpy array of floats
@@ -1357,7 +1355,7 @@ def get_f_model_dummy(dummy):
     """
     Generate a model function for a dummy variable defined by f_dummy
 
-    :param dummy:
+    :param dummy: dummy variable
     :type dummy: function or list-like of numerics or dates
     :return: model function based on dummy variable, to use on a ForecastModel
     :rtype: function
@@ -1434,15 +1432,15 @@ def fix_params_fmodel(forecast_model, l_params_fixed):
     """
     Given a forecast model and a list of floats, modify the model so that some of its parameters become fixed
 
-    :param forecast_model:
-    :type forecast_model:
+    :param forecast_model: Input model
+    :type forecast_model: ForecastModel
     :param l_params_fixed: List of floats with same length as number of parameters in model. For each element, a
         non-null value means that the parameter in that position is fixed to that value. A null value means that
         the parameter in that position is not fixed.
     :type l_params_fixed: list
     :return: A forecast model with a number of parameters equal to the number of null values in l_params_fixed,
         with f_model modified so that some of its parameters gain fixed values equal to the non-null values in l_params
-    :rtype:
+    :rtype: ForecastModel
     """
     assert len(l_params_fixed) == forecast_model.n_params
 
@@ -1481,16 +1479,16 @@ def simplify_model(f_model, a_x=None, a_y=None, a_date=None):
     """
     Check a model's bounds, and update model to make parameters fixed if their min and max bounds are equal
 
-    :param f_model:
-    :type f_model:
-    :param a_x:
-    :type a_x:
-    :param a_y:
-    :type a_y:
-    :param a_date:
-    :type a_date:
-    :return:
-    :rtype:
+    :param f_model: Input model
+    :type f_model: ForecastModel
+    :param a_x: X axis for model function.
+    :type a_x: numpy array of floats
+    :param a_y: Input time series values, to compare to the model function
+    :type a_y: numpy array of floats
+    :param a_date: Dates for the input time series
+    :type a_date: numpy array of datetimes
+    :return: Model with simplified parameters based on bounds
+    :rtype: ForecastModel
     """
     bounds_min, bounds_max = f_model.f_bounds(a_x, a_y, a_date)
     bounds_diff = np.array(bounds_max) - np.array(bounds_min)
@@ -1508,6 +1506,7 @@ def simplify_model(f_model, a_x=None, a_y=None, a_date=None):
 
 
 def validate_initial_guess(initial_guess, bounds):
+    # Check that initial parameter values fall within model bounds
     initial_guess = np.array(initial_guess)
     bounds_min, bounds_max = bounds
     return np.all((initial_guess >= bounds_min) & (initial_guess <= bounds_max))
@@ -1518,14 +1517,14 @@ def get_l_model_auto_season(a_date, min_periods=1.5, season_add_mult='add',
     """
     Generates a list of candidate seasonality models for an series of timestamps
 
-    :param a_date:
-    :type a_date:
-    :param min_periods:
-    :type min_periods:
-    :param is_mult:
-    :type is_mult:
-    :return:
-    :rtype:
+    :param a_date: date array of a time series
+    :type a_date: numpy array of timestamps
+    :param min_periods: Minimum number of periods required to apply seasonality
+    :type min_periods: float
+    :param season_add_mult: 'add' or 'mult'
+    :type is_mult: basestring
+    :return: list of candidate seasonality models
+    :rtype: list of ForecastModel
     """
     s_date = pd.Series(a_date).sort_values().drop_duplicates()
     min_date_delta = s_date.diff().min()
@@ -1575,10 +1574,3 @@ def get_l_model_auto_season(a_date, min_periods=1.5, season_add_mult='add',
             l_result += [model_season_mult]
 
     return l_result
-
-    """
-    todo: RENAME SEASON MODELS
-    - season_yearly_month, season_yearly_fourier, season_yearly_quarter
-    - season_weekly_wday, season_weekly_wkd
-    
-    """

@@ -4,7 +4,7 @@
 #                   contained within this applications INSTALL directory
 
 """
-    __high_level_module_description_here__
+Functions to plot forecast outputs
 """
 
 # -- Coding Conventions
@@ -20,26 +20,6 @@ import numpy as np
 
 # -- Globals
 logger = logging.getLogger(__name__)
-
-# ---- R Globals
-
-r_utils = (
-    """
-    require(scales)
-    require(stringr)
-
-    get_label_f = function(div=1, mult=1, curr='',unit='', digits=1){ # ... includes digits parameter, passed to string format()
-      #  Returns formatting functions for scale labels
-      function(x, ...)  {
-        paste0(curr, format(x*mult/div, digits=digits, ..., big.mark = ",", scientific = FALSE, trim = TRUE),unit) %>%
-          str_replace(paste0(curr,'-'),paste0('-',curr))
-      }
-    }
-    # Scale for thousands of units
-    s_y_k = scale_y_continuous(labels=get_label_f(div=1000, unit='k', digits=1)) 
-    # Scale for millions of units
-    s_y_m = scale_y_continuous(labels=get_label_f(div=10^6, unit='M', digits=4)) 
-    """)
 
 
 # -- Functions
@@ -77,15 +57,15 @@ def pix_to_in(width_px=None, height_px=None, dpi=300):
 
 
 def has_pi (df_fcast):
+    # Check if a forecast table includes prediction intervals
     return 'q5' in df_fcast.columns
 
 # ---- Plotting functions
 
 
-def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70, col_name_y='y',
-                          col_name_source='source', col_name_date='date', col_name_model='model', scale=None):
+def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70):
     """
-    Creates ggplot object from forecast dataframe
+    Creates matplotlib plot from forecast dataframe
 
     :param df_fcast:
         | Forecast Dataframe with the following columns:
@@ -96,8 +76,12 @@ def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70,
     :type df_fcast: pandas.DataFrame
     :param title: Plot title
     :type title: str
-    :param scale: Scale of y axis: If 'k', show thousands, and if 'M', show millions
-    :type scale: str
+    :param width: plot width, in pixels
+    :type width: int
+    :param height: plot height, in pixels
+    :type height: int
+    :param dpi: plot dpi
+    :type dpi: int
     :return: The plot
     :rtype: matplotlib plot instance
     """
@@ -192,10 +176,7 @@ def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70,
     return plt.Figure
 
 
-def plot_forecast_save(df_fcast, file_path, width=None, height=None, title=None, dpi=70, col_name_y='y',
-                       col_name_source='source', col_name_date='date', col_name_model='model',
-                       scale=None, device='png',
-                       transparent_bg=False):
+def plot_forecast_save(df_fcast, file_path, width=None, height=None, title=None, dpi=70):
     """
     Generates matplotlib plot and saves as file
 
@@ -207,21 +188,20 @@ def plot_forecast_save(df_fcast, file_path, width=None, height=None, title=None,
         | - is_actuals (bool) : True for actuals samples, False for forecasted samples
     :type df_fcast: pandas.DataFrame
     :param file_path: File path for output
-    :type file_path: str
+    :type file_path: basestring
     :param width: Image width, in pixels
     :type width: int
     :param height: Image height, in pixels
     :type height: int
     :param title: Plot title
-    :type title: str
+    :type title: basestring
     :param dpi: Image dpi
     :type dpi: Image dpi
     :param device: 'png' or 'pdf'
     :type device: str
     """
 
-    fig = _plot_forecast_create(df_fcast, width, height, title, dpi, col_name_y, col_name_source,
-                                col_name_date, col_name_model, scale)
+    fig = _plot_forecast_create(df_fcast, width, height, title, dpi)
 
     dirname, fname = os.path.split(file_path)
     if not os.path.exists(dirname):
@@ -230,9 +210,7 @@ def plot_forecast_save(df_fcast, file_path, width=None, height=None, title=None,
     plt.savefig(file_path, dpi=dpi)
 
 
-def plot_forecast(df_fcast, width=None, height=None, title=None, dpi=70, scale=None, device='png',
-                  col_name_y='y', col_name_source='source', col_name_date='date', col_name_model='model',
-                  transparent_bg=False):
+def plot_forecast(df_fcast, width=None, height=None, title=None, dpi=70):
     """
     Generates plot and shows in an ipython notebook
 
@@ -261,6 +239,5 @@ def plot_forecast(df_fcast, width=None, height=None, title=None, dpi=70, scale=N
         return None
 
     file_plot = NamedTemporaryFile()
-    plot_forecast_save(df_fcast, file_plot.name, width, height, title, dpi, scale, device,
-                       col_name_y, col_name_source, col_name_date, col_name_model, transparent_bg)
+    plot_forecast_save(df_fcast, file_plot.name, width, height, title, dpi)
     return Image(filename=file_plot.name, format='png')

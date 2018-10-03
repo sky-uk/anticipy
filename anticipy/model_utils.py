@@ -58,11 +58,11 @@ def array_transpose(a):
 # TODO: rework to support model composition
 def model_requires_scaling(model):
     """
-    Given a :py:class:`nsa.forecast.forecast_models.ForecastModel`  return True if the function requires
+    Given a :py:class:`anticipy.forecast_models.ForecastModel`  return True if the function requires
     scaling a_x
 
-    :param model: A get_model_<modeltype> function from :py:mod:`nsa.forecast.model.periodic_models` or
-        :py:mod:`nsa.forecast.model.aperiodic_models`
+    :param model: A get_model_<modeltype> function from :py:mod:`anticipy.model.periodic_models` or
+        :py:mod:`anticipy.model.aperiodic_models`
     :type model: function
     :return: True if function is logistic or sigmoidal
     :rtype: bool
@@ -80,7 +80,7 @@ def apply_a_x_scaling(a_x, model=None, scaling_factor=100.0):
 
     :param a_x: x axis of time series
     :type a_x: numpy array
-    :param model: a :py:class:`nsa.forecast.forecast_models.ForecastModel`
+    :param model: a :py:class:`anticipy.forecast_models.ForecastModel`
     :type model: function or None
     :param scaling_factor: Value used for scaling t_values for logistic models
     :type scaling_factor: float
@@ -98,8 +98,7 @@ dict_freq_units_per_year = {'A': 1.0, 'Y': 1.0, 'D': 365.0, 'W': 52.0, 'M': 12, 
 def get_s_x_extrapolate(date_start_actuals, date_end_actuals, model=None, freq='W',  extrapolate_years=2.5,
                         shifted_origin=0, scaling_factor=100.0, x_start_actuals=0.):
     """
-    Return t_values series with DateTimeIndex, covering the date range for the actuals, plus a forecast period.
-
+    Return a_x series with DateTimeIndex, covering the date range for the actuals, plus a forecast period.
 
     :param date_start_actuals: date or numeric index for first actuals sample
     :type date_start_actuals: str, datetime, int or float
@@ -112,7 +111,7 @@ def get_s_x_extrapolate(date_start_actuals, date_end_actuals, model=None, freq='
     :param freq: Time unit between samples. Supported units are 'W' for weekly samples, or 'D' for daily samples.
         (untested) Any date unit or time unit accepted by numpy should also work, see
         https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits
-    :type freq: str or int
+    :type freq: basestring
     :param shifted_origin: Offset to apply to a_x
     :type shifted_origin: int
     :param scaling_factor: Value used for scaling a_x for certain model functions

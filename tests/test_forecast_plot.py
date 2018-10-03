@@ -112,14 +112,6 @@ class TestForecastPlot(PandasTest):
         forecast_plot.plot_forecast_save(df_forecast, path, 400, 300, 'Test Plot')
         logger_info('plot saved to :', path)
 
-        path = get_path_test_plot('test_k',is_matplotlib)
-        forecast_plot.plot_forecast_save(df_forecast, path, 400, 300, 'Test Plot', scale='k')
-        logger_info('plot saved to :', path)
-
-        path = get_path_test_plot('test_m',is_matplotlib)
-        forecast_plot.plot_forecast_save(df_forecast, path, 400, 300, 'Test Plot', scale='M')
-        logger_info('plot saved to :', path)
-
         # Todo: add checks about file creation, cleanup after running
 
         logger_info('debug - df_forecast_facet', df_forecast_facet)
@@ -133,14 +125,6 @@ class TestForecastPlot(PandasTest):
 
         path = get_path_test_plot('test',is_matplotlib)
         forecast_plot.plot_forecast_save(df_forecast, path, 400, 300, 'Test Plot')
-        logger_info('plot saved to :', path)
-
-        path = get_path_test_plot('test_k',is_matplotlib)
-        forecast_plot.plot_forecast_save(df_forecast, path, 400, 300, 'Test Plot', scale='k')
-        logger_info('plot saved to :', path)
-
-        path = get_path_test_plot('test_m',is_matplotlib)
-        forecast_plot.plot_forecast_save(df_forecast, path, 400, 300, 'Test Plot', scale='M')
         logger_info('plot saved to :', path)
 
         # Todo: add checks about file creation, cleanup after running
