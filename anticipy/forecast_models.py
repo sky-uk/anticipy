@@ -1040,13 +1040,12 @@ def get_model_outliers(df, window=3):
     :type window: int
     :return:
         | tuple (mask_step, mask_spike)
-        | mask_step: 0 if sample contains a step
-        | mask_spike: 0 if sample contains a spike
-    :rtype: tuple of 2 numpy arrays of floats
+        | mask_step: True if sample contains a step
+        | mask_spike: True if sample contains a spike
+    :rtype: tuple of 2 numpy arrays of booleans
 
-    Note: due to the way the thresholds are defined, we require 6+ samples in series to find a spike.
+    TODO: require minimum number of samples to find an outlier
     """
-    is_mult = False
 
     dfo = df.copy()  # dfo - df for outliers
     with_dates = 'date' in df.columns  # If df has datetime index, use date logic in steps/spikes
@@ -1055,47 +1054,62 @@ def get_model_outliers(df, window=3):
     if df[x_col].duplicated().any():
         raise ValueError('Input cannot have multiple values per sample')
 
-    # logger_info('debug 0 :', dfo)
+    # Get the differences
+    dfo['dif'] = dfo.y.diff()
 
-    dfo['dif'] = dfo.y.diff()  # .fillna(0)
-
-    # TODO: If df has weight column, use only samples with weight=1 for IQR
-
+    # We consider as outliers the values that are
+    # 1.5 * IQR (interquartile range) beyond the quartiles.
+    # These thresholds are obtained here
     thr_low, thr_hi = get_iqr_thresholds(dfo.dif)
-    # Identify changes of state when diff value exceeds thresholds
+    # Now identify the changes
     dfo['ischange'] = ((dfo.dif < thr_low) | (dfo.dif > thr_hi)).astype(int)
 
+    # Whenever there are two or more consecutive changes
+    # (that is, within `window` samples), we group them together
     dfo['ischange_group'] = (
         (dfo.ischange)
             .rolling(window, win_type=None, center=True).max()
             .fillna(0).astype(int)
     )
 
+    # We now have to calculate the difference within the
+    # same group in order to identify if the consecutive changes
+    # result in a step, a spike, or both.
+
+    # We get the filtered difference
     dfo['dif_filt'] = (dfo.dif * dfo.ischange).fillna(0)
+    # And the absolute value of that
     dfo['dif_filt_abs'] = dfo.dif_filt.abs()
 
     dfo['change_group'] = dfo.ischange_group.diff().abs().fillna(0).astype(int).cumsum()
 
+    # this gets us the average difference of the outliers within each change group
     df_mean_gdiff = (
         dfo.loc[dfo.ischange.astype(bool)].groupby('change_group')['dif_filt'].mean()
             .rename('mean_group_diff').reset_index()
     )
-
+    # this gets us the average absolute difference of the outliers within each change group
     df_mean_gdiff_abs = (
         dfo.loc[dfo.ischange.astype(bool)].groupby('change_group')['dif_filt_abs'].mean()
             .rename('mean_group_diff_abs').reset_index()
     )
 
+    # Merge the differences with the original dfo
     dfo = dfo.merge(df_mean_gdiff, how='left').merge(df_mean_gdiff_abs, how='left')
+    # Fill missing values with zero -> no change
     dfo.mean_group_diff = dfo.mean_group_diff.fillna(0)
     dfo.mean_group_diff_abs = dfo.mean_group_diff_abs.fillna(0)
 
-    # dfo['is_step'] = (dfo.mean_group_diff < thr_low) | (dfo.mean_group_diff > thr_hi)
+    # the change group is a step if the mean_group_diff exceeds the thresholds
     dfo['is_step'] = dfo['ischange_group'] & (
         ((dfo.mean_group_diff < thr_low) | (dfo.mean_group_diff > thr_hi)))
 
+    # the change group is a spike if the difference between the
+    # mean_group_diff_abs and the average mean_group_diff exceeds
+    # the average threshold value
     dfo['is_spike'] = (dfo.mean_group_diff_abs - dfo.mean_group_diff.abs()) > (thr_hi - thr_low) / 2
 
+    # Get the outlier start and end points for each group
     df_outl = (
         dfo.loc[dfo.ischange.astype(bool)].groupby('change_group').apply(
             lambda x: pd.Series({'outl_start': x[x_col].iloc[0],
@@ -1107,9 +1121,12 @@ def get_model_outliers(df, window=3):
                np.full(dfo.index.size, False)
 
     dfo = dfo.merge(df_outl, how='left')
+    # Get the start and end points in dfo
     if with_dates:
+        # Convert to datetime, if we are using dates
         dfo['outl_start'] = pd.to_datetime(dfo.outl_start)
         dfo['outl_end'] = pd.to_datetime(dfo.outl_end)
+        # Create the mask for spikes and steps
         dfo['mask_spike'] = (dfo['is_spike'] &
                              (dfo.date >= pd.to_datetime(dfo.outl_start)) &
                              (dfo.date < pd.to_datetime(dfo.outl_end)))
@@ -1117,8 +1134,10 @@ def get_model_outliers(df, window=3):
                              (dfo.date >= pd.to_datetime(dfo.outl_start)) &
                              (dfo.date <= pd.to_datetime(dfo.outl_end)))
     else:
+        # For non-date x values, we fill na's and convert to int
         dfo['outl_start'] = dfo.outl_start.fillna(0).astype(int)
         dfo['outl_end'] = dfo.outl_end.fillna(0).astype(int)
+        # Create the mask for spikes and steps
         dfo['mask_spike'] = (dfo['is_spike'] &
                              (dfo.x >= dfo.outl_start) &
                             (dfo.x < dfo.outl_end))
