@@ -1,5 +1,9 @@
 [![Documentation Status](https://readthedocs.org/projects/anticipy/badge/?version=latest)](https://anticipy.readthedocs.io/en/latest/?badge=latest)
 
+[![Latest Release](https://img.shields.io/pypi/v/anticipy.svg)](https://img.shields.io/pypi/v/anticipy.svg)
+
+
+
 # anticipy
 
 AnticiPy is a tool to generate forecasts for time series. It takes a pandas Series or DataFrame as input, and
