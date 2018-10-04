@@ -1074,7 +1074,6 @@ def get_model_outliers(df, window=3):
     dfo['dif_filt'] = (dfo.dif * dfo.ischange).fillna(0)
     dfo['dif_filt_abs'] = dfo.dif_filt.abs()
 
-    dfo['ischange_cumsum'] = dfo.ischange.cumsum()
     dfo['change_group'] = dfo.ischange_group.diff().abs().fillna(0).astype(int).cumsum()
 
     df_mean_gdiff = (
@@ -1096,7 +1095,6 @@ def get_model_outliers(df, window=3):
         ((dfo.mean_group_diff < thr_low) | (dfo.mean_group_diff > thr_hi)))
 
     dfo['is_spike'] = (dfo.mean_group_diff_abs - dfo.mean_group_diff.abs()) > (thr_hi - thr_low) / 2
-    dfo['ischange_cumsum'] = dfo.ischange.cumsum()
 
     df_outl = (
         dfo.loc[dfo.ischange.astype(bool)].groupby('change_group').apply(
@@ -1107,8 +1105,6 @@ def get_model_outliers(df, window=3):
     if df_outl.empty:  # No outliers - nothing to do
         return np.full(dfo.index.size, False), \
                np.full(dfo.index.size, False)
-
-    df_outl = df_outl.merge(dfo[['change_group', 'is_spike', 'is_step']].drop_duplicates())
 
     dfo = dfo.merge(df_outl, how='left')
     if with_dates:
