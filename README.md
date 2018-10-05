@@ -4,9 +4,9 @@
 
 
 
-# anticipy
+# Anticipy
 
-AnticiPy is a tool to generate forecasts for time series. It takes a pandas Series or DataFrame as input, and
+Anticipy is a tool to generate forecasts for time series. It takes a pandas Series or DataFrame as input, and
 returns a DataFrame with the forecasted values for a given period of time.
 
 Features:
