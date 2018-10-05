@@ -47,5 +47,4 @@ setup(
     zip_safe=zip_safe,
     entry_points=entry_points,
     classifiers=["License :: OSI Approved :: BSD License"],
-    python_requires='>=2.7.11,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*'
 )
