@@ -51,7 +51,11 @@ install:
     fi
   - python --version
   - pip install .
+  - pip install codecov
 
 script:
-  - python -m unittest discover
+  - coverage run -m unittest discover
   - pycodestyle ./ --ignore=E402,W
+
+after_success:
+  - codecov
