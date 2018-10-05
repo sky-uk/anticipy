@@ -1,6 +1,6 @@
-[![Documentation Status](https://readthedocs.org/projects/anticipy/badge/?version=latest)](https://anticipy.readthedocs.io/en/latest/?badge=latest)
-
 [![Latest Release](https://img.shields.io/pypi/v/anticipy.svg)](https://img.shields.io/pypi/v/anticipy.svg)
+[![Build Status](https://travis-ci.com/sky-uk/anticipy.svg?branch=master)](https://travis-ci.com/sky-uk/anticipy.svg?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/anticipy/badge/?version=latest)](https://anticipy.readthedocs.io/en/latest/?badge=latest)
 
 
 
