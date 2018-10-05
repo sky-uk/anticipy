@@ -721,11 +721,13 @@ class TestForecastModel(PandasTest):
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=549, freq='D')
         l_expected = [model_null, model_season_wday * model_season_fourier_yearly,
                       model_season_wday, model_season_fourier_yearly]
+        l_expected.sort()
         l_result = get_l_model_auto_season(a_date, min_periods=1.5, season_add_mult='mult')
         self.assert_array_equal(l_result, l_expected)
 
         l_expected = [model_null, model_season_wday + model_season_fourier_yearly, model_season_wday,
                       model_season_fourier_yearly]
+        l_expected.sort()
         l_result = get_l_model_auto_season(a_date, min_periods=1.5, season_add_mult='add')
         self.assert_array_equal(l_result, l_expected)
 
@@ -833,8 +835,17 @@ class TestForecastModel(PandasTest):
         self.assertListEqual(model4.l_f_validate_input, [f1])
         # Check composition
         l_expected = [forecast_models._f_validate_input_default, f1]
-        self.assertListEqual((model1 + model4).l_f_validate_input, l_expected)
-        self.assertListEqual((model1 * model4).l_f_validate_input, l_expected)
+        l_result1 = (model1 + model4).l_f_validate_input
+        l_result2 = (model1 * model4).l_f_validate_input
+
+        def assert_list_func_equal(l_result, l_expected):
+            # can't sort lists of functions, so we need to brute force the equality test
+            self.assertEquals(len(l_result), len(l_expected))
+            for result in l_result:
+                self.assertIn(result, l_expected)
+
+        assert_list_func_equal(l_result1, l_expected)
+        assert_list_func_equal(l_result2, l_expected)
 
         # Test3: model.validate_input()
         self.assertTrue(model1.validate_input(None,None,None))

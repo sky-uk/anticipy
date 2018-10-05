@@ -299,7 +299,7 @@ class ForecastModel:
         f_model = _get_f_add_2_f_models(self, forecast_model)
         f_init_params = _get_f_add_2_f_init_params(self.f_init_params, forecast_model.f_init_params)
         f_bounds = _get_f_concat_2_bounds(self, forecast_model)
-        l_f_validate_input = np.unique(self.l_f_validate_input+forecast_model.l_f_validate_input).tolist()
+        l_f_validate_input = list(set(self.l_f_validate_input+forecast_model.l_f_validate_input))
         return ForecastModel(name, n_params, f_model, f_init_params,
                              f_bounds=f_bounds, l_f_validate_input=l_f_validate_input)
 
@@ -316,7 +316,7 @@ class ForecastModel:
         f_model = _get_f_mult_2_f_models(self, forecast_model)
         f_init_params = _get_f_mult_2_f_init_params(self.f_init_params, forecast_model.f_init_params)
         f_bounds = _get_f_concat_2_bounds(self, forecast_model)
-        l_f_validate_input = np.unique(self.l_f_validate_input+forecast_model.l_f_validate_input).tolist()
+        l_f_validate_input = list(set(self.l_f_validate_input + forecast_model.l_f_validate_input))
         return ForecastModel(name, n_params, f_model, f_init_params,
                              f_bounds=f_bounds, l_f_validate_input=l_f_validate_input)
 
@@ -1426,5 +1426,6 @@ def get_l_model_auto_season(a_date, min_periods=1.5, season_add_mult='add',
         if season_add_mult in ['mult'] and model_season_mult != model_null and \
                 model_season_mult not in l_result:
             l_result += [model_season_mult]
-
+    # Sort values to make results more predictable, testable
+    l_result.sort()
     return l_result

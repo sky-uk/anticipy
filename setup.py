@@ -8,8 +8,7 @@ zip_safe = False
 modules = []
 
 dependencies = [
-    'matplotlib==2.2.3;python_version<"3.5"', # Last version compatible with python 2.7
-    'matplotlib>=2.2.3;python_version>="3.5"',
+    'matplotlib>=2.2.3',
     'numpy>=1.15.1',
     'pandas>=0.23.0',
     'scipy>=1.0.0',
@@ -48,5 +47,4 @@ setup(
     zip_safe=zip_safe,
     entry_points=entry_points,
     classifiers=["License :: OSI Approved :: BSD License"],
-    python_requires='>=2.7.11,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*'
 )
