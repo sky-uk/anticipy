@@ -54,6 +54,4 @@ install:
 
 script:
   - python -m unittest discover
-
-after_success:
   - pycodestyle ./
