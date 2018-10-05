@@ -54,4 +54,4 @@ install:
 
 script:
   - python -m unittest discover
-  - pycodestyle ./
+  - pycodestyle ./ --ignore=E402,W

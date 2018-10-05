@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# License:          This module is released under the terms of the LICENSE file 
+# License:          This module is released under the terms of the LICENSE file
 #                   contained within this applications INSTALL directory
 
 """
@@ -9,7 +9,8 @@ Utility functions for model generation
 
 # -- Coding Conventions
 #    http://www.python.org/dev/peps/pep-0008/   -   Use the Python style guide
-#    http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for docstrings
+# http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
+# docstrings
 
 # -- Public Imports
 import logging
@@ -58,10 +59,11 @@ def array_transpose(a):
 # TODO: rework to support model composition
 def model_requires_scaling(model):
     """
-    Given a :py:class:`anticipy.forecast_models.ForecastModel`  return True if the function requires
-    scaling a_x
+    Given a :py:class:`anticipy.forecast_models.ForecastModel`
+        return True if the function requires scaling a_x
 
-    :param model: A get_model_<modeltype> function from :py:mod:`anticipy.model.periodic_models` or
+    :param model: A get_model_<modeltype> function from
+        :py:mod:`anticipy.model.periodic_models` or
         :py:mod:`anticipy.model.aperiodic_models`
     :type model: function
     :return: True if function is logistic or sigmoidal
@@ -92,13 +94,28 @@ def apply_a_x_scaling(a_x, model=None, scaling_factor=100.0):
     return a_x
 
 
-dict_freq_units_per_year = {'A': 1.0, 'Y': 1.0, 'D': 365.0, 'W': 52.0, 'M': 12, 'Q': 4, 'H': 24 * 365.0}
+dict_freq_units_per_year = {
+    'A': 1.0,
+    'Y': 1.0,
+    'D': 365.0,
+    'W': 52.0,
+    'M': 12,
+    'Q': 4,
+    'H': 24 * 365.0}
 
 
-def get_s_x_extrapolate(date_start_actuals, date_end_actuals, model=None, freq='W',  extrapolate_years=2.5,
-                        shifted_origin=0, scaling_factor=100.0, x_start_actuals=0.):
+def get_s_x_extrapolate(
+        date_start_actuals,
+        date_end_actuals,
+        model=None,
+        freq='W',
+        extrapolate_years=2.5,
+        shifted_origin=0,
+        scaling_factor=100.0,
+        x_start_actuals=0.):
     """
-    Return a_x series with DateTimeIndex, covering the date range for the actuals, plus a forecast period.
+    Return a_x series with DateTimeIndex, covering the date range for the
+        actuals, plus a forecast period.
 
     :param date_start_actuals: date or numeric index for first actuals sample
     :type date_start_actuals: str, datetime, int or float
@@ -108,38 +125,62 @@ def get_s_x_extrapolate(date_start_actuals, date_end_actuals, model=None, freq='
     :type extrapolate_years: float
     :param model:
     :type model: function
-    :param freq: Time unit between samples. Supported units are 'W' for weekly samples, or 'D' for daily samples.
-        (untested) Any date unit or time unit accepted by numpy should also work, see
-        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits
+    :param freq: Time unit between samples. Supported units are 'W' for weekly
+        samples, or 'D' for daily samples. (untested) Any date unit or time
+        unit accepted by numpy should also work, see
+        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits  # noqa
     :type freq: basestring
     :param shifted_origin: Offset to apply to a_x
     :type shifted_origin: int
-    :param scaling_factor: Value used for scaling a_x for certain model functions
+    :param scaling_factor: Value used for scaling a_x for certain model
+        functions
     :type scaling_factor: float
-    :return: Series of floats with DateTimeIndex. To be used as (a_date, a_x) input for a model function.
+    :return: Series of floats with DateTimeIndex. To be used as (a_date, a_x)
+        input for a model function.
     :rtype: pandas.Series
 
-    The returned series covers the actuals time domain plus a forecast period lasting extrapolate_years, in years.
-    The number of additional samples for the forecast period is time_resolution * extrapolate_years, rounded down
+    The returned series covers the actuals time domain plus a forecast period
+    lasting extrapolate_years, in years.
+    The number of additional samples for the forecast period is
+    time_resolution * extrapolate_years, rounded down
     """
-    if isinstance(date_start_actuals, str) or isinstance(date_start_actuals, pd.datetime):  # Use dates if available
+    if isinstance(
+            date_start_actuals,
+            str) or isinstance(
+            date_start_actuals,
+            pd.datetime):  # Use dates if available
         date_start_actuals = pd.to_datetime(date_start_actuals)
         date_end_actuals = pd.to_datetime(date_end_actuals)
 
-        if freq is None: # Default frequency
-            freq='W'
+        if freq is None:  # Default frequency
+            freq = 'W'
 
         freq_short = freq[0:1]      # Changes e.g. W-MON to W
-        # freq_units_per_year = 52.0 if freq_short=='W' else 365.0   # Todo: change to dict to support more frequencies
+        # freq_units_per_year = 52.0 if freq_short=='W' else 365.0   # Todo:
+        # change to dict to support more frequencies
         freq_units_per_year = dict_freq_units_per_year.get(freq_short, 365.0)
-        extrapolate_units = extrapolate_years*freq_units_per_year
-        date_end_forecast = date_end_actuals+pd.to_timedelta(extrapolate_units, unit=freq_short)
+        extrapolate_units = extrapolate_years * freq_units_per_year
+        date_end_forecast = date_end_actuals + \
+            pd.to_timedelta(extrapolate_units, unit=freq_short)
 
-        index = pd.date_range(date_start_actuals, date_end_forecast, freq=freq, name='date')
-    else:  # Otherwise, use numeric index - we extrapolate future samples equal to 100*extrapolate_years
-        index = pd.Index(np.arange(date_start_actuals, date_end_actuals+100*extrapolate_years))
+        index = pd.date_range(
+            date_start_actuals,
+            date_end_forecast,
+            freq=freq,
+            name='date')
+    else:  # Otherwise, use numeric index - we extrapolate future samples equal to 100*extrapolate_years  # noqa
+        index = pd.Index(
+            np.arange(
+                date_start_actuals,
+                date_end_actuals +
+                100 *
+                extrapolate_years))
 
-    s_x = pd.Series(index=index, data=np.arange(x_start_actuals, x_start_actuals+index.size))+shifted_origin
+    s_x = pd.Series(
+        index=index,
+        data=np.arange(
+            x_start_actuals,
+            x_start_actuals + index.size)) + shifted_origin
     if model_requires_scaling(model):
         s_x = s_x / scaling_factor
 
@@ -150,16 +191,17 @@ def get_s_x_extrapolate(date_start_actuals, date_end_actuals, model=None, freq='
 
 def get_aic_c(fit_error, n, n_params):
     """
-    This function implements the corrected Akaike Information Criterion (AICc), taking as input
-    a given fit error and data/model degrees of freedom. We assume that the residuals of the candidate model
-    are distributed according to independent identical normal distributions with zero mean. Hence, we can use
-    define the AICc as
+    This function implements the corrected Akaike Information Criterion (AICc)
+    taking as input a given fit error and data/model degrees of freedom.
+    We assume that the residuals of the candidate model are distributed
+    according to independent identical normal distributions with zero mean.
+    Hence, we can use define the AICc as
 
     .. math::
 
-        AICc = AIC + \\frac{2k(k+1)}{n-k-1} = 2k + n \\log\\left(\\frac{E}{n}\\right) + \\frac{2k(k+1)}{n-k-1},
+        AICc = AIC + \\frac{2k(k+1)}{n-k-1} = 2k + n \\log\\left(\\frac{E}{n}\\right) + \\frac{2k(k+1)}{n-k-1},  # noqa
 
-    where :math:`k` and :math:`n` denotes the model and data degrees of freedom respectively, and :math:`E`
+    where :math:`k` and :math:`n` denotes the model and data degrees of freedom respectively, and :math:`E`  # noqa
     denotes the residual error of the fit.
 
     :param fit_error: Residual error of the fit
@@ -173,33 +215,42 @@ def get_aic_c(fit_error, n, n_params):
 
     Note:
 
-    - see AIC in `Wikipedia article on the AIC <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_.
+    - see AIC in `Wikipedia article on the AIC <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_.  # noqa
 
     """
-    # First, deal with corner cases that can blow things up with division by zero
+    # First, deal with corner cases that can blow things up with division by
+    # zero
     if (n <= n_params + 1) or (n == 0):
         aux = n - n_params - 1
         raise ValueError(
-            'ERROR: Time series too short for AIC_C: (n = ' + str(n) + ', n - n_params - 1 = ' + str(aux) + ')')
+            'ERROR: Time series too short for AIC_C: (n = ' +
+            str(n) +
+            ', n - n_params - 1 = ' +
+            str(aux) +
+            ')')
     elif fit_error == 0.0:
         if n_params == 1:
             aicc = -float("inf")
         else:
-            # This can lead to suboptimal model selection when we have multiple perfect fits - we use a patch instead
+            # This can lead to suboptimal model selection when we have
+            # multiple perfect fits - we use a patch instead
             # aicc = -float("inf")
             fit_error = 10 ** -320
-            aicc = n * math.log(fit_error / n) + 2 * n_params + (2 * n_params * (n_params + 1) / (n - n_params - 1))
+            aicc = n * math.log(fit_error / n) + 2 * n_params + \
+                (2 * n_params * (n_params + 1) / (n - n_params - 1))
 
     else:
         # Actual calculation of the AICc
-        aicc = n * math.log(fit_error / n) + 2 * n_params + (2 * n_params * (n_params + 1) / (n - n_params - 1))
+        aicc = n * math.log(fit_error / n) + 2 * n_params + \
+            (2 * n_params * (n_params + 1) / (n - n_params - 1))
 
-    # logger.info('DEBUG: getting aicc, fit_error: %s, n: %s, n_params: %s, aicc: %s', fit_error, n, n_params, aicc)
+    # logger.info('DEBUG: getting aicc, fit_error: %s, n: %s, n_params: %s, aicc: %s', fit_error, n, n_params, aicc)  # noqa
     return aicc
 
 
 def get_s_aic_c_best_result_key(s_aic_c):
-    # Required because aic_c can be -inf, that value is not compatible with pd.Series.argmin()
+    # Required because aic_c can be -inf, that value is not compatible with
+    # pd.Series.argmin()
     if s_aic_c.empty or s_aic_c.isnull().all():
         return None
     if (s_aic_c.values == -np.inf).any():
@@ -228,7 +279,8 @@ def detect_freq(a_date):
         return dict_wday_name.get(min_date_wday, 'W')
     elif min_date_delta >= pd.Timedelta(28, unit='d') and \
             min_date_delta <= pd.Timedelta(31, unit='d'):
-        # MS is month start, M is month end. We use MS if all dates match first of month
+        # MS is month start, M is month end. We use MS if all dates match first
+        # of month
         if s_date.dt.day.max() == 1:
             return 'MS'
         else:
@@ -238,13 +290,14 @@ def detect_freq(a_date):
         return 'Q'
     elif min_date_delta >= pd.Timedelta(365, unit='d') and \
             min_date_delta <= pd.Timedelta(366, unit='d'):
-        # YS is month start, Y is month end. We use MS if all dates match first of month
+        # YS is month start, Y is month end. We use MS if all dates match first
+        # of month
         if s_date.dt.day.max() == 1 and s_date.dt.month.max() == 1:
             return 'YS'
         else:
             return 'Y'
     elif min_date_delta >= pd.Timedelta(23, unit='h'):
-            #and min_date_delta <= pd.Timedelta(1, unit='d')\
+            # and min_date_delta <= pd.Timedelta(1, unit='d')\
         return 'D'
     else:
         return None
@@ -252,15 +305,15 @@ def detect_freq(a_date):
 
 def interpolate_df(df, include_mask=False):
     # In a dataframe with date gaps, replace gaps with interpolation
-    if not 'date' in df.columns:    # interpolate by x column
-        if df.x.diff().nunique() <=1:
+    if 'date' not in df.columns:    # interpolate by x column
+        if df.x.diff().nunique() <= 1:
             return df
         else:
             df_result = (
                 df.set_index('x')
-                    .reindex(pd.RangeIndex(df.x.min(), df.x.max()+1, name='x'))
-                    .interpolate()
-                    .reset_index()
+                .reindex(pd.RangeIndex(df.x.min(), df.x.max() + 1, name='x'))
+                .interpolate()
+                .reset_index()
             )
 
     else:   # df has date column - interpolate by date
@@ -268,20 +321,23 @@ def interpolate_df(df, include_mask=False):
         if s_date_diff.pipe(pd.isnull).all():
             s_date_diff_first = None
         else:
-            s_date_diff_first = s_date_diff.loc[s_date_diff.first_valid_index()]
+            s_date_diff_first = s_date_diff.loc[s_date_diff.first_valid_index(
+            )]
         freq = detect_freq(df)
         # If space between samples is constant, no interpolation is required
-        # Exception: in sparse series with date gaps, we can randomly get gaps that are constant but
-        # don't match any real period, e.g. 8 days
+        # Exception: in sparse series with date gaps, we can randomly get
+        # gaps that are constant but don't match any real period, e.g. 8 days
 
-        if s_date_diff.nunique() <=1 and not (freq == 'D' and s_date_diff_first>pd.to_timedelta(1, 'day')):
-            # TODO: Add additional check for e.g. 2-sample series with 8-day gap
+        if s_date_diff.nunique() <= 1 and not (
+                freq == 'D' and s_date_diff_first > pd.to_timedelta(1, 'day')):
+            # TODO: Add additional check for e.g. 2-sample series with 8-day
+            # gap
             return df
         df_result = (
             df.set_index('date')
-                .asfreq(freq)
-                .interpolate()
-                .reset_index()
+            .asfreq(freq)
+            .interpolate()
+            .reset_index()
         )
     if 'x' in df.columns:
         df_result['x'] = df_result['x'].astype(df.x.dtype)

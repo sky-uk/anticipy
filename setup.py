@@ -14,7 +14,7 @@ dependencies = [
     'scipy>=1.0.0',
 ]
 
-extras_require={
+extras_require = {
 }
 
 dependency_links = [

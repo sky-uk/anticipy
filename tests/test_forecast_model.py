@@ -1,18 +1,12 @@
 """
 
 Author: Pedro Capelastegui
-Created on 04/12/2015 
+Created on 04/12/2015
 """
 
-import logging
 import unittest
-import itertools
-import pandas as pd, numpy as np
 from argparse import Namespace
 
-import numpy as np
-import pandas as pd
-from unittest import TestCase
 from anticipy.utils_test import PandasTest
 from anticipy import forecast_models
 from anticipy.forecast_models import *
@@ -35,14 +29,18 @@ pd.set_option('display.width', 1000)
 def get_initial_guess(f_model, t_values):
     return f_model(t_values, None, None, get_aic_k=False)
 
+
 def array_ones_in_indices(n, l_indices):
-    return np.isin(np.arange(0,n),l_indices).astype(float)
+    return np.isin(np.arange(0, n), l_indices).astype(float)
+
 
 def array_zeros_in_indices(n, l_indices):
-    return  (~np.isin(np.arange(0,n),l_indices)).astype(float)
+    return (~np.isin(np.arange(0, n), l_indices)).astype(float)
+
 
 def array_true_in_indices(n, l_indices):
-    return np.isin(np.arange(0,n),l_indices)
+    return np.isin(np.arange(0, n), l_indices)
+
 
 class TestForecastModel(PandasTest):
     def setUp(self):
@@ -51,35 +49,41 @@ class TestForecastModel(PandasTest):
     def test_model_naive(self):
         a_x = np.arange(0, 10)
         a_date = pd.date_range('2014-01-01', periods=10, freq='D')
-        a_y = 10*a_x
-        df_actuals = pd.DataFrame({'date':a_date,'x':a_x,'y':a_y}).head()
+        a_y = 10 * a_x
+        df_actuals = pd.DataFrame({'date': a_date, 'x': a_x, 'y': a_y}).head()
 
         a_y_result = model_naive(a_x, a_date, None, df_actuals=df_actuals)
         logger_info('a_y result: ', a_y_result)
-        a_y_expected = np.array([0., 0., 10, 20., 30., 40, 40., 40., 40., 40.,])
+        a_y_expected = np.array(
+            [0., 0., 10, 20., 30., 40, 40., 40., 40., 40., ])
         self.assert_array_equal(a_y_result, a_y_expected)
 
         # TODO: model composition disabled, check that exception is thrown
         # # Model composition
         # a_params = np.array([1.,0.,])
-        # a_y_result = (model_naive + model_linear) (a_x, a_date, a_params, df_actuals=df_actuals)
+        # a_y_result = (model_naive + model_linear) (a_x, a_date, a_params,
+        #   df_actuals=df_actuals)
         # logger_info('a_y result: ', a_y_result)
 
     def test_model_snaive_wday(self):
         a_x = np.arange(0, 21)
         a_date = pd.date_range('2014-01-01', periods=21, freq='D')
-        a_y = 10.*a_x
-        df_actuals = pd.DataFrame({'date':a_date,'x':a_x,'y':a_y}).head(7)
+        a_y = 10. * a_x
+        df_actuals = pd.DataFrame({'date': a_date, 'x': a_x,
+                                   'y': a_y}).head(7)
 
-        a_y_result = model_snaive_wday(a_x, a_date, None, df_actuals=df_actuals)
+        a_y_result = model_snaive_wday(
+            a_x, a_date, None, df_actuals=df_actuals)
         logger_info('a_y result: ', a_y_result)
-        a_y_expected = np.array([np.NaN]*7+np.arange(0,70., 10.).tolist()*2)
+        a_y_expected = np.array(
+            [np.NaN] * 7 + np.arange(0, 70., 10.).tolist() * 2)
         self.assert_array_equal(a_y_result, a_y_expected)
 
         # TODO: model composition disabled, check that exception is thrown
         # # Model composition
         # a_params = np.array([1.,0.,])
-        # a_y_result = (model_naive + model_linear) (a_x, a_date, a_params, df_actuals=df_actuals)
+        # a_y_result = (model_naive + model_linear) (a_x, a_date, a_params,
+        #   df_actuals=df_actuals)
         # logger_info('a_y result: ', a_y_result)
 
     def test_forecast_model_simple_models(self):
@@ -88,7 +92,14 @@ class TestForecastModel(PandasTest):
         a_x = np.arange(0, 10)
         a_date = pd.date_range('2014-01-01', periods=10, freq='D')
 
-        def test_model(name, model, params, a_expected, l_is_mult=None, a_date=a_date, a_x = a_x):
+        def test_model(
+                name,
+                model,
+                params,
+                a_expected,
+                l_is_mult=None,
+                a_date=a_date,
+                a_x=a_x):
             if l_is_mult is None:
                 l_is_mult = [True, False]
             for is_mult in l_is_mult:
@@ -134,8 +145,8 @@ class TestForecastModel(PandasTest):
         test_model('ramp', model_ramp, [5., 1.],
                    np.concatenate([np.full(5, 1.), np.arange(1, 6.)]), [True])
 
-        test_model('exp', model_exp, [10., 2],
-                   np.array([10., 20., 40., 80., 160., 320., 640., 1280., 2560., 5120.]))
+        test_model('exp', model_exp, [10., 2], np.array(
+            [10., 20., 40., 80., 160., 320., 640., 1280., 2560., 5120.]))
 
         test_model('step', model_step, [5., 100.],
                    np.array(5 * [0.] + 5 * [100.]), [False])
@@ -155,13 +166,35 @@ class TestForecastModel(PandasTest):
         test_model('spike', model_spike, [10., 4., 6.],
                    np.array(4 * [1.] + 2 * [10.] + 4 * [1.]), [True])
 
-        test_model('spike_date', get_model_spike_date('2014-01-05', '2014-01-07'),
-                   [10.],
-                   np.array(4 * [0.] + 2 * [10.] + 4 * [0.]), [False])
+        test_model(
+            'spike_date',
+            get_model_spike_date(
+                '2014-01-05',
+                '2014-01-07'),
+            [10.],
+            np.array(
+                4 *
+                [0.] +
+                2 *
+                [10.] +
+                4 *
+                [0.]),
+            [False])
 
-        test_model('spike_date', get_model_spike_date('2014-01-05', '2014-01-07'),
-                   [10.],
-                   np.array(4 * [1.] + 2 * [10.] + 4 * [1.]), [True])
+        test_model(
+            'spike_date',
+            get_model_spike_date(
+                '2014-01-05',
+                '2014-01-07'),
+            [10.],
+            np.array(
+                4 *
+                [1.] +
+                2 *
+                [10.] +
+                4 *
+                [1.]),
+            [True])
 
         test_model('2 steps', model_two_steps, [5., 100., 7, 200.],
                    np.array(5 * [0.] + 2 * [100.] + 3 * [300.]), [False])
@@ -170,27 +203,35 @@ class TestForecastModel(PandasTest):
                    np.array(5 * [1.] + 2 * [100.] + 3 * [300.]), [True])
 
         test_model('season_wday', model_season_wday, 10 * np.arange(1., 7.),
-                   np.array([20., 30., 40., 50., 60., 0, 10., 20., 30., 40.]), [False])
+                   np.array([20., 30., 40., 50., 60., 0, 10., 20., 30., 40.]),
+                   [False])
 
         test_model('season_wday', model_season_wday, 10 * np.arange(1., 7.),
-                   np.array([20., 30., 40., 50., 60., 1, 10., 20., 30., 40.]), [True])
-
+                   np.array([20., 30., 40., 50., 60., 1, 10., 20., 30., 40.]),
+                   [True])
 
         a_x2 = np.arange(0, 12)
         a_date2 = pd.date_range('2014-01-01', periods=12, freq='D')
 
+        test_model('season_month', model_season_month, 10 * np.arange(2., 13.),
+                   np.array([60., 70., 80., 90., 100, 110., 120.,
+                             0., 20., 30., 40., 50., ]), [False],
+                   a_date=pd.date_range('2014-06-01', periods=12, freq='M'),
+                   a_x=a_x2)
 
-        test_model('season_month', model_season_month, 10*np.arange(2.,13.),
-                   np.array([60., 70., 80., 90., 100, 110., 120., 0., 20., 30.,40.,50., ]), [False],
-                   a_date= pd.date_range('2014-06-01', periods=12, freq='M'), a_x=a_x2)
+        test_model('season_month', model_season_month,
+                   10 * np.arange(2., 13.),
+                   np.array([60., 70., 80., 90., 100, 110., 120.,
+                             1., 20., 30., 40., 50., ]), [True],
+                   a_date=pd.date_range('2014-06-01', periods=12, freq='M'),
+                   a_x=a_x2)
 
-        test_model('season_month', model_season_month, 10*np.arange(2.,13.),
-                   np.array([60., 70., 80., 90., 100, 110., 120., 1., 20., 30., 40.,50.,]), [True],
-                   a_date= pd.date_range('2014-06-01', periods=12, freq='M'), a_x=a_x2)
-
-        test_model('season_fourier_yearly', model_season_month, 10*np.arange(2.,13.),
-                   np.array([60., 70., 80., 90., 100, 110., 120., 1., 20., 30.,40.,50., ]), [True],
-                   a_date= pd.date_range('2014-06-01', periods=12, freq='M'), a_x=a_x2)
+        test_model('season_fourier_yearly', model_season_month,
+                   10 * np.arange(2., 13.),
+                   np.array([60., 70., 80., 90., 100, 110., 120., 1.,
+                             20., 30., 40., 50., ]), [True],
+                   a_date=pd.date_range('2014-06-01', periods=12, freq='M'),
+                   a_x=a_x2)
 
         # test fourier model
         from anticipy.forecast_models import _f_init_params_fourier
@@ -200,14 +241,22 @@ class TestForecastModel(PandasTest):
             a_date = pd.date_range('2014-06-01', periods=10, freq='M')
             params = _f_init_params_fourier()
             a = model_season_fourier_yearly(a_x, a_date, params, is_mult)
-            logger_info('a {}, is_mult={} :'.format('model_season_fourier_yearly', is_mult), a)
+            logger_info(
+                'a {}, is_mult={} :'.format(
+                    'model_season_fourier_yearly',
+                    is_mult),
+                a)
 
         for is_mult in [False, True]:
             a_x = 10 * np.arange(2., 13.)
             a_date = pd.date_range('2014-06-01', periods=10, freq='M')
             params = np.full(20, 1.)
             a = model_season_fourier_yearly(a_x, a_date, params, is_mult)
-            logger_info('a {}, is_mult={} :'.format('model_season_fourier_yearly', is_mult), a)
+            logger_info(
+                'a {}, is_mult={} :'.format(
+                    'model_season_fourier_yearly',
+                    is_mult),
+                a)
 
     def test_forecast_model_composite(self):
         a_x = np.arange(1, 11.)
@@ -251,7 +300,8 @@ class TestForecastModel(PandasTest):
             'linear': np.arange(1., 11.),
             'ramp': np.concatenate([np.full(5, 1.), np.arange(1, 6.)]),
             'exp': 2 ** np.arange(1., 11.),
-            'season_wday': np.array([2., 3., 4., 5., 6., 1., 1., 2., 3., 4., ]),
+            'season_wday': np.array([2., 3., 4., 5., 6., 1.,
+                                     1., 2., 3., 4., ]),
             'season_month': np.full(10, 1.),
             'step': np.array(5 * [1.] + 5 * [100.]),
             'two_steps': np.array(5 * [1.] + 2 * [100.] + 3 * [20000.]),
@@ -261,7 +311,12 @@ class TestForecastModel(PandasTest):
             model = dict_model[key]
             initial_guess = model.f_init_params(a_x, a_y)
             logger.info('Testing model %s - name: %s', key, model.name)
-            self.assert_array_equal(model(a_x, a_date, dict_params[key]), dict_expected_add[key])
+            self.assert_array_equal(
+                model(
+                    a_x,
+                    a_date,
+                    dict_params[key]),
+                dict_expected_add[key])
             logger.info('Initial guess: %s', model.f_init_params(a_x, a_y))
             self.assertEquals(len(initial_guess), model.n_params)
 
@@ -271,34 +326,54 @@ class TestForecastModel(PandasTest):
         def test_model_2_add(key1, key2):
             model = dict_model[key1] + dict_model[key2]
             initial_guess = model.f_init_params(a_x, a_y)
-            logger.info('Testing model %s, %s - name: %s', key1, key2, model.name)
-            logger.info('Parameters: %s , %s', dict_params[key1], dict_params[key2])
+            logger.info(
+                'Testing model %s, %s - name: %s',
+                key1,
+                key2,
+                model.name)
+            logger.info(
+                'Parameters: %s , %s',
+                dict_params[key1],
+                dict_params[key2])
             logger.info('Initial guess: %s', initial_guess)
             self.assertEquals(len(initial_guess), model.n_params)
-            model_output = model(a_x, a_date,
-                                 np.concatenate([dict_params[key1], dict_params[key2]]))
+            model_output = model(a_x, a_date, np.concatenate(
+                [dict_params[key1], dict_params[key2]]))
             logger.info('Model output: %s', model_output)
-            self.assert_array_equal(model_output,
-                                    dict_expected_add[key1] + dict_expected_add[key2])
+            self.assert_array_equal(
+                model_output,
+                dict_expected_add[key1] +
+                dict_expected_add[key2])
 
-        for key1, key2 in itertools.product(dict_model.keys(), dict_model.keys()):
+        for key1, key2 in itertools.product(
+                dict_model.keys(), dict_model.keys()):
             logger.info('Keys: %s , %s', key1, key2)
             test_model_2_add(key1, key2)
 
         def test_model_2_mult(key1, key2):
             model = dict_model[key1] * dict_model[key2]
             initial_guess = model.f_init_params(a_x, a_y)
-            logger.info('Testing model %s, %s - name: %s', key1, key2, model.name)
-            logger.info('Parameters: %s , %s', dict_params[key1], dict_params[key2])
+            logger.info(
+                'Testing model %s, %s - name: %s',
+                key1,
+                key2,
+                model.name)
+            logger.info(
+                'Parameters: %s , %s',
+                dict_params[key1],
+                dict_params[key2])
             logger.info('Initial guess: %s', initial_guess)
             self.assertEquals(len(initial_guess), model.n_params)
-            model_output = model(a_x, a_date,
-                                 np.concatenate([dict_params[key1], dict_params[key2]]))
+            model_output = model(a_x, a_date, np.concatenate(
+                [dict_params[key1], dict_params[key2]]))
             logger.info('Model output: %s', model_output)
-            self.assert_array_equal(model_output,
-                                    dict_expected_mult[key1] * dict_expected_mult[key2])
+            self.assert_array_equal(
+                model_output,
+                dict_expected_mult[key1] *
+                dict_expected_mult[key2])
 
-        for key1, key2 in itertools.product(dict_model.keys(), dict_model.keys()):
+        for key1, key2 in itertools.product(
+                dict_model.keys(), dict_model.keys()):
             logger.info('Keys: %s , %s', key1, key2)
             test_model_2_mult(key1, key2)
 
@@ -403,20 +478,26 @@ class TestForecastModel(PandasTest):
 
         test_model_3(
             (model_linear * model_linear) + model_constant,
-            np.concatenate([dict_params['linear'], dict_params['linear'], dict_params['constant']]),
-            (dict_expected['linear'] * dict_expected['linear']) + dict_expected['constant']
+            np.concatenate([dict_params['linear'], dict_params['linear'],
+                            dict_params['constant']]),
+            (dict_expected['linear'] * dict_expected['linear']) +
+            dict_expected['constant']
         )
 
         test_model_3(
             model_linear * (model_linear + model_constant),
-            np.concatenate([dict_params['linear'], dict_params['linear'], dict_params['constant']]),
-            dict_expected['linear'] * (dict_expected['linear'] + dict_expected['constant'])
+            np.concatenate([dict_params['linear'], dict_params['linear'],
+                            dict_params['constant']]),
+            dict_expected['linear'] * (dict_expected['linear'] +
+                                       dict_expected['constant'])
         )
 
         test_model_3(
             (model_linear * model_season_wday) + model_constant,
-            np.concatenate([dict_params['linear'], dict_params['season_wday'], dict_params['constant']]),
-            (dict_expected['linear'] * dict_expected['season_wday']) + dict_expected['constant']
+            np.concatenate([dict_params['linear'], dict_params['season_wday'],
+                            dict_params['constant']]),
+            (dict_expected['linear'] * dict_expected['season_wday']) +
+            dict_expected['constant']
         )
 
     def test_forecast_model_bounds(self):
@@ -439,7 +520,8 @@ class TestForecastModel(PandasTest):
             dict_expected[model_name] = exp
 
         # Manually set the boundaries here
-        dict_expected['sigmoid_step'] = ([-np.inf, -np.inf, 0.0], [np.inf, np.inf, np.inf])
+        dict_expected['sigmoid_step'] = (
+            [-np.inf, -np.inf, 0.0], [np.inf, np.inf, np.inf])
 
         def test_model_bounds(key, model, expected):
             bounds = model.f_bounds()
@@ -454,7 +536,8 @@ class TestForecastModel(PandasTest):
             test_model_bounds(model_name, model_obj, dict_expected[model_name])
 
     def test_get_model_outliers(self):
-        # TODO: change input dfs to normalized form, rather than call normalize_df
+        # TODO: change input dfs to normalized form, rather than call
+        # normalize_df
 
         # Test 1 - no outliers
         a_y = [20.0, 20.1, 20.2, 20.3, 20.4, 20.5]
@@ -476,12 +559,12 @@ class TestForecastModel(PandasTest):
 
         # Test 2 - Single step
         a_y = np.array([19.8, 19.9, 20.0, 20.1, 20.2, 20.3, 20.4, 20.5,
-               20.6, 10., 10.1, 10.2, 10.3, 10.4,
-               10.5, 10.6, 10.7, 10.8, 10.9])
+                        20.6, 10., 10.1, 10.2, 10.3, 10.4,
+                        10.5, 10.6, 10.7, 10.8, 10.9])
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step,mask_spike = get_model_outliers(df)
+        mask_step, mask_spike = get_model_outliers(df)
         logger.info('Model 2a: Step: %s, Spike: %s ', mask_step, mask_spike)
         self.assert_array_equal(mask_step,
                                 array_true_in_indices(a_y.size, 9))
@@ -493,62 +576,62 @@ class TestForecastModel(PandasTest):
         mask_step, mask_spike = get_model_outliers(df)
         logger.info('Model 2b: Step: %s, Spike: %s ', mask_step, mask_spike)
         self.assert_array_equal(mask_step,
-                          array_true_in_indices(a_y.size, 9))
+                                array_true_in_indices(a_y.size, 9))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
-
 
         # Test 3 - Two step changes
         a_y = np.array([-1, 0, 1, 2, 3, 5, 6, 8, 10, 15, 16, 18,
-               20.1, 20.2, 20.3, 20.4, 20.5, 20.6,
-               10., 10.1, 10.2, 10.3, 10.4])
+                        20.1, 20.2, 20.3, 20.4, 20.5, 20.6,
+                        10., 10.1, 10.2, 10.3, 10.4])
 
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step,mask_spike = get_model_outliers(df)
+        mask_step, mask_spike = get_model_outliers(df)
         logger.info('Model 3: Step: %s, Spike: %s ', mask_step, mask_spike)
         self.assert_array_equal(mask_step,
-                                array_true_in_indices(a_y.size, [9,18]))
+                                array_true_in_indices(a_y.size, [9, 18]))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
-
 
         # Test 4 - Consecutive changes
         a_y = np.array([-1, 0, 1, 2, 3, 5, 6, 8, 15, 16, 21, 20.1,
-               20.2, 20.3, 20.4, 20.5, 20.6, 20.7, 20.8,
-               10., 10.1, 10.2, 10.3, 10.4])
+                        20.2, 20.3, 20.4, 20.5, 20.6, 20.7, 20.8,
+                        10., 10.1, 10.2, 10.3, 10.4])
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step,mask_spike = get_model_outliers(df)
+        mask_step, mask_spike = get_model_outliers(df)
         logger.info('Model 4: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step,
-                                array_true_in_indices(a_y.size, [8, 9, 10, 19]))
+        self.assert_array_equal(
+            mask_step, array_true_in_indices(
+                a_y.size, [
+                    8, 9, 10, 19]))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
 
         # spikes
 
         # Test 5 - 2 spikes and 1 step
         a_y = np.array([19.8, 19.9, 30.0, 30.1, 20.2, 20.3, 20.4, 20.5,
-               20.6, 10., 10.1, 10.2, 10.3, 10.4,
-               10.5, 10.6, 30.7, 10.8, 10.9])
+                        20.6, 10., 10.1, 10.2, 10.3, 10.4,
+                        10.5, 10.6, 30.7, 10.8, 10.9])
 
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step,mask_spike = get_model_outliers(df)
+        mask_step, mask_spike = get_model_outliers(df)
         logger.info('Model 5a: Step: %s, Spike: %s ', mask_step, mask_spike)
         self.assert_array_equal(mask_step,
-                          array_true_in_indices(a_y.size, [9]))
+                                array_true_in_indices(a_y.size, [9]))
         self.assert_array_equal(mask_spike,
-                          array_true_in_indices(a_y.size, [2,3,16]))
+                                array_true_in_indices(a_y.size, [2, 3, 16]))
 
         # 5b - with datetime index
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y}, index=a_date).pipe(normalize_df)
 
-        mask_step,mask_spike = get_model_outliers(df)
+        mask_step, mask_spike = get_model_outliers(df)
         logger.info('Model 5b: Step: %s, Spike: %s ', mask_step, mask_spike)
         self.assert_array_equal(mask_step,
-                          array_ones_in_indices(a_y.size, [9]))
+                                array_ones_in_indices(a_y.size, [9]))
         self.assert_array_equal(mask_spike,
-                          array_true_in_indices(a_y.size, [2,3,16]))
+                                array_true_in_indices(a_y.size, [2, 3, 16]))
 
         # Test 6a - single spike
         a_y = np.array([19.8, 19.9, 20.0, 20.1, 20.2, 20.3, 20.4, 20.5,
@@ -557,7 +640,7 @@ class TestForecastModel(PandasTest):
 
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step,mask_spike = get_model_outliers(df)
+        mask_step, mask_spike = get_model_outliers(df)
         logger.info('Model 6a: Step: %s, Spike: %s ', mask_step, mask_spike)
         self.assert_array_equal(mask_step, np.full(len(a_y), False))
         self.assert_array_equal(mask_spike,
@@ -570,7 +653,7 @@ class TestForecastModel(PandasTest):
 
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step,mask_spike = get_model_outliers(df)
+        mask_step, mask_spike = get_model_outliers(df)
         logger.info('Model 6b: Step: %s, Spike: %s ', mask_step, mask_spike)
         self.assert_array_equal(mask_step,
                                 array_true_in_indices(a_y.size, [9, 10]))
@@ -582,7 +665,7 @@ class TestForecastModel(PandasTest):
     def test_get_model_outliers_withgap(self):
 
         # # Test 1 - short series with null value - nulls cause no outliers
-        a_y = [0., 1., np.NaN, 3.,4.,5.,6.,7.,]
+        a_y = [0., 1., np.NaN, 3., 4., 5., 6., 7., ]
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y, 'date': a_date}).pipe(normalize_df)
 
@@ -592,7 +675,7 @@ class TestForecastModel(PandasTest):
         self.assertIsNone(mask_spike)
 
         # Test 1b -  series with multiple values per x -- raises ValueError
-        a_y = np.arange(0,10.)
+        a_y = np.arange(0, 10.)
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y, 'date': a_date})
         df = pd.concat([df.head(5), df.head(6).tail(2)]).pipe(normalize_df)
@@ -601,15 +684,15 @@ class TestForecastModel(PandasTest):
             mask_step, mask_spike = get_model_outliers(df)
 
         # Test 2 - short series with gap value - no real outliers
-        a_y = np.arange(0,10.)
+        a_y = np.arange(0, 10.)
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y, 'date': a_date})
         df = pd.concat([df.head(5), df.tail(-6)]).pipe(normalize_df)
 
         mask_step, mask_spike = get_model_outliers(df)
         logger_info('Model 1:', mask_step)
-        self.assertIsNotNone(mask_step) # Incorrectly finds a step
-        self.assertIsNone(mask_spike) # No spikes
+        self.assertIsNotNone(mask_step)  # Incorrectly finds a step
+        self.assertIsNone(mask_spike)  # No spikes
 
         # Test 2b - after interpolating, can get outliers - finds none
 
@@ -619,9 +702,8 @@ class TestForecastModel(PandasTest):
         self.assertIsNone(mask_step)  # No steps
         self.assertIsNone(mask_spike)  # No spikes
 
-
         # # Test 3 - short series with gap value - with outliers
-        a_y = np.arange(0,10.)
+        a_y = np.arange(0, 10.)
         a_y2 = np.arange(1, 11.)
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y, 'date': a_date})
@@ -630,26 +712,31 @@ class TestForecastModel(PandasTest):
 
         mask_step, mask_spike = get_model_outliers(df)
         logger_info('Model 1:', mask_step)
-        self.assertIsNotNone(mask_step) # Incorrectly finds a step
-        self.assertIsNone(mask_spike) # No spikes
+        self.assertIsNotNone(mask_step)  # Incorrectly finds a step
+        self.assertIsNone(mask_spike)  # No spikes
 
-        # Test 3b - after interpolating with interpolate_df() - TODO: REMOVE THIS
+        # Test 3b - after interpolating with interpolate_df() - TODO: REMOVE
+        # THIS
 
         df_nogap = df.pipe(interpolate_df, include_mask=True)
         mask_step, mask_spike = get_model_outliers(df_nogap)
 
-        df_nogap ['mask_step']=mask_step
-        df_nogap['step_in_filled_gap'] = df_nogap.mask_step*df_nogap.is_gap_filled
+        df_nogap['mask_step'] = mask_step
+        df_nogap['step_in_filled_gap'] = df_nogap.mask_step * \
+            df_nogap.is_gap_filled
 
-        df_nogap['mask_step_patch'] = df_nogap.step_in_filled_gap.shift(-1).fillna(0)
+        df_nogap['mask_step_patch'] = df_nogap.step_in_filled_gap.shift(
+            -1).fillna(0)
         df_nogap = df_nogap.loc[~df_nogap.is_gap_filled]
-        df_nogap['mask_step_patch'] = df_nogap.mask_step_patch.shift(1).fillna(0)
-        df_nogap['mask_step'] = df_nogap.mask_step+df_nogap.mask_step_patch
-        df_nogap = df_nogap[['date','x','y','mask_step']]
+        df_nogap['mask_step_patch'] = df_nogap.mask_step_patch.shift(
+            1).fillna(0)
+        df_nogap['mask_step'] = df_nogap.mask_step + df_nogap.mask_step_patch
+        df_nogap = df_nogap[['date', 'x', 'y', 'mask_step']]
         logger_info('df 1 - no gap:', df_nogap)
 
-        self.assert_array_equal(df_nogap.mask_step,
-                          array_ones_in_indices(df_nogap.index.size, [5]))
+        self.assert_array_equal(
+            df_nogap.mask_step, array_ones_in_indices(
+                df_nogap.index.size, [5]))
 
         self.assertIsNone(mask_spike)  # No spikes
 
@@ -662,13 +749,13 @@ class TestForecastModel(PandasTest):
 
         mask_step, mask_spike = get_model_outliers_withgap(df)
         logger_info('Model 3c:', mask_step)
-        self.assert_array_equal(mask_step,
-                          array_ones_in_indices(df_nogap.index.size, [5]))
+        self.assert_array_equal(
+            mask_step, array_ones_in_indices(
+                df_nogap.index.size, [5]))
         logger_info('mask_spike:', mask_spike)
         logger_info('mask_step:', mask_step)
 
-        self.assertIsNone(mask_spike) # No spikes
-
+        self.assertIsNone(mask_spike)  # No spikes
 
     def test_fixed_model_creation(self):
         a_x = np.arange(0, 10)
@@ -719,18 +806,24 @@ class TestForecastModel(PandasTest):
 
         # Test 1.3 - Weekly and yearly seasonality
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=549, freq='D')
-        l_expected = [model_null, model_season_wday * model_season_fourier_yearly,
-                      model_season_wday, model_season_fourier_yearly]
-        l_expected.sort()
-        l_result = get_l_model_auto_season(a_date, min_periods=1.5, season_add_mult='mult')
+        l_expected = sorted([model_null,
+                             model_season_wday * model_season_fourier_yearly,
+                             model_season_wday,
+                             model_season_fourier_yearly])
+        l_result = get_l_model_auto_season(
+            a_date, min_periods=1.5, season_add_mult='mult')
         self.assert_array_equal(l_result, l_expected)
 
-        l_expected = [model_null, model_season_wday + model_season_fourier_yearly, model_season_wday,
-                      model_season_fourier_yearly]
+        l_expected = [
+            model_null,
+            model_season_wday +
+            model_season_fourier_yearly,
+            model_season_wday,
+            model_season_fourier_yearly]
         l_expected.sort()
-        l_result = get_l_model_auto_season(a_date, min_periods=1.5, season_add_mult='add')
+        l_result = get_l_model_auto_season(
+            a_date, min_periods=1.5, season_add_mult='add')
         self.assert_array_equal(l_result, l_expected)
-
 
         # 2. Tests for series with weekly samples
 
@@ -777,7 +870,8 @@ class TestForecastModel(PandasTest):
     def test_simplify_model(self):
         # Test 1: normal bounds
         model_dummy = Namespace()
-        model_dummy.f_bounds = lambda a_x, a_y, a_date: (np.array([3.]), np.array([7.]))
+        model_dummy.f_bounds = lambda a_x, a_y, a_date: (
+            np.array([3.]), np.array([7.]))
         model_dummy.n_params = 1
         model_dummy.name = 'dummy'
 
@@ -788,7 +882,8 @@ class TestForecastModel(PandasTest):
 
         # Test 2: min and max bounds match - model transformed into fixed model
         model_dummy = Namespace()
-        model_dummy.f_bounds = lambda a_x, a_y, a_date: (np.array([5.]), np.array([5.]))
+        model_dummy.f_bounds = lambda a_x, a_y, a_date: (
+            np.array([5.]), np.array([5.]))
         model_dummy.n_params = 1
         model_dummy.name = 'dummy'
 
@@ -798,34 +893,42 @@ class TestForecastModel(PandasTest):
         self.assertEquals(model_result.n_params, 0)
 
     def test_validate_initial_guess(self):
-        result = validate_initial_guess(np.array([5., 5.]),
-                                        (np.array([0., 0.]), np.array([10., 10.])))
+        result = validate_initial_guess(
+            np.array([5., 5.]), (np.array([0., 0.]), np.array([10., 10.])))
         self.assertTrue(result)
 
-        result = validate_initial_guess(np.array([0., 10.]),
-                                        (np.array([0., 0.]), np.array([10., 10.])))
+        result = validate_initial_guess(
+            np.array([0., 10.]), (np.array([0., 0.]), np.array([10., 10.])))
         self.assertTrue(result)
 
-        result = validate_initial_guess(np.array([-1., 11.]),
-                                        (np.array([0., 0.]), np.array([10., 10.])))
+        result = validate_initial_guess(
+            np.array([-1., 11.]), (np.array([0., 0.]), np.array([10., 10.])))
         self.assertFalse(result)
 
     def test_validate_input(self):
         # Test1: default f_validate_input
         model1 = ForecastModel('model1', 0, forecast_models._f_model_null,
                                l_f_validate_input=None)
-        model2 = ForecastModel('model2', 0, forecast_models._f_model_null,
-                               l_f_validate_input=forecast_models._f_validate_input_default)
-        model3 = ForecastModel('model3', 0, forecast_models._f_model_null,
-                               l_f_validate_input=[forecast_models._f_validate_input_default])
+        model2 = ForecastModel(
+            'model2',
+            0,
+            forecast_models._f_model_null,
+            l_f_validate_input=forecast_models._f_validate_input_default)
+        model3 = ForecastModel(
+            'model3', 0, forecast_models._f_model_null, l_f_validate_input=[
+                forecast_models._f_validate_input_default])
 
         l_expected = [forecast_models._f_validate_input_default]
         self.assertListEqual(model1.l_f_validate_input, l_expected)
         self.assertListEqual(model2.l_f_validate_input, l_expected)
         self.assertListEqual(model3.l_f_validate_input, l_expected)
         # Check composition
-        self.assertListEqual((model1+model2+model3).l_f_validate_input, l_expected)
-        self.assertListEqual((model1 * model2*model3).l_f_validate_input, l_expected)
+        self.assertListEqual(
+            (model1 + model2 + model3).l_f_validate_input,
+            l_expected)
+        self.assertListEqual(
+            (model1 * model2 * model3).l_f_validate_input,
+            l_expected)
 
         # Test2 : test non-default input functions
         def f1(a_x, a_y, a_date):
@@ -839,7 +942,8 @@ class TestForecastModel(PandasTest):
         l_result2 = (model1 * model4).l_f_validate_input
 
         def assert_list_func_equal(l_result, l_expected):
-            # can't sort lists of functions, so we need to brute force the equality test
+            # can't sort lists of functions, so we need to brute force the
+            # equality test
             self.assertEquals(len(l_result), len(l_expected))
             for result in l_result:
                 self.assertIn(result, l_expected)
@@ -848,12 +952,12 @@ class TestForecastModel(PandasTest):
         assert_list_func_equal(l_result2, l_expected)
 
         # Test3: model.validate_input()
-        self.assertTrue(model1.validate_input(None,None,None))
+        self.assertTrue(model1.validate_input(None, None, None))
         self.assertTrue(model2.validate_input(None, None, None))
         self.assertTrue(model3.validate_input(None, None, None))
         self.assertFalse(model4.validate_input(None, None, None))
 
-        self.assertTrue((model1+model2).validate_input(None, None, None))
+        self.assertTrue((model1 + model2).validate_input(None, None, None))
         self.assertFalse((model1 + model4).validate_input(None, None, None))
 
         # Test 4: model_season_wday.validate_input():
@@ -863,8 +967,9 @@ class TestForecastModel(PandasTest):
         a_date_complete = pd.date_range('2018-01-01', periods=50, freq='D')
 
         self.assertFalse(model_season_wday.validate_input(None, None, None))
-        self.assertFalse(model_season_wday.validate_input(None, None, a_date_incomplete))
-        self.assertTrue(model_season_wday.validate_input(None, None, a_date_complete))
-
-
-
+        self.assertFalse(
+            model_season_wday.validate_input(
+                None, None, a_date_incomplete))
+        self.assertTrue(
+            model_season_wday.validate_input(
+                None, None, a_date_complete))

@@ -9,7 +9,8 @@
 
 # -- Coding Conventions
 #    http://www.python.org/dev/peps/pep-0008/   -   Use the Python style guide
-#    http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for docstrings
+# http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
+# docstrings
 
 # -- Public Imports
 import unittest
@@ -31,7 +32,7 @@ def logger_info(msg, data):
 
 
 def _is_dtype_categorical(x):
-    if type(x) is pd.DataFrame:
+    if isinstance(x, pd.DataFrame):
         # Slightly faster than x.dtypes == 'category'
         return x.dtypes.apply(lambda x: x.name == 'category')
     else:
@@ -42,8 +43,14 @@ def _is_dtype_categorical(x):
 # -- Classes
 class PandasTest(unittest.TestCase):
 
-    def assert_frame_equal(self, left, right, ignore_index=False, compare_as_strings=False,
-                           ignore_column_order=False, **kwargs):
+    def assert_frame_equal(
+            self,
+            left,
+            right,
+            ignore_index=False,
+            compare_as_strings=False,
+            ignore_column_order=False,
+            **kwargs):
         """
         Checks that 2 dataframes are equal
 
@@ -59,28 +66,42 @@ class PandasTest(unittest.TestCase):
         :type kwargs:
 
         """
-        l = left
-        r = right
+        le = left
+        ri = right
         if ignore_index:
-            l = l.reset_index(drop=True)
-            r = r.reset_index(drop=True)
+            le = le.reset_index(drop=True)
+            ri = ri.reset_index(drop=True)
         if compare_as_strings:
-            l = l.astype(str)
-            r = r.astype(str)
+            le = le.astype(str)
+            ri = ri.astype(str)
         if ignore_column_order:
-            r = r.pdu_reorder(l.columns)
-        pdt.assert_frame_equal(l, r, **kwargs)
+            ri = ri.pdu_reorder(le.columns)
+        pdt.assert_frame_equal(le, ri, **kwargs)
 
-    def assert_frame_not_equal(self, left, right, ignore_index=False, **kwargs):
+    def assert_frame_not_equal(
+            self,
+            left,
+            right,
+            ignore_index=False,
+            **kwargs):
         if ignore_index:
             with self.assertRaises(AssertionError):
-                pdt.assert_frame_equal(left.reset_index(drop=True), right.reset_index(drop=True), **kwargs)
+                pdt.assert_frame_equal(
+                    left.reset_index(
+                        drop=True), right.reset_index(
+                        drop=True), **kwargs)
         else:
             with self.assertRaises(AssertionError):
                 pdt.assert_frame_equal(left, right, **kwargs)
 
-    def assert_series_equal(self, left, right, ignore_index=False, compare_as_strings=False, ignore_name=True,
-                            **kwargs):
+    def assert_series_equal(
+            self,
+            left,
+            right,
+            ignore_index=False,
+            compare_as_strings=False,
+            ignore_name=True,
+            **kwargs):
         """
         Checks that 2 series are equal
 
@@ -95,26 +116,26 @@ class PandasTest(unittest.TestCase):
         :param kwargs:
         :type kwargs:
         """
-        l = left
-        r = right
-        pdt._check_isinstance(l, r, pd.Series)
+        le = left
+        ri = right
+        pdt._check_isinstance(le, ri, pd.Series)
         if ignore_index:
-            l = l.reset_index(drop=True)
-            r = r.reset_index(drop=True)
+            le = le.reset_index(drop=True)
+            ri = ri.reset_index(drop=True)
         if compare_as_strings:
-            l = l.astype(str)
-            r = r.astype(str)
+            le = le.astype(str)
+            ri = ri.astype(str)
         if ignore_name:
-            l = l.rename(None)
-            r = r.rename(None)
+            le = le.rename(None)
+            ri = ri.rename(None)
 
-        if _is_dtype_categorical(l) or _is_dtype_categorical(r):
-            self.assertTrue(_is_dtype_categorical(l))
-            self.assertTrue(_is_dtype_categorical(r))
-            self.assertTrue(r.equals(l))
-            self.assertEqual(l.cat.ordered, r.cat.ordered)
+        if _is_dtype_categorical(le) or _is_dtype_categorical(ri):
+            self.assertTrue(_is_dtype_categorical(le))
+            self.assertTrue(_is_dtype_categorical(ri))
+            self.assertTrue(ri.equals(le))
+            self.assertEqual(le.cat.ordered, ri.cat.ordered)
         else:
-            pdt.assert_series_equal(l, r, **kwargs)
+            pdt.assert_series_equal(le, ri, **kwargs)
 
     def assert_array_equal(self, left, right):
         np.testing.assert_array_equal(left, right)
