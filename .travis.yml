@@ -11,7 +11,7 @@ language: python
 matrix:
   include:
     - os: linux
-      python: 2.7.11
+      python: 2.7.8
     - os: linux
       python: 2.7.15
     - os: linux

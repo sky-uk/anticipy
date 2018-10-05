@@ -8,8 +8,7 @@ zip_safe = False
 modules = []
 
 dependencies = [
-    'matplotlib==2.2.3;python_version<"3.5"', # Last version compatible with python 2.7
-    'matplotlib>=2.2.3;python_version>="3.5"',
+    'matplotlib>=2.2.3',
     'numpy>=1.15.1',
     'pandas>=0.23.0',
     'scipy>=1.0.0',
