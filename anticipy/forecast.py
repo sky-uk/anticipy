@@ -856,7 +856,7 @@ def run_forecast_single(df_y,
     elif season_add_mult == 'mult':
         l_model = l_model_mult
     else: # both
-        l_model = np.unique([l_model_add+l_model_mult]).tolist()
+        l_model = list(set(l_model_add+l_model_mult))
     # logger_info('debug l_Model',l_model)
     if l_model_naive is not None:
         l_model = l_model_naive+l_model
@@ -882,6 +882,8 @@ def run_forecast_single(df_y,
     # from the data used for fitting
     # then we fill gaps in dates from the table used for extrapolating.
     # The filled gaps have NaN values in the y column, 0 weight
+
+    l_model.sort()
 
     for model in l_model:
 

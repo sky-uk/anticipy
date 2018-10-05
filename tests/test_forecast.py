@@ -1831,7 +1831,7 @@ class TestForecast(PandasTest):
 
         l_model_expected = ['linear', '(linear+(season_wday+season_fourier_yearly))',
                             '(linear+season_wday)', '(linear+season_fourier_yearly)']
-
+        l_model_expected.sort()
         self.assert_array_equal(df_metadata.model, l_model_expected)
         logger_info('df_metadata:', df_metadata)
 
@@ -1841,14 +1841,16 @@ class TestForecast(PandasTest):
                                    l_model_trend=[forecast_models.model_linear])
         df_metadata = dict_result['metadata']
 
-        l_model_expected = [
-            '(linear*(season_wday*season_fourier_yearly))',
+        l_model_expected = np.array([
+            'linear',
+            '(linear+season_fourier_yearly)',
+            '(linear+(season_wday+season_fourier_yearly))',
+            '(linear+season_wday)',
             '(linear*season_fourier_yearly)',
             '(linear*season_wday)',
-            '(linear+(season_wday+season_fourier_yearly))',
-            '(linear+season_fourier_yearly)',
-            '(linear+season_wday)',
-            'linear' ]
+            '(linear*(season_wday*season_fourier_yearly))',
+            ])
+        l_model_expected.sort()
 
         self.assert_array_equal(df_metadata.model.values, l_model_expected)
         logger_info('df_metadata:', df_metadata)
