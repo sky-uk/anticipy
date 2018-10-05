@@ -50,4 +50,4 @@ Output:
 ```
 
 
-Documentation is available in [Read the Docs](https://readthedocs.org/projects/anticipy/)
+Documentation is available in [Read the Docs](https://anticipy.readthedocs.io/en/latest/)
