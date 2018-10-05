@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# License:          This module is released under the terms of the LICENSE file 
+# License:          This module is released under the terms of the LICENSE file
 #                   contained within this applications INSTALL directory
 
 """
@@ -9,7 +9,8 @@ Functions to plot forecast outputs
 
 # -- Coding Conventions
 #    http://www.python.org/dev/peps/pep-0008/   -   Use the Python style guide
-#    http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for docstrings
+# http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
+# docstrings
 
 # -- Public Imports
 from tempfile import NamedTemporaryFile
@@ -42,12 +43,14 @@ def df_string_to_unicode(df):
 
 
 def to_feather(df, file_path):
-    # Save dataframe as feather file. Formats strings on unicode, for compatibility with R. Drops index.
+    # Save dataframe as feather file. Formats strings on unicode, for
+    # compatibility with R. Drops index.
     df.reset_index(drop=True).pipe(df_string_to_unicode).to_feather(file_path)
 
 
 def pix_to_in(width_px=None, height_px=None, dpi=300):
-    # Utility function to use pixel dimensions rather than ggplot's physical dims
+    # Utility function to use pixel dimensions rather than ggplot's physical
+    # dims
     dpi = float(dpi)
 
     width_in = width_px / dpi if width_px is not None else np.NaN
@@ -56,14 +59,20 @@ def pix_to_in(width_px=None, height_px=None, dpi=300):
     return width_in, height_in
 
 
-def has_pi (df_fcast):
+def has_pi(df_fcast):
     # Check if a forecast table includes prediction intervals
     return 'q5' in df_fcast.columns
+
 
 # ---- Plotting functions
 
 
-def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70):
+def _plot_forecast_create(
+        df_fcast,
+        width=None,
+        height=None,
+        title=None,
+        dpi=70):
     """
     Creates matplotlib plot from forecast dataframe
 
@@ -72,7 +81,7 @@ def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70)
         | - date (timestamp)
         | - model (str) : ID for the forecast model
         | - y (float) : Value of the time series in that sample
-        | - is_actuals (bool) : True for actuals samples, False for forecasted samples
+        | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
     :type df_fcast: pandas.DataFrame
     :param title: Plot title
     :type title: str
@@ -110,7 +119,8 @@ def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70)
         nrows = 1
         ncols = 1
 
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=figsize, dpi=dpi, squeeze=False)
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols,
+                             figsize=figsize, dpi=dpi, squeeze=False)
     fig.canvas.set_window_title(title)
 
     x = 0
@@ -124,12 +134,14 @@ def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70)
         else:
             source_filt = df_fcast['source'] == src
 
-        actuals, = ax.plot(df_fcast.loc[source_filt & df_fcast['is_actuals'], :].index,
-                           df_fcast.loc[source_filt & df_fcast['is_actuals'], 'y'],
-                           color=act_col, marker='o', linestyle='None', label='Actuals')
-        forecast, = ax.plot(df_fcast.loc[source_filt & ~df_fcast['is_actuals'], :].index,
-                            df_fcast.loc[source_filt & ~df_fcast['is_actuals'], 'y'],
-                            color=for_col, marker='None', linestyle='solid', label='Forecast')
+        actuals, = ax.plot(
+            df_fcast.loc[source_filt & df_fcast['is_actuals'], :].index,
+            df_fcast.loc[source_filt & df_fcast['is_actuals'], 'y'],
+            color=act_col, marker='o', linestyle='None', label='Actuals')
+        forecast, = ax.plot(
+            df_fcast.loc[source_filt & ~df_fcast['is_actuals'], :].index,
+            df_fcast.loc[source_filt & ~df_fcast['is_actuals'], 'y'],
+            color=for_col, marker='None', linestyle='solid', label='Forecast')
 
         # Fill area between 5th and 95th prediction interval
         if ('q5' in df_fcast.columns) and ('q95' in df_fcast.columns):
@@ -176,7 +188,13 @@ def _plot_forecast_create(df_fcast, width=None, height=None, title=None, dpi=70)
     return plt.Figure
 
 
-def plot_forecast_save(df_fcast, file_path, width=None, height=None, title=None, dpi=70):
+def plot_forecast_save(
+        df_fcast,
+        file_path,
+        width=None,
+        height=None,
+        title=None,
+        dpi=70):
     """
     Generates matplotlib plot and saves as file
 
@@ -185,7 +203,7 @@ def plot_forecast_save(df_fcast, file_path, width=None, height=None, title=None,
         | - date (timestamp)
         | - model (str) : ID for the forecast model
         | - y (float) : Value of the time series in that sample
-        | - is_actuals (bool) : True for actuals samples, False for forecasted samples
+        | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
     :type df_fcast: pandas.DataFrame
     :param file_path: File path for output
     :type file_path: basestring
@@ -219,7 +237,7 @@ def plot_forecast(df_fcast, width=None, height=None, title=None, dpi=70):
         | - date (timestamp)
         | - model (str) : ID for the forecast model
         | - y (float) : Value of the time series in that sample
-        | - is_actuals (bool) : True for actuals samples, False for forecasted samples
+        | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
     :type df_fcast: pandas.DataFrame
     :param width: Image width, in pixels
     :type width: int
