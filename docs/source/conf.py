@@ -33,8 +33,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'anticipy %s' % __version__  # Required for RTD theme
-copyright = u'%s, BSKYB Limited' % datetime.datetime.utcnow().year
+project = u'anticipy %s' % __version__       # Required for RTD theme
+copyright = u'%s, Sky UK Limited' % datetime.datetime.utcnow().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

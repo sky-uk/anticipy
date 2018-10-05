@@ -4,13 +4,13 @@
 Overview
 ********
 
-AnticiPy is a tool to generate forecasts for time series. It takes a pandas Series or DataFrame as input, and
+Anticipy is a tool to generate forecasts for time series. It takes a pandas Series or DataFrame as input, and
 returns a DataFrame with the forecasted values for a given period of time.
 
 Features:
 
 * **Simple interface**. Start forecasting with a single function call on a pandas DataFrame.
-* **Model selection**. If you provide different multiple models (e.g. linear, sigmoidal, exponential), the tool will
+* **Model selection**. If you provide different models (e.g. linear, sigmoidal, exponential), the tool will
   compare them and choose the best fit for your data.
 * **Trend and seasonality**. Support for weekly and monthly seasonality, among other types.
 * **Calendar events**. Provide lists of special dates, such as holiday seasons or bank holidays, to improve model
@@ -18,12 +18,12 @@ Features:
 * **Data cleaning**. The library has tools to identify and remove outliers, and to detect and handle step changes in
   the data.
 
-To get started, install the library with pip ::
+To get started, install the library with pip: ::
 
    pip install anticipy
 
 It is straightforward to generate a simple linear model with the tool - just call
-:py:func:`forecast.run_forecast(my_dataframe)`::
+:py:func:`forecast.run_forecast(my_dataframe)`: ::
 
    import pandas as pd, numpy as np
    from anticipy import forecast, forecast_models
@@ -48,5 +48,5 @@ Output::
    10 2018-01-06  linear  5.000000e+00       False
    11 2018-01-07  linear  6.000000e+00       False
 
-For more advanced usage, check the :ref:`rst_tutorial` .
+For more advanced usage, check the :ref:`rst_tutorial`.
 

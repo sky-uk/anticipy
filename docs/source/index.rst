@@ -2,7 +2,7 @@
    It should at least contain the root `toctree` directive.
 
 ###########################
-anticiPy documentation
+Anticipy documentation
 ###########################
 
 Contents:

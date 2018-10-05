@@ -18,7 +18,8 @@ To get started, install the library with pip ::
 
    pip install anticipy
 
-It is straightforward to generate a forecast with the tool - just call :py:func:`forecast.run_forecast(my_dataframe)`::
+It is straightforward to generate a forecast with the tool -
+just call :py:func:`forecast.run_forecast(my_dataframe)`: ::
 
     import pandas as pd, numpy as np
     from anticipy import forecast, forecast_models, forecast_plot
@@ -39,9 +40,9 @@ Output::
 The tool automatically selects the best model from a list of defaults - in this case, a simple linear model. Advanced
 users can instead provide their preferred model or lists of candidate models, as explained in :ref:`models`.
 
-You can plot the forecast output using the functions in :py:mod:`forecast_plot` .
-:py:func:`anticipy.forecast_plot.ggplot_fcast_save` saves the plot as a file. If you use
-nsa.forecast in a Jupyter notebook, :py:func:`anticipy.forecast_plot.ggplot_fcast` shows the plot as the output of
+You can plot the forecast output using the functions in :py:mod:`forecast_plot`.
+:py:func:`anticipy.forecast_plot.plot_forecast_save` saves the plot as a file. If you use
+nsa.forecast in a Jupyter notebook, :py:func:`anticipy.forecast_plot.plot_forecast` shows the plot as the output of
 a notebook cell. The plot looks as follows:
 
 .. image:: resources/tutorial-forecast1.png
@@ -50,17 +51,9 @@ The code to generate the plot is::
 
     path_tutorial_plot = 'plot-tutorial.png'
     # Save plot as a file
-    forecast_plot.ggplot_fcast_save(df_forecast, path_tutorial_plot,width=350, height=240, title='Tutorial Forecast')
+    forecast_plot.plot_forecast_save(df_forecast, path_tutorial_plot,width=350, height=240, title='Tutorial Forecast')
     # Show plot in a jupyter notebook
-    forecast_plot.ggplot_fcast(df_forecast, width=350, height=240, title='Tutorial Forecast')
-
-**Note:** The plotting functions use the R ggplot2 library, so you will need to
-`install R <https://cran.r-project.org/bin/>`_ in your environment. Once you do that, install the rpy2 library, used to
-call R from python::
-
-    pip install rpy2
-
-
+    forecast_plot.plot_forecast(df_forecast, width=350, height=240, title='Tutorial Forecast')
 
 
 
@@ -70,7 +63,7 @@ Input Format
 The input time series needs to be formatted as a pandas series or dataframe. If a dataframe is passed, the following
 columns are used:
 
-  - **y:** float, values of the time series
+  - **y:** float, values of the time series.
   - **date:** (optional) timestamp, date and time of each sample. If this column is not present, and the dataframe index is
     a DatetimeIndex, the index will be used instead. This is an optional column, only required when using models
     that are aware of the date, such as weekly seasonality models.
@@ -86,10 +79,10 @@ An input dataframe should meet the following constraints:
 
   - Minimum required samples depends on number of parameters in the chosen models. run_forecast() will fail to fit if
     n_samples < n_parameters+2
-  - y column may include null values
+  - y column may include null values.
   - Multiple values per sample may be included, e.g when the same metric is observed by multiple sources. In that case,
     it is possible to assign weights to each individual sample so that one source will be given higher priority. To do
-    that, include a 'weight' column of floats in the input dataframe
+    that, include a 'weight' column of floats in the input dataframe.
   - A date column or date index is only required if the model is date-aware.
   - Non-default column names may be used. In that case, you need to pass the new column names to run_forecast() using
     the col_name\_ parameters.
