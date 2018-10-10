@@ -395,6 +395,7 @@ def plot_forecast(df_fcast, path, output='png', width=None,
         fig = _matplotlib_forecast_create(df_fcast, facet, sources, nrows,
                                           ncols, width, height, title, dpi,
                                           show_legend)
+        path = '{}.png'.format(path)
         dirname, fname = os.path.split(path)
         if not os.path.exists(dirname):
             logger.error('Path missing {}'.format(path))
@@ -406,6 +407,7 @@ def plot_forecast(df_fcast, path, output='png', width=None,
             fig = _plotly_forecast_create(df_fcast, facet, sources, nrows,
                                           ncols, width, height, title,
                                           show_legend)
+            path = '{}.html'.format(path)
             py.offline.plot(fig, filename=path, show_link=False,
                             auto_open=auto_open)
         else:

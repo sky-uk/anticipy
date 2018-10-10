@@ -39,7 +39,8 @@ def run_forecast_app(path_in, path_out=None, forecast_years=2.0,
                      col_name_y='y', col_name_weight='weight',
                      col_name_x='x', col_name_date='date',
                      col_name_source='source',
-                     include_all_fits=False
+                     include_all_fits=False,
+                     output_format='png'
                      ):
     assert path_in is not None and os.path.exists(
         path_in), 'path_in needs to be a string pointing to a valid file path'
@@ -61,7 +62,7 @@ def run_forecast_app(path_in, path_out=None, forecast_years=2.0,
 
     path_data = os.path.join(path_folder, file_name_p1 + '_fcast.csv')
     path_metadata = os.path.join(path_folder, file_name_p1 + '_metadata.csv')
-    path_plot = os.path.join(path_folder, file_name_p1 + '_fcast.png')
+    path_plot = os.path.join(path_folder, file_name_p1 + '_fcast')
 
     logger_info('path_data', path_data)
     logger_info('path_metadata', path_metadata)
@@ -95,9 +96,11 @@ def run_forecast_app(path_in, path_out=None, forecast_years=2.0,
 
     try:
         forecast_plot.plot_forecast(
-            df_result, path_plot, width=1920, height=1080)
+            df_result, path_plot, output=output_format, width=1920,
+            height=1080)
     except AssertionError:
-        logger.info("Couldn't generate plot - Matplotlib not installed")
+        logger.info("Couldn't generate plot - The required plotting library "
+                    "is not installed")
 
 
 def main():
@@ -136,6 +139,10 @@ def main():
         '--include_all_fits',
         help='If true, output includes non-optimal models',
         action='store_true')
+    parser.add_argument(
+        '--output_format',
+        help='png, html or jupyter',
+        default='png')
 
     args = parser.parse_args()
     logger.info('Input: path_in= %s', args.path_in)
@@ -146,6 +153,7 @@ def main():
     logger.info('Input: col_name_weight= %s', args.col_name_weight)
     logger.info('Input: col_name_source= %s', args.col_name_source)
     logger.info('Input: include_all_fits= %s', args.include_all_fits)
+    logger.info('Input: output_format= %s', args.output_format)
 
     run_forecast_app(
         args.path_in,
@@ -156,7 +164,8 @@ def main():
         args.col_name_x,
         args.col_name_date,
         args.col_name_source,
-        args.include_all_fits)
+        args.include_all_fits,
+        args.output_format)
 
     # run_forecast_app('/Users/pec21/Downloads/file1.csv','/Users/pec21/Downloads/',
     #                   col_name_y='occup_erl', col_name_source='bend_name')

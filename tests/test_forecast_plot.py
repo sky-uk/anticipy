@@ -22,11 +22,9 @@ def logger_info(msg, data):
 base_folder = os.path.join(os.path.dirname(__file__), 'test_plots')
 
 
-def get_path_test_plot(name, is_matplotlib=False):
-    if is_matplotlib:
-        name = name + '_mpl'
-    file_name = '{}.png'.format(name)
-    return os.path.join(base_folder, file_name)
+def get_path_test_plot(name):
+    path = os.path.join(base_folder, name)
+    return path
 
 
 df_forecast = (
@@ -107,8 +105,7 @@ df_forecast_facet_pi = pd.concat(
 class TestForecastPlot(PandasTest):
 
     def test_plot_foracast_png(self):
-        is_matplotlib=True
-        path = get_path_test_plot('test', is_matplotlib)
+        path = get_path_test_plot('test_mpl')
         forecast_plot.plot_forecast(df_forecast, path, 'png', 400, 300,
                                     'Test Plot')
         logger_info('plot saved to :', path)
@@ -117,17 +114,14 @@ class TestForecastPlot(PandasTest):
 
         logger_info('debug - df_forecast_facet', df_forecast_facet)
 
-        path = get_path_test_plot('test_facet', is_matplotlib)
-
+        path = get_path_test_plot('test_facet_mpl')
         forecast_plot.plot_forecast(df_forecast_pi, path, 'png', 400, 300,
                                     'Test Plot', show_legend=True,
                                     auto_open=False)
         logger_info('plot saved to :', path)
 
         # Repeat test with prediction intervals
-        # TODO: ADD _PI TO PATH NAME
-
-        path = get_path_test_plot('test',is_matplotlib)
+        path = get_path_test_plot('test_pi_mpl')
         forecast_plot.plot_forecast(df_forecast, path, 'png', 400, 300,
                                     'Test Plot', show_legend=True,
                                     auto_open=False)
@@ -137,13 +131,16 @@ class TestForecastPlot(PandasTest):
 
         logger_info('debug - df_forecast_facet', df_forecast_facet)
 
-        path = get_path_test_plot('test_facet')
-
+        path = get_path_test_plot('test_pi_facet_mpl')
         forecast_plot.plot_forecast(df_forecast_facet, path, 'png', 400,
                                     300, 'Test Plot', show_legend=True,
                                     auto_open=False)
 
         logger_info('plot saved to :', path)
+
+    def test_plot_forecast_html(self):
+        #TODO
+        logger.info('needs to be completed')
 
     def test_plot_forecast_jupyter(self):
         i = forecast_plot.plot_forecast(df_forecast,
