@@ -684,7 +684,7 @@ def f_bounds_linear_nondec(a_x=None, a_y=None, a_date=None):
     return [0, -np.inf], [np.inf, np.inf]
 
 
-model_linear_nondec = ForecastModel('linear', 2, _f_model_linear,
+model_linear_nondec = ForecastModel('linear_nondec', 2, _f_model_linear,
                                     f_init_params=f_init_params_linear_nondec,
                                     f_bounds=f_bounds_linear_nondec)
 
