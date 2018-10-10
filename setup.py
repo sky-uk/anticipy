@@ -15,6 +15,7 @@ dependencies = [
 ]
 
 extras_require = {
+    'extras': ['plotly>=3.3.0', 'ipython>=5.8.0']
 }
 
 dependency_links = [
@@ -47,4 +48,5 @@ setup(
     zip_safe=zip_safe,
     entry_points=entry_points,
     classifiers=["License :: OSI Approved :: BSD License"],
+    extras_require=extras_require
 )
