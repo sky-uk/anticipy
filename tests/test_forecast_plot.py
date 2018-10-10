@@ -104,14 +104,13 @@ df_forecast_p2_pi['source'] = 'ts2'
 df_forecast_facet_pi = pd.concat(
     [df_forecast_p1_pi, df_forecast_p2_pi], sort=False, ignore_index=True)
 
-
 class TestForecastPlot(PandasTest):
 
-    def test_ggplot_fcast_save(self):
-        is_matplotlib = True
+    def test_plot_foracast_png(self):
+        is_matplotlib=True
         path = get_path_test_plot('test', is_matplotlib)
-        forecast_plot.plot_forecast_save(
-            df_forecast, path, 400, 300, 'Test Plot')
+        forecast_plot.plot_forecast(df_forecast, path, 'png', 400, 300,
+                                    'Test Plot')
         logger_info('plot saved to :', path)
 
         # Todo: add checks about file creation, cleanup after running
@@ -119,16 +118,19 @@ class TestForecastPlot(PandasTest):
         logger_info('debug - df_forecast_facet', df_forecast_facet)
 
         path = get_path_test_plot('test_facet', is_matplotlib)
-        forecast_plot.plot_forecast_save(
-            df_forecast_facet, path, 400, 300, 'Test Plot')
+
+        forecast_plot.plot_forecast(df_forecast_pi, path, 'png', 400, 300,
+                                    'Test Plot', show_legend=True,
+                                    auto_open=False)
         logger_info('plot saved to :', path)
 
         # Repeat test with prediction intervals
         # TODO: ADD _PI TO PATH NAME
 
-        path = get_path_test_plot('test', is_matplotlib)
-        forecast_plot.plot_forecast_save(
-            df_forecast, path, 400, 300, 'Test Plot')
+        path = get_path_test_plot('test',is_matplotlib)
+        forecast_plot.plot_forecast(df_forecast, path, 'png', 400, 300,
+                                    'Test Plot', show_legend=True,
+                                    auto_open=False)
         logger_info('plot saved to :', path)
 
         # Todo: add checks about file creation, cleanup after running
@@ -136,11 +138,21 @@ class TestForecastPlot(PandasTest):
         logger_info('debug - df_forecast_facet', df_forecast_facet)
 
         path = get_path_test_plot('test_facet')
-        forecast_plot.plot_forecast_save(
-            df_forecast_facet, path, 400, 300, 'Test Plot')
+
+        forecast_plot.plot_forecast(df_forecast_facet, path, 'png', 400,
+                                    300, 'Test Plot', show_legend=True,
+                                    auto_open=False)
+
         logger_info('plot saved to :', path)
 
-    def test_plot_forecast(self):
-        i = forecast_plot.plot_forecast(df_forecast, 400, 300, 'Test Plot')
+    def test_plot_forecast_jupyter(self):
+        i = forecast_plot.plot_forecast(df_forecast,
+                                        path=None,
+                                        output='jupyter',
+                                        width=1600,
+                                        height=900,
+                                        title='Test Plot',
+                                        show_legend=False,
+                                        auto_open=False)
         logger_info('plot output:', repr(i))
         # Todo: add checks to validate Ipython.Image instance

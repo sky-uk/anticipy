@@ -94,10 +94,10 @@ def run_forecast_app(path_in, path_out=None, forecast_years=2.0,
     df_metadata.to_csv(path_metadata, index=False)
 
     try:
-        forecast_plot.plot_forecast_save(
+        forecast_plot.plot_forecast(
             df_result, path_plot, width=1920, height=1080)
     except AssertionError:
-        logger.info("Couldn't generate plot - R not installed")
+        logger.info("Couldn't generate plot - Matplotlib not installed")
 
 
 def main():
