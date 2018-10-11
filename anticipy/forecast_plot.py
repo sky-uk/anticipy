@@ -13,12 +13,12 @@ Functions to plot forecast outputs
 # docstrings
 
 # -- Public Imports
-from tempfile import NamedTemporaryFile
 import os
 import matplotlib.pyplot as plt
 import logging
 import numpy as np
 import pandas as pd
+import webbrowser
 
 # -- Globals
 logger = logging.getLogger(__name__)
@@ -33,49 +33,9 @@ except ImportError:
     plotly_exists = False
 
 
-# -- Functions
-# ----- Utility functions
-def logger_info(msg, data):
-    # Convenience function for easier log typing
-    logger.info(msg + '\n%s', data)
-
-
-def df_string_to_unicode(df):
-    # In a dataframe, convert any string columns to unicode strings
-    df = df.copy()
-    columns_str = df.dtypes == basestring
-    if not columns_str.any():
-        return df
-    for col in df.columns[columns_str]:
-        df[col] = df[col].astype('unicode')
-    return df
-
-
-def to_feather(df, file_path):
-    # Save dataframe as feather file. Formats strings on unicode, for
-    # compatibility with R. Drops index.
-    df.reset_index(drop=True).pipe(df_string_to_unicode).to_feather(file_path)
-
-
-def pix_to_in(width_px=None, height_px=None, dpi=300):
-    # Utility function to use pixel dimensions rather than ggplot's physical
-    # dims
-    dpi = float(dpi)
-
-    width_in = width_px / dpi if width_px is not None else np.NaN
-    height_in = height_px / dpi if height_px is not None else np.NaN
-    # print width_in, height_in
-    return width_in, height_in
-
-
-def has_pi(df_fcast):
-    # Check if a forecast table includes prediction intervals
-    return 'q5' in df_fcast.columns
-
-
 # ---- Plotting functions
 
-def _matplotlib_forecast_create(df_fcast, facet, sources, nrows, ncols,
+def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                                 width=None, height=None, title=None, dpi=70,
                                 show_legend=True):
     """
@@ -88,8 +48,8 @@ def _matplotlib_forecast_create(df_fcast, facet, sources, nrows, ncols,
         | - y (float) : Value of the time series in that sample
         | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
     :type df_fcast: pandas.DataFrame
-    :param facet: Indicates whether a facet grid will be required
-    :type facet: bool
+    :param subplots: Indicates whether a facet grid will be required
+    :type subplots: bool
     :param sources: Includes the various sources
     :type sources:
     :param nrows: Number of rows
@@ -129,12 +89,11 @@ def _matplotlib_forecast_create(df_fcast, facet, sources, nrows, ncols,
     y = 0
     for src in sources:
         ax = axes[x, y]
-
         # Filter the specific source is subplots
-        if ~facet:
+        if not subplots:
             source_filt = True
         else:
-            source_filt = df_fcast['source'] == str(src)
+            source_filt = df_fcast['source'] == src
 
         actuals, = ax.plot(
             df_fcast.loc[source_filt & df_fcast['is_actuals'], :].index,
@@ -165,7 +124,7 @@ def _matplotlib_forecast_create(df_fcast, facet, sources, nrows, ncols,
                             where=where_to_fill_2,
                             facecolor=for_col, alpha=0.2)
 
-        if facet:
+        if subplots:
             # Set the title of each subplot as per source name
             ax.set_title(src)
 
@@ -191,7 +150,7 @@ def _matplotlib_forecast_create(df_fcast, facet, sources, nrows, ncols,
     return plt.Figure
 
 
-def _plotly_forecast_create(df_fcast, facet, sources, nrows, ncols,
+def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                             width=None, height=None, title=None,
                             show_legend=False):
     """
@@ -204,8 +163,8 @@ def _plotly_forecast_create(df_fcast, facet, sources, nrows, ncols,
         | - y (float) : Value of the time series in that sample
         | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
     :type df_fcast: pandas.DataFrame
-    :param facet: Indicates whether a facet grid will be required
-    :type facet: bool
+    :param subplots: Indicates whether a facet grid will be required
+    :type subplots: bool
     :param sources: Includes the various sources
     :type sources:
     :param nrows: Number of rows
@@ -225,24 +184,26 @@ def _plotly_forecast_create(df_fcast, facet, sources, nrows, ncols,
     :rtype: plotly plot instance
     """
 
-    if facet:
-        fig = tools.make_subplots(rows=nrows, cols=ncols,
-                                  subplot_titles=sources)
+    if subplots:
+        fig = tools.make_subplots(rows=nrows,
+                                  cols=ncols,
+                                  subplot_titles=map(str, sources),
+                                  print_grid=False)
     else:
-        fig = tools.make_subplots(rows=nrows, cols=ncols)
+        fig = tools.make_subplots(rows=nrows, cols=ncols, print_grid=False)
 
     x = 1
     y = 1
     for src in sources:
         # Filter the specific source is subplots
-        if ~facet:
+        if not subplots:
             source_filt = True
             actuals_name = 'Actuals'
             forecasts_name = 'Forecast'
         else:
             source_filt = df_fcast['source'] == src
-            actuals_name = str(src) + ' Actuals'
-            forecasts_name = str(src) + ' Forecast'
+            actuals_name = '{} Actuals'.format(str(src))
+            forecasts_name = '{} Forecast'.format(str(src))
 
         actuals = go.Scatter(
             x=df_fcast.loc[source_filt & df_fcast['is_actuals']].date,
@@ -336,7 +297,7 @@ def _plotly_forecast_create(df_fcast, facet, sources, nrows, ncols,
                          paper_bgcolor='#FFFFFF',
                          plot_bgcolor='#E2E2E2')
 
-    if facet:
+    if not subplots:
         fig['layout'].update(xaxis=dict(rangeslider=dict(visible=True),
                                         type='date'))
 
@@ -371,7 +332,7 @@ def plot_forecast(df_fcast, path, output='png', width=None,
     :type dpi: int
     :param show_legend: Indicates whether legends will be displayed
     :type show_legend: bool
-    :param auto_open: indicates whether the output will be displayed
+    :param auto_open: Indicates whether the output will be displayed
                       automatically
     :type auto_open: bool
     """
@@ -379,20 +340,20 @@ def plot_forecast(df_fcast, path, output='png', width=None,
     assert isinstance(df_fcast, pd.DataFrame)
 
     if 'source' in df_fcast.columns:
-        facet = False
+        subplots = True
         sources = df_fcast.loc[df_fcast['is_actuals'], 'source'].unique()
         num_plots = len(sources)
         nrows = int(np.ceil(np.sqrt(num_plots)))
         ncols = int(np.ceil(1. * num_plots / nrows))
     else:
         # Only one set of actuals and forecast needed
-        facet = True
+        subplots = False
         sources = ['y']
         nrows = 1
         ncols = 1
 
     if output == 'png':
-        fig = _matplotlib_forecast_create(df_fcast, facet, sources, nrows,
+        fig = _matplotlib_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title, dpi,
                                           show_legend)
         path = '{}.png'.format(path)
@@ -401,10 +362,13 @@ def plot_forecast(df_fcast, path, output='png', width=None,
             logger.error('Path missing {}'.format(path))
             os.makedirs(dirname)
         plt.savefig(path, dpi=dpi)
-        # TODO address the autoopen issue
+
+        if auto_open:
+            fileurl = 'file://{}'.format(path)
+            webbrowser.open(fileurl, new=2, autoraise=True)
     elif output == 'html':
         if plotly_exists:
-            fig = _plotly_forecast_create(df_fcast, facet, sources, nrows,
+            fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
                                           show_legend)
             path = '{}.html'.format(path)
@@ -415,12 +379,12 @@ def plot_forecast(df_fcast, path, output='png', width=None,
                          'feature.')
     elif output == 'jupyter':
         if plotly_exists:
-            fig = _plotly_forecast_create(df_fcast, facet, sources, nrows,
+            fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
                                           show_legend)
-            py.offline.iplot(fig, show_link=False)
+            return py.offline.iplot(fig, show_link=False)
     else:
-        logger.error('Wrong exporting format provided. Either png or html '
-                     'formats are supported at the moment.')
+        logger.error('Wrong exporting format provided. Either png, html or '
+                     'jupyter formats are supported at the moment.')
         return 0
 
