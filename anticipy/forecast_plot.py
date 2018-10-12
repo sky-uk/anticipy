@@ -191,9 +191,10 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     """
 
     if subplots:
+        titles = map(str, sources)
         fig = tools.make_subplots(rows=nrows,
                                   cols=ncols,
-                                  subplot_titles=map(str, sources),
+                                  subplot_titles=list(titles),
                                   print_grid=False)
     else:
         fig = tools.make_subplots(rows=nrows, cols=ncols, print_grid=False)
