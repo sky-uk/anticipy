@@ -117,6 +117,9 @@ class TestForecastPlot(PandasTest):
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
     def test_plot_foracast_html(self):
+        if not forecast_plot.plotly_exists:
+            self.skipTest("Test skipped as Plotly is not installed...")
+
         path = get_file_path(base_folder, 'test_plotly')
         forecast_plot.plot_forecast(df_forecast, path, 'html', 900, 600,
                                     'Test Plot', show_legend=False,
