@@ -30,7 +30,8 @@ logging.basicConfig(level=logging.INFO)
 # Set base folder and samples folder paths
 base_folder = os.path.join(os.path.dirname(__file__), 'test_plots')
 samples_folder = os.path.join(os.path.dirname(__file__), 'data')
-
+if not os.path.exists(base_folder):
+    os.makedirs(base_folder)
 
 def get_file_path(folder, name):
     path = os.path.join(folder, name)
@@ -147,7 +148,7 @@ class TestForecastPlot(PandasTest):
 
     def test_plot_forecast_jupyter(self):
         if (not forecast_plot._plotly_imported) or \
-                (not forecast_plot. _ipython_imported_imported):
+                (not forecast_plot._ipython_imported):
             self.skipTest('Test skipped as either plotly or IPython is '
                           'not installed...')
 
