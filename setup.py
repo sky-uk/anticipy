@@ -15,7 +15,7 @@ dependencies = [
 ]
 
 extras_require = {
-    'extras': ['plotly>=3.3.0']
+    'extras': ['plotly>=3.3.0', 'ipython>=5.8.0']
 }
 
 dependency_links = [

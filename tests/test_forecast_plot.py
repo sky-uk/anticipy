@@ -117,8 +117,8 @@ class TestForecastPlot(PandasTest):
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
     def test_plot_foracast_html(self):
-        if not forecast_plot.plotly_exists:
-            self.skipTest("Test skipped as Plotly is not installed...")
+        if not forecast_plot._plotly_imported:
+            self.skipTest('Test skipped as Plotly is not installed...')
 
         path = get_file_path(base_folder, 'test_plotly')
         forecast_plot.plot_forecast(df_forecast, path, 'html', 900, 600,
@@ -146,6 +146,11 @@ class TestForecastPlot(PandasTest):
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
     def test_plot_forecast_jupyter(self):
+        if (not forecast_plot._plotly_imported) or \
+                (not forecast_plot. _ipython_imported_imported):
+            self.skipTest('Test skipped as either plotly or IPython is '
+                          'not installed...')
+
         forecast_plot.plot_forecast(df_forecast_pi_facet,
                                     path=None,
                                     output='jupyter',

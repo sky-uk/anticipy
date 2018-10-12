@@ -27,14 +27,20 @@ try:
     import plotly as py
     from plotly import tools
     import plotly.graph_objs as go
-    plotly_exists = True
+    _plotly_imported = True
 except ImportError:
-    logger.info('Plotly not available, skipping...')
-    plotly_exists = False
+    logger.info('Plotly not available, skipping importing library...')
+    _plotly_imported = False
+
+try:
+    import IPython
+    _ipython_imported = True
+except ImportError:
+    logger.info('IPython not available, skipping importing library...')
+    _ipython_imported = False
 
 
 # ---- Plotting functions
-
 def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                                 width=None, height=None, title=None, dpi=70,
                                 show_legend=True):
@@ -367,7 +373,7 @@ def plot_forecast(df_fcast, path, output='png', width=None,
             fileurl = 'file://{}'.format(path)
             webbrowser.open(fileurl, new=2, autoraise=True)
     elif output == 'html':
-        if plotly_exists:
+        if _plotly_imported:
             fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
                                           show_legend)
@@ -378,11 +384,14 @@ def plot_forecast(df_fcast, path, output='png', width=None,
             logger.error('Please install plotly library to enable this '
                          'feature.')
     elif output == 'jupyter':
-        if plotly_exists:
+        if _plotly_imported and _ipython_imported:
             fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
                                           show_legend)
             return py.offline.iplot(fig, show_link=False)
+        else:
+            logger.error('Please make sure that both plotly and ipython '
+                         'libraries are installed to enable this feature.')
     else:
         logger.error('Wrong exporting format provided. Either png, html or '
                      'jupyter formats are supported at the moment.')
