@@ -50,7 +50,7 @@ install:
       echo "Build on $TRAVIS_OS_NAME for Python $TRAVIS_PYTHON_VERSION"
     fi
   - python --version
-  - pip install .
+  - pip install -e .[extras]
   - pip install codecov
 
 script:

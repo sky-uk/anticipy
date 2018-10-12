@@ -4,10 +4,12 @@
 Installation
 ************
 
-Install with pip::
+To install the project with pip including all the required dependencies do::
 
     pip install anticipy
 
-Dependencies will be automatically downloaded and installed
+To install the optional dependencies, do the following within your virtual
+environment::
 
+    pip install -e .[extras]
 
