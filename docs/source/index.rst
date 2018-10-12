@@ -13,7 +13,6 @@ Contents:
    overview.rst
    install.rst
    tutorial.rst
-   faq.rst
    library.rst
 
 Indices and tables
