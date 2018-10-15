@@ -11,11 +11,11 @@ dependencies = [
     'numpy>=1.15.1',
     'pandas>=0.23.0',
     'scipy>=1.0.0',
-    'plotly>=3.3.0',
+    'plotly>=3.3.0'
 ]
 
 extras_require = {
-    'extras': ['matplotlib>=2.2.3','ipython>=5.8.0']
+    'extras': ['matplotlib>=2.2.3', 'ipython>=5.8.0']
 }
 
 dependency_links = [
