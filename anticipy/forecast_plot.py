@@ -322,9 +322,8 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     return fig
 
 
-def plot_forecast(df_fcast, path, output='html', width=None,
-                  height=None, title=None, dpi=70, show_legend=True,
-                  auto_open=False):
+def plot_forecast(df_fcast, output, path, width=None, height=None,
+                  title=None, dpi=70, show_legend=True, auto_open=False):
     """
     Generates matplotlib or plotly plot and saves it respectively as png or
     html
@@ -334,12 +333,13 @@ def plot_forecast(df_fcast, path, output='html', width=None,
         | - date (timestamp)
         | - model (str) : ID for the forecast model
         | - y (float) : Value of the time series in that sample
-        | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
+        | - is_actuals (bool) : True for actuals samples, False for
+        |                       forecasted samples # noqa
     :type df_fcast: pandas.DataFrame
+    :param output: Indicates the output type (html=Default, png or jupyter)
+    :type output: basestring
     :param path: File path for output
     :type path: basestring
-    :param output: ...
-    :type output: ...
     :param width: Image width, in pixels
     :type width: int
     :param height: Image height, in pixels
@@ -375,6 +375,10 @@ def plot_forecast(df_fcast, path, output='html', width=None,
             fig = _matplotlib_forecast_create(df_fcast, subplots, sources,
                                               nrows, ncols, width, height,
                                               title, dpi, show_legend)
+            if path is None:
+                logger.error('No export path provided.')
+                return 0
+
             path = '{}.png'.format(path)
             dirname, fname = os.path.split(path)
             if not os.path.exists(dirname):
@@ -393,6 +397,10 @@ def plot_forecast(df_fcast, path, output='html', width=None,
             fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
                                           show_legend)
+            if path is None:
+                logger.error('No export path provided.')
+                return 0
+
             path = '{}.html'.format(path)
             py.offline.plot(fig, filename=path, show_link=False,
                             auto_open=auto_open, include_plotlyjs=True)
