@@ -14,7 +14,6 @@ Functions to plot forecast outputs
 
 # -- Public Imports
 import os
-import matplotlib.pyplot as plt
 import logging
 import numpy as np
 import pandas as pd
@@ -24,9 +23,17 @@ import webbrowser
 logger = logging.getLogger(__name__)
 
 try:
+    import matplotlib.pyplot as plt
+    _matplotlib_imported = True
+except ImportError:
+    logger.info('Matplotlib not available, skipping importing library...')
+    _matplotlib_imported = False
+
+try:
     import plotly as py
     from plotly import tools
     import plotly.graph_objs as go
+
     _plotly_imported = True
 except ImportError:
     logger.info('Plotly not available, skipping importing library...')
@@ -34,10 +41,12 @@ except ImportError:
 
 try:
     import IPython
+
     _ipython_imported = True
 except ImportError:
     logger.info('IPython not available, skipping importing library...')
     _ipython_imported = False
+
 
 
 # ---- Plotting functions
@@ -76,6 +85,7 @@ def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     :return: The plot
     :rtype: matplotlib plot instance
     """
+    assert _matplotlib_imported, 'Error: matplotlib not installed. Please run pip install plotly, then import.'
     # Default palette from ggplot
     act_col = '#00BFC4'
     for_col = '#F8766D'
@@ -189,7 +199,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     :return: The plot
     :rtype: plotly plot instance
     """
-
+    assert _plotly_imported, 'Error: plotly not installed. Please run pip install plotly, then import the library'
     if subplots:
         titles = map(str, sources)
         fig = tools.make_subplots(rows=nrows,
@@ -311,7 +321,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     return fig
 
 
-def plot_forecast(df_fcast, path, output='png', width=None,
+def plot_forecast(df_fcast, path, output='html', width=None,
                   height=None, title=None, dpi=70, show_legend=True,
                   auto_open=False):
     """
@@ -360,19 +370,23 @@ def plot_forecast(df_fcast, path, output='png', width=None,
         ncols = 1
 
     if output == 'png':
-        fig = _matplotlib_forecast_create(df_fcast, subplots, sources, nrows,
-                                          ncols, width, height, title, dpi,
-                                          show_legend)
-        path = '{}.png'.format(path)
-        dirname, fname = os.path.split(path)
-        if not os.path.exists(dirname):
-            logger.error('Path missing {}'.format(path))
-            os.makedirs(dirname)
-        plt.savefig(path, dpi=dpi)
+        if _matplotlib_imported:
+            fig = _matplotlib_forecast_create(df_fcast, subplots, sources, nrows,
+                                              ncols, width, height, title, dpi,
+                                              show_legend)
+            path = '{}.png'.format(path)
+            dirname, fname = os.path.split(path)
+            if not os.path.exists(dirname):
+                logger.error('Path missing {}'.format(path))
+                os.makedirs(dirname)
+            plt.savefig(path, dpi=dpi)
 
-        if auto_open:
-            fileurl = 'file://{}'.format(path)
-            webbrowser.open(fileurl, new=2, autoraise=True)
+            if auto_open:
+                fileurl = 'file://{}'.format(path)
+                webbrowser.open(fileurl, new=2, autoraise=True)
+        else:
+            logger.error('Please install matplotlib library to enable this '
+                         'feature.')
     elif output == 'html':
         if _plotly_imported:
             fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
@@ -380,12 +394,13 @@ def plot_forecast(df_fcast, path, output='png', width=None,
                                           show_legend)
             path = '{}.html'.format(path)
             py.offline.plot(fig, filename=path, show_link=False,
-                            auto_open=auto_open)
+                            auto_open=auto_open,include_plotlyjs=True)
         else:
             logger.error('Please install plotly library to enable this '
                          'feature.')
     elif output == 'jupyter':
         if _plotly_imported and _ipython_imported:
+            py.offline.init_notebook_mode(connected=True)
             fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
                                           show_legend)
