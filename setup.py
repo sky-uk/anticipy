@@ -8,13 +8,14 @@ zip_safe = False
 modules = []
 
 dependencies = [
-    'matplotlib>=2.2.3',
     'numpy>=1.15.1',
     'pandas>=0.23.0',
     'scipy>=1.0.0',
+    'plotly>=3.3.0'
 ]
 
 extras_require = {
+    'extras': ['matplotlib>=2.2.3', 'ipython>=5.8.0']
 }
 
 dependency_links = [
@@ -47,4 +48,5 @@ setup(
     zip_safe=zip_safe,
     entry_points=entry_points,
     classifiers=["License :: OSI Approved :: BSD License"],
+    extras_require=extras_require
 )

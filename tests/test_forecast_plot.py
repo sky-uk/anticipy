@@ -1,3 +1,17 @@
+# -*- coding: utf-8 -*-
+#
+# License:          This module is released under the terms of the LICENSE file
+#                   contained within this applications INSTALL directory
+
+"""
+Unittests for plotting functions
+"""
+
+# -- Coding Conventions
+#    http://www.python.org/dev/peps/pep-0008/   -   Use the Python style guide
+# http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
+# docstrings
+
 # -- Public Imports
 
 import logging
@@ -10,25 +24,23 @@ from anticipy.utils_test import PandasTest
 from anticipy import forecast_plot
 
 # -- Globals
-
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
-def logger_info(msg, data):
-    logger.info(msg + '\n%s', data)
-
-
+# Set base folder and samples folder paths
 base_folder = os.path.join(os.path.dirname(__file__), 'test_plots')
+samples_folder = os.path.join(os.path.dirname(__file__), 'data')
+if not os.path.exists(base_folder):
+    os.makedirs(base_folder)
 
 
-def get_path_test_plot(name, is_matplotlib=False):
-    if is_matplotlib:
-        name = name + '_mpl'
-    file_name = '{}.png'.format(name)
-    return os.path.join(base_folder, file_name)
+def get_file_path(folder, name):
+    path = os.path.join(folder, name)
+    return path
 
 
+# # Forecasting output samples
+# Sample dataframe without prediction intervals and a single source
 df_forecast = (
     pd.concat([
         pd.DataFrame({'date': pd.date_range('2018-01-01', periods=6,
@@ -47,100 +59,108 @@ df_forecast = (
     ], sort=False, ignore_index=True)
 )
 
-df_forecast_pi = (
-    pd.concat([
-        pd.DataFrame({'date': pd.date_range('2018-01-01', periods=6, freq='D'),
-                      'model': 'actuals',
-                      'y': 1000 * np.arange(0., 6.),
-                      'is_actuals': True
-                      }),
-        pd.DataFrame({'date': pd.date_range('2018-01-01', periods=6, freq='D'),
-                      'model': 'forecast',
-                      'y': 1000 * np.full(6, 5.),
-                      'is_actuals': False
-                      }),
-        pd.DataFrame({'date': pd.date_range('2018-01-07', periods=4, freq='D'),
-                      'model': 'forecast',
-                      'y': 1000 * np.full(4, 5.),
-                      'is_actuals': False,
-                      'q5': 1000 * np.full(4, 4.),
-                      'q20': 1000 * np.full(4, 4.5),
-                      'q80': 1000 * np.full(4, 5.5),
-                      'q95': 1000 * np.full(4, 6.),
-                      }),
 
-    ], sort=False, ignore_index=True)
-)
-
-# Dataframe with different data sources, to plot with faceting
+# Dataframe with no prediction intervals and different data sources, to plot
+# with faceting
 df_forecast_p1 = df_forecast.copy()
 df_forecast_p2 = df_forecast.copy()
-df_forecast_p1['source'] = 'ts1'
-df_forecast_p2['source'] = 'ts2'
-df_forecast_facet = pd.concat(
-    [df_forecast_p1, df_forecast_p2], sort=False, ignore_index=True)
-
 df_forecast_p3 = df_forecast.copy()
 df_forecast_p4 = df_forecast.copy()
 df_forecast_p5 = df_forecast.copy()
+df_forecast_p1['source'] = 'ts1'
+df_forecast_p2['source'] = 'ts2'
 df_forecast_p3['source'] = 'ts3'
 df_forecast_p4['source'] = 'ts4'
 df_forecast_p5['source'] = 'ts5'
-df_forecast_facet_5 = pd.concat([df_forecast_p1,
-                                 df_forecast_p2,
-                                 df_forecast_p3,
-                                 df_forecast_p4,
-                                 df_forecast_p5],
-                                sort=False,
-                                ignore_index=True)
+df_forecast_facet = pd.concat([df_forecast_p1,
+                               df_forecast_p2,
+                               df_forecast_p3,
+                               df_forecast_p4,
+                               df_forecast_p5],
+                              sort=False,
+                              ignore_index=True)
 
+# Sample dataframe with prediction intervals and single data source
+df_forecast_pi = pd.read_csv(get_file_path(samples_folder,
+                                           'df_test_forecast.csv'))
 
-# As above, with prediction interval
-# Dataframe with different data sources, to plot with faceting
-df_forecast_p1_pi = df_forecast_pi.copy()
-df_forecast_p2_pi = df_forecast_pi.copy()
-df_forecast_p1_pi['source'] = 'ts1'
-df_forecast_p2_pi['source'] = 'ts2'
-df_forecast_facet_pi = pd.concat(
-    [df_forecast_p1_pi, df_forecast_p2_pi], sort=False, ignore_index=True)
+# Dataframe with prediction intervals and multiple data sources (mds), to plot
+# with faceting
+df_forecast_pi_facet = pd.read_csv(get_file_path(samples_folder,
+                                                 'df_test_forecast_mds.csv'))
 
 
 class TestForecastPlot(PandasTest):
 
-    def test_ggplot_fcast_save(self):
-        is_matplotlib = True
-        path = get_path_test_plot('test', is_matplotlib)
-        forecast_plot.plot_forecast_save(
-            df_forecast, path, 400, 300, 'Test Plot')
-        logger_info('plot saved to :', path)
+    def test_plot_forecast_png(self):
+        if not forecast_plot._matplotlib_imported:
+            self.skipTest('Test skipped as Matplotlib is not installed...')
+        path = get_file_path(base_folder, 'test_mpl')
+        forecast_plot.plot_forecast(df_forecast, path, 'png', 900, 600,
+                                    'Test Plot', show_legend=False,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
-        # Todo: add checks about file creation, cleanup after running
-
-        logger_info('debug - df_forecast_facet', df_forecast_facet)
-
-        path = get_path_test_plot('test_facet', is_matplotlib)
-        forecast_plot.plot_forecast_save(
-            df_forecast_facet, path, 400, 300, 'Test Plot')
-        logger_info('plot saved to :', path)
+        path = get_file_path(base_folder, 'test_facet_mpl')
+        forecast_plot.plot_forecast(df_forecast_facet, path, 'png', 1200, 900,
+                                    'Test Plot', show_legend=True,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
         # Repeat test with prediction intervals
-        # TODO: ADD _PI TO PATH NAME
+        path = get_file_path(base_folder, 'test_pi_mpl')
+        forecast_plot.plot_forecast(df_forecast_pi, path, 'png', 900, 600,
+                                    'Test Plot', show_legend=True,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
-        path = get_path_test_plot('test', is_matplotlib)
-        forecast_plot.plot_forecast_save(
-            df_forecast, path, 400, 300, 'Test Plot')
-        logger_info('plot saved to :', path)
+        path = get_file_path(base_folder, 'test_pi_facet_mpl')
+        forecast_plot.plot_forecast(df_forecast_pi_facet, path, 'png', 1200,
+                                    900, 'Test Plot', show_legend=True,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
-        # Todo: add checks about file creation, cleanup after running
+    def test_plot_forecast_html(self):
+        if not forecast_plot._plotly_imported:
+            self.skipTest('Test skipped as Plotly is not installed...')
 
-        logger_info('debug - df_forecast_facet', df_forecast_facet)
+        path = get_file_path(base_folder, 'test_plotly')
+        forecast_plot.plot_forecast(df_forecast, path, 'html', 900, 600,
+                                    'Test Plot', show_legend=False,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
-        path = get_path_test_plot('test_facet')
-        forecast_plot.plot_forecast_save(
-            df_forecast_facet, path, 400, 300, 'Test Plot')
-        logger_info('plot saved to :', path)
+        path = get_file_path(base_folder, 'test_facet_plotly')
+        forecast_plot.plot_forecast(df_forecast_facet, path, 'html', 1900,
+                                    1200, 'Test Plot', show_legend=False,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
-    def test_plot_forecast(self):
-        i = forecast_plot.plot_forecast(df_forecast, 400, 300, 'Test Plot')
-        logger_info('plot output:', repr(i))
-        # Todo: add checks to validate Ipython.Image instance
+        # Repeat test with prediction intervals
+        path = get_file_path(base_folder, 'test_pi_plotly')
+        forecast_plot.plot_forecast(df_forecast_pi, path, 'html', 900, 600,
+                                    'Test Plot', show_legend=False,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.html'.format(path)))
+
+        path = get_file_path(base_folder, 'test_pi_facet_plotly')
+        forecast_plot.plot_forecast(df_forecast_pi_facet, path, 'html', 1900,
+                                    1200, 'Test Plot', show_legend=False,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.html'.format(path)))
+
+    def test_plot_forecast_jupyter(self):
+        if (not forecast_plot._plotly_imported) or \
+                (not forecast_plot._ipython_imported):
+            self.skipTest('Test skipped as either plotly or IPython is '
+                          'not installed...')
+
+        forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                    path=None,
+                                    output='jupyter',
+                                    width=1900,
+                                    height=1200,
+                                    title='Test Plot',
+                                    show_legend=False,
+                                    auto_open=False)
+        # Todo: add checks to validate py.offline.iplot
