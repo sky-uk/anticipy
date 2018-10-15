@@ -41,19 +41,20 @@ The tool automatically selects the best model from a list of defaults - in this 
 users can instead provide their preferred model or lists of candidate models, as explained in :ref:`models`.
 
 You can plot the forecast output using the functions in :py:mod:`forecast_plot`.
-:py:func:`anticipy.forecast_plot.plot_forecast_save` saves the plot as a file. If you use
-nsa.forecast in a Jupyter notebook, :py:func:`anticipy.forecast_plot.plot_forecast` shows the plot as the output of
-a notebook cell. The plot looks as follows:
+:py:func:`anticipy.forecast_plot.plot_forecast` saves the plot as a file or
+exports it to a jupyter notebook. The plot looks as follows:
 
 .. image:: resources/tutorial-forecast1.png
 
 The code to generate the plot is::
 
-    path_tutorial_plot = 'plot-tutorial.png'
+    path_tutorial_plot = 'plot-tutorial'
     # Save plot as a file
-    forecast_plot.plot_forecast_save(df_forecast, path_tutorial_plot,width=350, height=240, title='Tutorial Forecast')
+    forecast_plot.plot_forecast(df_forecast, output='html',
+    path=path_tutorial_plot, width=350, height=240, title='Tutorial Forecast')
     # Show plot in a jupyter notebook
-    forecast_plot.plot_forecast(df_forecast, width=350, height=240, title='Tutorial Forecast')
+    forecast_plot.plot_forecast(df_forecast, output='jupyter', width=350,
+    height=240, title='Tutorial Forecast')
 
 
 
