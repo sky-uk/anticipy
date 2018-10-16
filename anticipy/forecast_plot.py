@@ -322,9 +322,8 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     return fig
 
 
-def plot_forecast(df_fcast, path, output='html', width=None,
-                  height=None, title=None, dpi=70, show_legend=True,
-                  auto_open=False):
+def plot_forecast(df_fcast, output, path=None, width=None, height=None,
+                  title=None, dpi=70, show_legend=True, auto_open=False):
     """
     Generates matplotlib or plotly plot and saves it respectively as png or
     html
@@ -334,12 +333,13 @@ def plot_forecast(df_fcast, path, output='html', width=None,
         | - date (timestamp)
         | - model (str) : ID for the forecast model
         | - y (float) : Value of the time series in that sample
-        | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
+        | - is_actuals (bool) : True for actuals samples, False for
+        |                       forecasted samples # noqa
     :type df_fcast: pandas.DataFrame
+    :param output: Indicates the output type (html=Default, png or jupyter)
+    :type output: basestring
     :param path: File path for output
     :type path: basestring
-    :param output: ...
-    :type output: ...
     :param width: Image width, in pixels
     :type width: int
     :param height: Image height, in pixels
@@ -353,9 +353,16 @@ def plot_forecast(df_fcast, path, output='html', width=None,
     :param auto_open: Indicates whether the output will be displayed
                       automatically
     :type auto_open: bool
+
+    :return: Success or failure code.
+    :rtype: int
     """
 
     assert isinstance(df_fcast, pd.DataFrame)
+
+    if not path and (output == 'html' or output == 'png'):
+        logger.error('No export path provided.')
+        return 1
 
     if 'source' in df_fcast.columns:
         subplots = True
@@ -375,6 +382,7 @@ def plot_forecast(df_fcast, path, output='html', width=None,
             fig = _matplotlib_forecast_create(df_fcast, subplots, sources,
                                               nrows, ncols, width, height,
                                               title, dpi, show_legend)
+
             path = '{}.png'.format(path)
             dirname, fname = os.path.split(path)
             if not os.path.exists(dirname):
@@ -412,5 +420,6 @@ def plot_forecast(df_fcast, path, output='html', width=None,
     else:
         logger.error('Wrong exporting format provided. Either png, html or '
                      'jupyter formats are supported at the moment.')
-        return 0
+        return 1
 
+    return 0

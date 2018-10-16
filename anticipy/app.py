@@ -95,9 +95,8 @@ def run_forecast_app(path_in, path_out=None, forecast_years=2.0,
     df_metadata.to_csv(path_metadata, index=False)
 
     try:
-        forecast_plot.plot_forecast(
-            df_result, path_plot, output=output_format, width=1920,
-            height=1080)
+        forecast_plot.plot_forecast(df_result, output_format, path_plot,
+                                    width=1920, height=1080)
     except AssertionError:
         logger.info("Couldn't generate plot - The required plotting library "
                     "is not installed")

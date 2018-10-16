@@ -96,58 +96,84 @@ class TestForecastPlot(PandasTest):
         if not forecast_plot._matplotlib_imported:
             self.skipTest('Test skipped as Matplotlib is not installed...')
         path = get_file_path(base_folder, 'test_mpl')
-        forecast_plot.plot_forecast(df_forecast, path, 'png', 900, 600,
+        forecast_plot.plot_forecast(df_forecast, 'png', path, 900, 600,
                                     'Test Plot', show_legend=False,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
         path = get_file_path(base_folder, 'test_facet_mpl')
-        forecast_plot.plot_forecast(df_forecast_facet, path, 'png', 1200, 900,
+        forecast_plot.plot_forecast(df_forecast_facet, 'png', path, 1200, 900,
                                     'Test Plot', show_legend=True,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
         # Repeat test with prediction intervals
         path = get_file_path(base_folder, 'test_pi_mpl')
-        forecast_plot.plot_forecast(df_forecast_pi, path, 'png', 900, 600,
+        forecast_plot.plot_forecast(df_forecast_pi, 'png', path, 900, 600,
                                     'Test Plot', show_legend=True,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
         path = get_file_path(base_folder, 'test_pi_facet_mpl')
-        forecast_plot.plot_forecast(df_forecast_pi_facet, path, 'png', 1200,
+        forecast_plot.plot_forecast(df_forecast_pi_facet, 'png', path, 1200,
                                     900, 'Test Plot', show_legend=True,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
+
+        # Test the case where a 'None' or an empty path is provided
+        self.assertTrue(forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                                    'png', None, 1200, 900,
+                                                    'Test Plot',
+                                                    show_legend=True,
+                                                    auto_open=False))
+
+        self.assertTrue(forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                                    'png', '', 1200, 900,
+                                                    'Test Plot',
+                                                    show_legend=True,
+                                                    auto_open=False))
 
     def test_plot_forecast_html(self):
         if not forecast_plot._plotly_imported:
             self.skipTest('Test skipped as Plotly is not installed...')
 
         path = get_file_path(base_folder, 'test_plotly')
-        forecast_plot.plot_forecast(df_forecast, path, 'html', 900, 600,
+        forecast_plot.plot_forecast(df_forecast, 'html', path, 900, 600,
                                     'Test Plot', show_legend=False,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
         path = get_file_path(base_folder, 'test_facet_plotly')
-        forecast_plot.plot_forecast(df_forecast_facet, path, 'html', 1900,
+        forecast_plot.plot_forecast(df_forecast_facet, 'html', path, 1900,
                                     1200, 'Test Plot', show_legend=False,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
         # Repeat test with prediction intervals
         path = get_file_path(base_folder, 'test_pi_plotly')
-        forecast_plot.plot_forecast(df_forecast_pi, path, 'html', 900, 600,
+        forecast_plot.plot_forecast(df_forecast_pi, 'html', path, 900, 600,
                                     'Test Plot', show_legend=False,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
         path = get_file_path(base_folder, 'test_pi_facet_plotly')
-        forecast_plot.plot_forecast(df_forecast_pi_facet, path, 'html', 1900,
+        forecast_plot.plot_forecast(df_forecast_pi_facet, 'html', path, 1900,
                                     1200, 'Test Plot', show_legend=False,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
+
+        # Test the case where a 'None' or an empty path is provided
+        self.assertTrue(forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                                    'html', None, 1900, 1200,
+                                                    'Test Plot',
+                                                    show_legend=False,
+                                                    auto_open=False))
+
+        self.assertTrue(forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                                    'html', '', 1900, 1200,
+                                                    'Test Plot',
+                                                    show_legend=False,
+                                                    auto_open=False))
 
     def test_plot_forecast_jupyter(self):
         if (not forecast_plot._plotly_imported) or \
@@ -156,7 +182,6 @@ class TestForecastPlot(PandasTest):
                           'not installed...')
 
         forecast_plot.plot_forecast(df_forecast_pi_facet,
-                                    path=None,
                                     output='jupyter',
                                     width=1900,
                                     height=1200,
