@@ -322,7 +322,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     return fig
 
 
-def plot_forecast(df_fcast, output, path, width=None, height=None,
+def plot_forecast(df_fcast, output, path=None, width=None, height=None,
                   title=None, dpi=70, show_legend=True, auto_open=False):
     """
     Generates matplotlib or plotly plot and saves it respectively as png or

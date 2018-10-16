@@ -35,17 +35,6 @@ if not os.path.exists(base_folder):
 
 
 def get_file_path(folder, name):
-    """
-    Returns the file path based on folder and filename.
-
-    :param folder: File path for output file
-    :type folder: basestring
-    :param name: Filename of output file
-    :type name: basestring
-
-    :return: Complete file path
-    :rtype: basestring
-    """
     path = os.path.join(folder, name)
     return path
 
@@ -168,7 +157,6 @@ class TestForecastPlot(PandasTest):
 
         forecast_plot.plot_forecast(df_forecast_pi_facet,
                                     output='jupyter',
-                                    path=None,
                                     width=1900,
                                     height=1200,
                                     title='Test Plot',
