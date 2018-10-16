@@ -56,11 +56,11 @@ def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     Creates matplotlib plot from forecast dataframe
 
     :param df_fcast:
-        | Forecast Dataframe with the following columns:
-        | - date (timestamp)
-        | - model (str) : ID for the forecast model
-        | - y (float) : Value of the time series in that sample
-        | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
+      |  Forecast Dataframe with the following columns:
+      |  - date (timestamp)
+      |  - model (str) : ID for the forecast model
+      |  - y (float) : Value of the time series in that sample
+      |  - is_actuals (bool) : True for actuals samples, False for forecast
     :type df_fcast: pandas.DataFrame
     :param subplots: Indicates whether a facet grid will be required
     :type subplots: bool
@@ -173,11 +173,11 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     Creates matplotlib plot from forecast dataframe
 
     :param df_fcast:
-        | Forecast Dataframe with the following columns:
-        | - date (timestamp)
-        | - model (str) : ID for the forecast model
-        | - y (float) : Value of the time series in that sample
-        | - is_actuals (bool) : True for actuals samples, False for forecasted samples # noqa
+      |  Forecast Dataframe with the following columns:
+      |  - date (timestamp)
+      |  - model (str) : ID for the forecast model
+      |  - y (float) : Value of the time series in that sample
+      |  - is_actuals (bool) : True for actuals samples, False for forecast
     :type df_fcast: pandas.DataFrame
     :param subplots: Indicates whether a facet grid will be required
     :type subplots: bool
@@ -329,12 +329,12 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
     html
 
     :param df_fcast:
-        | Forecast Dataframe with the following columns:
-        | - date (timestamp)
-        | - model (str) : ID for the forecast model
-        | - y (float) : Value of the time series in that sample
-        | - is_actuals (bool) : True for actuals samples, False for
-        |                       forecasted samples # noqa
+      |  Forecast Dataframe with the following columns:
+      |  - date (timestamp)
+      |  - model (str) : ID for the forecast model
+      |  - y (float) : Value of the time series in that sample
+      |  - is_actuals (bool) : True for actuals samples, False for forecast
+      |
     :type df_fcast: pandas.DataFrame
     :param output: Indicates the output type (html=Default, png or jupyter)
     :type output: basestring

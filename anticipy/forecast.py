@@ -122,6 +122,7 @@ def optimize_least_squares(
     :return:
         | table(success, params, cost, optimality,
         |       iterations, status, jac_evals, message):
+        |
         | - success (bool): True if successful fit
         | - params (list): Parameters of fitted model
         | - cost (float): Value of cost function
@@ -655,7 +656,7 @@ def extrapolate_model(
         weekly samples, or 'D' for daily samples.
         (untested) Any date unit or time unit accepted by numpy should also
         work, see
-        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits # noqa
+        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits #noqa
     :type freq: basestring
     :param extrapolate_years: Number of years (or fraction of year) covered by
         the generated time series, after the
