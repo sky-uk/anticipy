@@ -357,6 +357,10 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
 
     assert isinstance(df_fcast, pd.DataFrame)
 
+    if not path and (output == 'html' or output == 'png'):
+        logger.error('No export path provided.')
+        return 0
+
     if 'source' in df_fcast.columns:
         subplots = True
         sources = df_fcast.loc[df_fcast['is_actuals'], 'source'].unique()
@@ -375,9 +379,6 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
             fig = _matplotlib_forecast_create(df_fcast, subplots, sources,
                                               nrows, ncols, width, height,
                                               title, dpi, show_legend)
-            if path is None:
-                logger.error('No export path provided.')
-                return 0
 
             path = '{}.png'.format(path)
             dirname, fname = os.path.split(path)
@@ -397,10 +398,6 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
             fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
                                           show_legend)
-            if path is None:
-                logger.error('No export path provided.')
-                return 0
-
             path = '{}.html'.format(path)
             py.offline.plot(fig, filename=path, show_link=False,
                             auto_open=auto_open, include_plotlyjs=True)
@@ -422,3 +419,4 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
                      'jupyter formats are supported at the moment.')
         return 0
 
+    return 1

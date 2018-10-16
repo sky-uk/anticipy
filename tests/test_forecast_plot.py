@@ -120,6 +120,19 @@ class TestForecastPlot(PandasTest):
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
+        # Test the case where a 'None' or an empty path is provided
+        self.assertFalse(forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                                     'png', None, 1200, 900,
+                                                     'Test Plot',
+                                                     show_legend=True,
+                                                     auto_open=False))
+
+        self.assertFalse(forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                                     'png', '', 1200, 900,
+                                                     'Test Plot',
+                                                     show_legend=True,
+                                                     auto_open=False))
+
     def test_plot_forecast_html(self):
         if not forecast_plot._plotly_imported:
             self.skipTest('Test skipped as Plotly is not installed...')
@@ -148,6 +161,19 @@ class TestForecastPlot(PandasTest):
                                     1200, 'Test Plot', show_legend=False,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
+
+        # Test the case where a 'None' or an empty path is provided
+        self.assertFalse(forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                                     'html', None, 1900, 1200,
+                                                     'Test Plot',
+                                                     show_legend=False,
+                                                     auto_open=False))
+
+        self.assertFalse(forecast_plot.plot_forecast(df_forecast_pi_facet,
+                                                     'html', '', 1900, 1200,
+                                                     'Test Plot',
+                                                     show_legend=False,
+                                                     auto_open=False))
 
     def test_plot_forecast_jupyter(self):
         if (not forecast_plot._plotly_imported) or \
