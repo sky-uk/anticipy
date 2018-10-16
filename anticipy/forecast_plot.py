@@ -353,13 +353,16 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
     :param auto_open: Indicates whether the output will be displayed
                       automatically
     :type auto_open: bool
+
+    :return: Success or failure code.
+    :rtype: int
     """
 
     assert isinstance(df_fcast, pd.DataFrame)
 
     if not path and (output == 'html' or output == 'png'):
         logger.error('No export path provided.')
-        return 0
+        return 1
 
     if 'source' in df_fcast.columns:
         subplots = True
@@ -417,6 +420,6 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
     else:
         logger.error('Wrong exporting format provided. Either png, html or '
                      'jupyter formats are supported at the moment.')
-        return 0
+        return 1
 
-    return 1
+    return 0
