@@ -183,17 +183,17 @@ class ForecastModel:
     - f(a_x, a_date, params, is_mult)
     - a_x : array of floats
     - a_date: array of dates, same length as a_x. Only required for date-aware
-        models, e.g. for weekly seasonality.
+      models, e.g. for weekly seasonality.
     - params: array of floats - model parameters - the optimisation loop
-        updates this to fit our actual values. Each
+      updates this to fit our actual values. Each
       model function uses a fixed number of parameters.
     - is_mult: boolean. True if the model is being used with multiplicative
-        composition. Required because
+      composition. Required because
       some model functions (e.g. steps) have different behaviour
       when added to other models than when multiplying them.
     - returns an array of floats - with same length as a_x - output of the
-        model defined by this object's modelling function f_model and the
-        current set of parameters
+      model defined by this object's modelling function f_model and the
+      current set of parameters
 
     By default, model parameters are initialized as random values between
     0 and 1. It is possible to define a parameter initialization function
@@ -209,7 +209,7 @@ class ForecastModel:
     - a_x: array of floats - same length as time series
     - a_y: array of floats - time series values
     - returns an array of floats - with length equal to this object's n_params
-    value
+      value
 
     By default, model parameters have no boundaries. However, it is possible
     to define a boundary function for a model, that sets boundaries for each
@@ -225,9 +225,9 @@ class ForecastModel:
     - a_x: array of floats - same length as time series
     - a_y: array of floats - time series values
     - a_date: array of dates, same length as a_x. Only required for date-aware
-        models, e.g. for weekly seasonality.
+      models, e.g. for weekly seasonality.
     - returns a tuple of 2 arrays of floats. The first defines minimum
-        parameter boundaries, and the second the maximum parameter boundaries.
+      parameter boundaries, and the second the maximum parameter boundaries.
 
     As an option, we can assign a list of input validation functions to a
     model. These functions analyse the inputs that will be used for fitting a
@@ -236,9 +236,10 @@ class ForecastModel:
     model returns False.
 
     Input validation functions have the following signature:
+
     - f_validate_input(a_x, a_y, a_date)
     - See the description of model functions above for more details on these
-    parameters.
+      parameters.
 
     Our input time series should meet the following constraints:
 
@@ -250,35 +251,51 @@ class ForecastModel:
     Class Usage::
 
         model_x = ForecastModel(name, n_params, f_model, f_init_params,
-            l_f_validate_input)
-        model_name = model_x.name                           # Get model name # noqa
-        n_params = model_x.n_params                         # Get number of model parameters # noqa
-        f_init_params = model_x.f_init_params               # Get parameter initialisation function # noqa
-        init_params = f_init_params(t_values, y_values)     # Get initial parameters # noqa
-        f_model = model_x.f_model                           # Get model fitting function # noqa
-        y = f_model(a_x, a_date, parameters)                # Get model output # noqa
+        l_f_validate_input)
+        # Get model name
+        model_name = model_x.name
+        # Get number of model parameters
+        n_params = model_x.n_params
+        # Get parameter initialisation function
+        f_init_params = model_x.f_init_params
+        # Get initial parameters
+        init_params = f_init_params(t_values, y_values)
+        # Get model fitting function
+        f_model = model_x.f_model
+        # Get model output
+        y = f_model(a_x, a_date, parameters)
 
-    The following pre-generated models are available. They are available as attributes from this module:
+    The following pre-generated models are available. They are available as attributes from this module: # noqa
 
     .. csv-table:: Forecast models
        :header: "name", "params", "formula","notes"
        :widths: 20, 10, 20, 40
 
-       "model_null",0, "y=0", "Does nothing. Used to disable components (e.g. seasonality)" # noqa
+       "model_null",0, "y=0", "Does nothing.
+       Used to disable components (e.g. seasonality)"
        "model_constant",1, "y=A", "Constant model"
        "model_linear",2, "y=Ax + B", "Linear model"
-       "model_linear_nondec",2, "y=Ax + B", "Non decreasing linear model. With boundaries to ensure model slope >=0" # noqa
+       "model_linear_nondec",2, "y=Ax + B", "Non decreasing linear model.
+       With boundaries to ensure model slope >=0"
        "model_quasilinear",3, "y=A*(x^B) + C", "Quasilinear model"
        "model_exp",2, "y=A * B^x", "Exponential model"
        "model_step",2, "y=0 if x<A, y=B if x>=A", "Step model"
-       "model_two_steps",4, "see model_step", "2 step models. Parameter initialization is aware of # of steps." # noqa
-       "model_sigmoid_step",3, "y = A + (B - A) / (1 + np.exp(- D * (x - C)))", "Sigmoid step model" # noqa
-       "model_sigmoid",3, "y = A + (B - A) / (1 + np.exp(- D * (x - C)))", "Sigmoid model" # noqa
-       "model_season_wday",7, "see desc.", "Weekday seasonality model. Assigns a constant value to each weekday" # noqa
-       "model_season_wday",6, "see desc.", "6-param weekday seasonality model. As above, with one constant set to 0." # noqa
-       "model_season_wday_2",2, "see desc.", "Weekend seasonality model. Assigns a constant to each of weekday/weekend" # noqa
-       "model_season_month",12, "see desc.", "Month seasonality model. Assigns a constant value to each month" # noqa
-       "model_season_fourier_yearly",10, "see desc", "Fourier yearly seasonality model" # noqa
+       "model_two_steps",4, "see model_step", "2 step models.
+       Parameter initialization is aware of # of steps."
+       "model_sigmoid_step",3, "y = A + (B - A) / (1 + np.exp(- D * (x - C)))
+       ", "Sigmoid step model"
+       "model_sigmoid",3, "y = A + (B - A) / (1 + np.exp(- D * (x - C)))", "
+       Sigmoid model"
+       "model_season_wday",7, "see desc.", "Weekday seasonality model.
+       Assigns a constant value to each weekday"
+       "model_season_wday",6, "see desc.", "6-param weekday seasonality model.
+       As above, with one constant set to 0."
+       "model_season_wday_2",2, "see desc.", "Weekend seasonality model.
+       Assigns a constant to each of weekday/weekend"
+       "model_season_month",12, "see desc.", "Month seasonality model.
+       Assigns a constant value to each month"
+       "model_season_fourier_yearly",10, "see desc", "Fourier
+       yearly seasonality model"
 
     """
 
@@ -867,7 +884,7 @@ model_two_steps = ForecastModel(
     _f_init_params_two_steps)
 
 
-# - Sigmoid step function: :math:`Y = {A + (B - A) / (1 + np.exp(- D * (a_x - C)))}` # noqa
+# - Sigmoid step function: `Y = {A + (B - A) / (1 + np.exp(- D * (a_x - C)))}`
 # Spans from A to B, C is the position of the step in x axis
 # and D is how steep the increase is
 def _f_sigmoid(a_x, a_date, params, is_mult=False, **kwargs):
@@ -978,7 +995,8 @@ def _f_init_params_ramp(a_x=None, a_y=None, a_date=None, is_mult=False):
             -skip_samples).nlargest(1, 'diff2').index[0]
         )
         b = df['diff2'].loc[a]
-        # TODO: replace b with estimation of slope in segment 2 minus slope in segment 1 - see init_params_linear # noqa
+        # TODO: replace b with estimation of slope in segment 2
+        #   minus slope in segment 1 - see init_params_linear
         return np.array([a, b])
 
 
@@ -997,7 +1015,8 @@ def _f_init_bounds_ramp(a_x=None, a_y=None, a_date=None):
         b_min = -np.inf
         b_max = np.inf
     else:
-        # df = pd.DataFrame({'b': a_y})  # TODO: FILTER A_Y BY 20-80 PERCENTILE IN A_X # noqa
+        # TODO: FILTER A_Y BY 20-80 PERCENTILE IN A_X
+        # df = pd.DataFrame({'b': a_y})
         # #max_diff2 = np.max(df.diff().diff().abs())
         # max_diff2 = np.max(np.abs(np.diff(np.diff(a_y))))
         #

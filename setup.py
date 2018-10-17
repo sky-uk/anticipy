@@ -27,7 +27,7 @@ entry_points = {
 # -- Edit Stop
 
 
-with open("README.md", "r") as fh:
+with open("pypi-description.md", "r") as fh:
     long_description = fh.read()
 
 setup(

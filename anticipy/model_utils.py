@@ -128,7 +128,7 @@ def get_s_x_extrapolate(
     :param freq: Time unit between samples. Supported units are 'W' for weekly
         samples, or 'D' for daily samples. (untested) Any date unit or time
         unit accepted by numpy should also work, see
-        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits  # noqa
+        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits # noqa
     :type freq: basestring
     :param shifted_origin: Offset to apply to a_x
     :type shifted_origin: int
@@ -168,7 +168,9 @@ def get_s_x_extrapolate(
             date_end_forecast,
             freq=freq,
             name='date')
-    else:  # Otherwise, use numeric index - we extrapolate future samples equal to 100*extrapolate_years  # noqa
+    else:
+        # Otherwise, use numeric index
+        # we extrapolate future samples equal to 100*extrapolate_years
         index = pd.Index(
             np.arange(
                 date_start_actuals,
@@ -199,9 +201,11 @@ def get_aic_c(fit_error, n, n_params):
 
     .. math::
 
-        AICc = AIC + \\frac{2k(k+1)}{n-k-1} = 2k + n \\log\\left(\\frac{E}{n}\\right) + \\frac{2k(k+1)}{n-k-1},  # noqa
+        AICc = AIC + \\frac{2k(k+1)}{n-k-1} =
+        2k + n \\log\\left(\\frac{E}{n}\\right) + \\frac{2k(k+1)}{n-k-1},
 
-    where :math:`k` and :math:`n` denotes the model and data degrees of freedom respectively, and :math:`E`  # noqa
+    where :math:`k` and :math:`n` denotes the model and data degrees of
+    freedom respectively, and :math:`E`
     denotes the residual error of the fit.
 
     :param fit_error: Residual error of the fit
@@ -215,7 +219,8 @@ def get_aic_c(fit_error, n, n_params):
 
     Note:
 
-    - see AIC in `Wikipedia article on the AIC <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_.  # noqa
+    - see AIC in `Wikipedia article on the AIC
+      <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_.
 
     """
     # First, deal with corner cases that can blow things up with division by
@@ -244,7 +249,6 @@ def get_aic_c(fit_error, n, n_params):
         aicc = n * math.log(fit_error / n) + 2 * n_params + \
             (2 * n_params * (n_params + 1) / (n - n_params - 1))
 
-    # logger.info('DEBUG: getting aicc, fit_error: %s, n: %s, n_params: %s, aicc: %s', fit_error, n, n_params, aicc)  # noqa
     return aicc
 
 

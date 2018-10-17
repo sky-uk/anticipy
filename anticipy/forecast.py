@@ -122,6 +122,7 @@ def optimize_least_squares(
     :return:
         | table(success, params, cost, optimality,
         |       iterations, status, jac_evals, message):
+        |
         | - success (bool): True if successful fit
         | - params (list): Parameters of fitted model
         | - cost (float): Value of cost function

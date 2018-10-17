@@ -27,7 +27,7 @@ just call :py:func:`forecast.run_forecast(my_dataframe)`: ::
     df = pd.DataFrame({'y': np.full(20,10.0)+np.random.normal(0.0, 0.1, 20),
                        'date':pd.date_range('2018-01-01', periods=20, freq='D')})
     df_forecast = forecast.run_forecast(df, extrapolate_years=0.5)
-    print df_forecast.tail(3)
+    print(df_forecast.tail(3))
 
 
 Output::
@@ -44,7 +44,7 @@ You can plot the forecast output using the functions in :py:mod:`forecast_plot`.
 :py:func:`anticipy.forecast_plot.plot_forecast` saves the plot as a file or
 exports it to a jupyter notebook. The plot looks as follows:
 
-.. image:: resources/tutorial-forecast1.png
+.. image:: .static/images/tutorial-forecast1.png
 
 The code to generate the plot is::
 
@@ -70,7 +70,7 @@ columns are used:
     that are aware of the date, such as weekly seasonality models.
   - **x:** (optional) float or int, numeric index of each sample. If this column is not present, it will be inferred from the
     date column or, if that is not possible, the dataframe index will be used instead.
-  - **source:** (optional). string, the name of the data source for this time series. You can include multiple time
+  - **source:** (optional) string, the name of the data source for this time series. You can include multiple time
     series in your input dataframe, using different source values to identify them.
 
 If a series is passed, 'y' will be the series values and, if the index is a DateTimeIndex, it will be used as the 'date'
@@ -81,7 +81,7 @@ An input dataframe should meet the following constraints:
   - Minimum required samples depends on number of parameters in the chosen models. run_forecast() will fail to fit if
     n_samples < n_parameters+2
   - y column may include null values.
-  - Multiple values per sample may be included, e.g when the same metric is observed by multiple sources. In that case,
+  - Multiple values per sample may be included, e.g. when the same metric is observed by multiple sources. In that case,
     it is possible to assign weights to each individual sample so that one source will be given higher priority. To do
     that, include a 'weight' column of floats in the input dataframe.
   - A date column or date index is only required if the model is date-aware.
@@ -305,7 +305,7 @@ Output::
 
 
 Outlier Detection
-================
+=================
 
 If you call :py:func:`anticipy.forecast.run_forecast` and specify as input `find_outliers=True`,
 it will try to automatically identify any outliers exist in the input Series. The weight for these samples is
