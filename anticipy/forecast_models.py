@@ -265,7 +265,7 @@ class ForecastModel:
         # Get model output
         y = f_model(a_x, a_date, parameters)
 
-    The following pre-generated models are available. They are available as attributes from this module:
+    The following pre-generated models are available. They are available as attributes from this module: # noqa
 
     .. csv-table:: Forecast models
        :header: "name", "params", "formula","notes"

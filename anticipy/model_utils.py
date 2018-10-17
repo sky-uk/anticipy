@@ -128,7 +128,7 @@ def get_s_x_extrapolate(
     :param freq: Time unit between samples. Supported units are 'W' for weekly
         samples, or 'D' for daily samples. (untested) Any date unit or time
         unit accepted by numpy should also work, see
-        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits #noqa
+        https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.datetime.html#arrays-dtypes-dateunits # noqa
     :type freq: basestring
     :param shifted_origin: Offset to apply to a_x
     :type shifted_origin: int
