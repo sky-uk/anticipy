@@ -334,7 +334,6 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
       |  - model (str) : ID for the forecast model
       |  - y (float) : Value of the time series in that sample
       |  - is_actuals (bool) : True for actuals samples, False for forecast
-      |
     :type df_fcast: pandas.DataFrame
     :param output: Indicates the output type (html=Default, png or jupyter)
     :type output: basestring
