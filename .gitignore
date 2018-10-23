@@ -21,3 +21,4 @@ setup.py~
 .idea/
 htmlcov/
 *.html
+tests/test_plots/
