@@ -22,5 +22,3 @@ setup.py~
 htmlcov/
 *.html
 tests/test_plots/
-*.png
-!static/images/tutorial-forecast1.png 
