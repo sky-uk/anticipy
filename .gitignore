@@ -20,6 +20,5 @@ config.local.*
 setup.py~
 .idea/
 htmlcov/
-docs/source/.static/
-*.png
 *.html
+tests/test_plots/
