@@ -206,7 +206,9 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
         fig = tools.make_subplots(rows=nrows,
                                   cols=ncols,
                                   subplot_titles=list(titles),
-                                  print_grid=False)
+                                  print_grid=False,
+                                  horizontal_spacing=0.03,
+                                  vertical_spacing=0.05)
     else:
         fig = tools.make_subplots(rows=nrows, cols=ncols, print_grid=False)
 
