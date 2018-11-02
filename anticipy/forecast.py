@@ -13,6 +13,7 @@ Functions to run forecast
 # docstrings
 
 # -- Public Imports
+from copy import deepcopy
 import logging
 import numpy as np
 import pandas as pd
@@ -1087,6 +1088,10 @@ def run_forecast_single(df_y,
                     return x + y
                 step_and_ramp_models_summed = reduce(func_add,
                                                      step_and_ramp_models)
+                # Copy to a new object to avoid changes in the original
+                # step_and_ramp_models, if there is only one obj in list
+                step_and_ramp_models_summed = deepcopy(
+                    step_and_ramp_models_summed)
                 step_and_ramp_models_summed.name = '{}_fixed_steps_added'.\
                     format(len(step_and_ramp_models))
             if season_add_mult in ['mult', 'both']:
@@ -1094,6 +1099,10 @@ def run_forecast_single(df_y,
                     return x * y
                 step_and_ramp_models_mult = reduce(func_mult,
                                                    step_and_ramp_models)
+                # Copy to a new object to avoid changes in the original
+                # step_and_ramp_models, if there is only one obj in list
+                step_and_ramp_models_mult = deepcopy(
+                    step_and_ramp_models_mult)
                 step_and_ramp_models_mult.name = '{}_fixed_steps_multiplied'.\
                     format(len(step_and_ramp_models))
 

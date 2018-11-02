@@ -2276,8 +2276,8 @@ class TestForecast(PandasTest):
         logger_info('Metadata', meta_df)
         logger_info('data', dict_result['data'].tail(3))
         # check that only two models exist and none have been added
-        models = meta_df.model.tolist()
-        self.assertItemsEqual(models, ['constant', 'linear'])
+        models = sorted(meta_df.model.tolist())
+        self.assertEquals(models, ['constant', 'linear'])
 
         # Test 2a - Single step with change in trend
         a_y = [19.8, 19.9, 20.0, 20.1, 20.2, 20.3, 20.4, 20.5,
@@ -2301,11 +2301,12 @@ class TestForecast(PandasTest):
         # round them
         output_params = [round(p, 1) for p in output_params]
         self.assertEqual(expected_params, output_params)
-        # check that the examined models are similar to the expected
+        # check that the fitted models include the expected
         models = meta_df.model.tolist()
-        self.assertItemsEqual(models, ['constant', 'linear',
-                                       '(constant+1_fixed_steps_added)',
-                                       '(linear+1_fixed_steps_added)'])
+        self.assertTrue(set(models).issuperset(
+            {'constant', 'linear',
+             '(constant+1_fixed_steps_added)',
+             '(linear+1_fixed_steps_added)'}))
 
         # Test 2b - Single step with change in trend - date axis
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
@@ -2327,12 +2328,44 @@ class TestForecast(PandasTest):
         # round them
         output_params = [round(p, 1) for p in output_params]
         self.assertEqual(expected_params, output_params)
-        # check that the metadata models include the expected
+        # check that the fitted models include the expected
         models = meta_df.model.tolist()
         self.assertTrue(set(models).issuperset(
             {'constant', 'linear',
              '(constant+1_fixed_steps_added)',
              '(linear+1_fixed_steps_added)'}))
+
+        # Test 3 - Single step with change in trend
+        # additive and multiplicative
+        a_y = [19.8, 19.9, 20.0, 20.1, 20.2, 20.3, 20.4, 20.5,
+               20.6, 10., 9., 8., 7., 6., 5., 4., 3., 2., 1.]
+        df = pd.DataFrame({'y': a_y})
+
+        dict_result = run_forecast(
+            df,
+            l_model_trend=l_model_trend,
+            find_outliers=True,
+            simplify_output=False,
+            include_all_fits=True,
+            season_add_mult='both',
+            infer_steps_and_ramps=True)
+        meta_df = dict_result['metadata']
+        logger_info('Metadata', meta_df)
+        logger_info('data', dict_result['data'].tail(3))
+
+        expected_params = [0.1, 19.8, -1.1, -10.2]
+        output_params = meta_df.loc[meta_df.is_best_fit, 'params'].iloc[0]
+        # round them
+        output_params = [round(p, 1) for p in output_params]
+        self.assertEqual(expected_params, output_params)
+        # check that the fitted models include the expected
+        models = meta_df.model.tolist()
+        self.assertTrue(set(models).issuperset(
+            {'constant', 'linear',
+             '(constant+1_fixed_steps_added)',
+             '(linear+1_fixed_steps_added)',
+             '(constant*1_fixed_steps_multiplied)',
+             '(linear*1_fixed_steps_multiplied)'}))
 
     def test_run_forecast_auto_season(self):
         # Yearly sinusoidal function
