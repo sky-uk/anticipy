@@ -1048,7 +1048,8 @@ def _f_step_and_ramp(a_x, a_date, params, is_mult=False, **kwargs):
     return y
 
 
-def _f_init_params_step_and_ramp(a_x=None, a_y=None, a_date=None, is_mult=False):
+def _f_init_params_step_and_ramp(a_x=None, a_y=None, a_date=None,
+                                 is_mult=False):
     # TODO: set boundaries: a_x (0.2, 0.8)
     if a_y is None:
         if a_x is not None:
@@ -1439,7 +1440,8 @@ def get_model_outliers(df, window=3):
     df_steps = dfo[['mask_step', 'dif_filt', 'change_group']]
     # Keep the change group only for the actual changes
     # excluding the values before and after due to the window
-    df_steps.change_group = df_steps.change_group * df_steps.mask_step.astype(int)
+    df_steps.change_group = \
+        df_steps.change_group * df_steps.mask_step.astype(int)
     # Also keep the dif_filt only for step changes, ignore spikes
     df_steps.dif_filt = df_steps.dif_filt * df_steps.mask_step.astype(int)
     # reorder

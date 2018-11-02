@@ -836,8 +836,8 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
         Naive models are not fitted with regression, they are based on
         the last actuals samples
     :type l_model_naive: list of ForecastModel
-    :param infer_steps_and_ramps: If True, infer the steps in the input time series
-        and add them as models
+    :param infer_steps_and_ramps: If True, infer the steps in the
+        input time series and add them as models
     :type infer_steps_and_ramps: bool
     :return:
         | With simplify_output=False, returns a dictionary with 4 dataframes:
@@ -866,41 +866,43 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
         return None
 
     if 'source' not in df_y.columns:
-        return run_forecast_single(df_y,
-                                   l_model_trend,
-                                   l_model_season,
-                                   date_start_actuals,
-                                   source_id,
-                                   extrapolate_years,
-                                   season_add_mult,
-                                   include_all_fits,
-                                   simplify_output,
-                                   find_outliers,
-                                   l_season_yearly,
-                                   l_season_weekly,
-                                   l_model_naive=l_model_naive,
-                                   infer_steps_and_ramps=infer_steps_and_ramps
-                                   )
+        return run_forecast_single(
+            df_y,
+            l_model_trend,
+            l_model_season,
+            date_start_actuals,
+            source_id,
+            extrapolate_years,
+            season_add_mult,
+            include_all_fits,
+            simplify_output,
+            find_outliers,
+            l_season_yearly,
+            l_season_weekly,
+            l_model_naive=l_model_naive,
+            infer_steps_and_ramps=infer_steps_and_ramps
+        )
     else:
         for src_tmp in df_y.source.drop_duplicates():
             if verbose:
                 logger.info('Running forecast for source: %s', src_tmp)
             df_y_tmp = df_y.loc[df_y.source == src_tmp].reset_index(drop=True)
-            dict_result_tmp = run_forecast_single(df_y_tmp,
-                                                  l_model_trend,
-                                                  l_model_season,
-                                                  date_start_actuals,
-                                                  src_tmp,
-                                                  extrapolate_years,
-                                                  season_add_mult,
-                                                  include_all_fits,
-                                                  False,  # Simplify output
-                                                  find_outliers,
-                                                  l_season_yearly,
-                                                  l_season_weekly,
-                                                  l_model_naive=l_model_naive,
-                                                  infer_steps_and_ramps=infer_steps_and_ramps
-                                                  )
+            dict_result_tmp = run_forecast_single(
+                df_y_tmp,
+                l_model_trend,
+                l_model_season,
+                date_start_actuals,
+                src_tmp,
+                extrapolate_years,
+                season_add_mult,
+                include_all_fits,
+                False,  # Simplify output
+                find_outliers,
+                l_season_yearly,
+                l_season_weekly,
+                l_model_naive=l_model_naive,
+                infer_steps_and_ramps=infer_steps_and_ramps
+            )
             l_dict_result += [dict_result_tmp]
     # Generate output
     dict_result = aggregate_forecast_dict_results(l_dict_result)
@@ -1069,26 +1071,31 @@ def run_forecast_single(df_y,
             for grp in change_groups:
                 step_increase = df_steps.loc[df_steps['change_group'] == grp,
                                              'dif_filt'].sum()
-                x_start = df_steps.loc[df_steps['change_group'] == grp].index.min()
-                x_end = df_steps.loc[df_steps['change_group'] == grp].index.max()
+                x_start = df_steps.loc[
+                    df_steps['change_group'] == grp].index.min()
+                x_end = df_steps.loc[
+                    df_steps['change_group'] == grp].index.max()
                 location = (x_end + x_start - 1.0) / 2.0
 
-                step_and_ramp_model = forecast_models.create_fixed_location_step_and_ramp(
-                    location=location, step_increase=step_increase)
+                step_and_ramp_model = forecast_models.\
+                    create_fixed_location_step_and_ramp(
+                        location=location, step_increase=step_increase)
                 step_and_ramp_models += [step_and_ramp_model]
 
             if season_add_mult in ['add', 'both']:
                 def func_add(x, y):
                     return x + y
-                step_and_ramp_models_summed = reduce(func_add, step_and_ramp_models)
-                step_and_ramp_models_summed.name = '{}_fixed_steps_added'.format(
-                    len(step_and_ramp_models))
+                step_and_ramp_models_summed = reduce(func_add,
+                                                     step_and_ramp_models)
+                step_and_ramp_models_summed.name = '{}_fixed_steps_added'.\
+                    format(len(step_and_ramp_models))
             if season_add_mult in ['mult', 'both']:
                 def func_mult(x, y):
                     return x * y
-                step_and_ramp_models_mult = reduce(func_mult, step_and_ramp_models)
-                step_and_ramp_models_mult.name = '{}_fixed_steps_multiplied'.format(
-                    len(step_and_ramp_models))
+                step_and_ramp_models_mult = reduce(func_mult,
+                                                   step_and_ramp_models)
+                step_and_ramp_models_mult.name = '{}_fixed_steps_multiplied'.\
+                    format(len(step_and_ramp_models))
 
     # Add actuals to output
     # Get weight for metadata
@@ -1145,11 +1152,13 @@ def run_forecast_single(df_y,
     l_model_add = get_list_model(l_model_trend, l_model_season_add, 'add')
     if infer_steps_and_ramps and step_and_ramp_models_summed:
         # Duplicate the list of models, adding the fixed location steps
-        l_model_add += get_list_model(l_model_add, [step_and_ramp_models_summed], 'add')
+        l_model_add += get_list_model(
+            l_model_add, [step_and_ramp_models_summed], 'add')
     l_model_mult = get_list_model(l_model_trend, l_model_season_mult, 'mult')
     if infer_steps_and_ramps and step_and_ramp_models_mult:
         # Duplicate the list of models, multiplying the fixed location steps
-        l_model_mult += get_list_model(l_model_mult, [step_and_ramp_models_mult], 'mult')
+        l_model_mult += get_list_model(
+            l_model_mult, [step_and_ramp_models_mult], 'mult')
 
     if season_add_mult == 'add':
         l_model = l_model_add
