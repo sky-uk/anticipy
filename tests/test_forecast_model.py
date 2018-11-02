@@ -42,6 +42,12 @@ def array_true_in_indices(n, l_indices):
     return np.isin(np.arange(0, n), l_indices)
 
 
+def array_val_in_indices(n, l_indices, val):
+    typ = type(val)
+    return (val * (np.isin(np.arange(0, n),
+                           l_indices)).astype(float)).astype(typ)
+
+
 class TestForecastModel(PandasTest):
     def setUp(self):
         pass
@@ -544,17 +550,26 @@ class TestForecastModel(PandasTest):
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 1a: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step, np.full(len(a_y), False))
+        df_steps, mask_spike = get_model_outliers(df)
+
+        logger.info('Model 1a: \nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        expected_df_steps = pd.DataFrame(
+            {'mask_step': np.full(len(a_y), False),
+             'dif_filt': np.full(len(a_y), 0.0),
+             'change_group': np.full(len(a_y), 0)})
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
 
         # 1b - with datetime index
         df = pd.DataFrame({'y': a_y}, index=a_date).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 1b: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step, np.full(len(a_y), False))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 1b: Step: %s, Spike: %s ', df_steps, mask_spike)
+        # same expected_df_steps
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
 
         # Test 2 - Single step
@@ -564,19 +579,26 @@ class TestForecastModel(PandasTest):
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 2a: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step,
-                                array_true_in_indices(a_y.size, 9))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 2a:\nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        expected_df_steps = pd.DataFrame(
+            {'mask_step': array_true_in_indices(a_y.size, 9),
+             'dif_filt': (array_ones_in_indices(a_y.size, 9) *
+                          np.ediff1d(a_y, to_begin=0)),
+             'change_group': array_val_in_indices(a_y.size, 9, 1)})
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
 
         # 2b - with date column
         df = pd.DataFrame({'y': a_y}, index=a_date).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 2b: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step,
-                                array_true_in_indices(a_y.size, 9))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 2b:\nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
 
         # Test 3 - Two step changes
@@ -586,10 +608,19 @@ class TestForecastModel(PandasTest):
 
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 3: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step,
-                                array_true_in_indices(a_y.size, [9, 18]))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 3:\nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        expected_df_steps = pd.DataFrame({
+            'mask_step': array_true_in_indices(a_y.size, [9, 18]),
+            'dif_filt': (array_ones_in_indices(a_y.size, [9, 18]) *
+                         np.ediff1d(a_y, to_begin=0)),
+            'change_group': (
+                array_val_in_indices(a_y.size, 9, 1) +
+                array_val_in_indices(a_y.size, 18, 3)
+            )})
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
 
         # Test 4 - Consecutive changes
@@ -598,12 +629,18 @@ class TestForecastModel(PandasTest):
                         10., 10.1, 10.2, 10.3, 10.4])
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 4: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(
-            mask_step, array_true_in_indices(
-                a_y.size, [
-                    8, 9, 10, 19]))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 4:\nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        expected_df_steps = pd.DataFrame({
+            'mask_step': array_true_in_indices(a_y.size, [8, 9, 10, 19]),
+            'dif_filt': (array_ones_in_indices(a_y.size, [8, 10, 19]) *
+                         np.ediff1d(a_y, to_begin=0)),
+            'change_group': (array_val_in_indices(a_y.size, [8, 9, 10], 1) +
+                             array_val_in_indices(a_y.size, 19, 3))
+        })
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike, np.full(len(a_y), False))
 
         # spikes
@@ -615,10 +652,17 @@ class TestForecastModel(PandasTest):
 
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 5a: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step,
-                                array_true_in_indices(a_y.size, [9]))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 5a:\nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        expected_df_steps = pd.DataFrame({
+            'mask_step': array_true_in_indices(a_y.size, 9),
+            'dif_filt': (array_ones_in_indices(a_y.size, 9) *
+                         np.ediff1d(a_y, to_begin=0)),
+            'change_group': array_val_in_indices(a_y.size, 9, 3)
+        })
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike,
                                 array_true_in_indices(a_y.size, [2, 3, 16]))
 
@@ -626,10 +670,11 @@ class TestForecastModel(PandasTest):
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y}, index=a_date).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 5b: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step,
-                                array_ones_in_indices(a_y.size, [9]))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 5b:\nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike,
                                 array_true_in_indices(a_y.size, [2, 3, 16]))
 
@@ -640,9 +685,15 @@ class TestForecastModel(PandasTest):
 
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 6a: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step, np.full(len(a_y), False))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 6a:\nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        expected_df_steps = pd.DataFrame(
+            {'mask_step': np.full(len(a_y), False),
+             'dif_filt': np.full(len(a_y), 0.0),
+             'change_group': np.full(len(a_y), 0)})
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike,
                                 array_true_in_indices(a_y.size, [9]))
 
@@ -653,10 +704,19 @@ class TestForecastModel(PandasTest):
 
         df = pd.DataFrame({'y': a_y}).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger.info('Model 6b: Step: %s, Spike: %s ', mask_step, mask_spike)
-        self.assert_array_equal(mask_step,
-                                array_true_in_indices(a_y.size, [9, 10]))
+        df_steps, mask_spike = get_model_outliers(df)
+        logger.info('Model 6b:\nStep:\n%s,\nSpike: %s',
+                    df_steps, mask_spike)
+        expected_df_steps = pd.DataFrame({
+            'mask_step': array_true_in_indices(a_y.size, [9, 10]),
+            'dif_filt': (array_ones_in_indices(a_y.size, [9, 10]) *
+                         np.ediff1d(a_y, to_begin=0)),
+            'change_group': (
+                array_val_in_indices(a_y.size, 9, 1) +
+                array_val_in_indices(a_y.size, 10, 1)
+            )})
+        self.assert_frame_equal(df_steps.sort_index(axis=1),
+                                expected_df_steps.sort_index(axis=1))
         self.assert_array_equal(mask_spike,
                                 array_true_in_indices(a_y.size, [9]))
 
@@ -669,9 +729,9 @@ class TestForecastModel(PandasTest):
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df = pd.DataFrame({'y': a_y, 'date': a_date}).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger_info('Model 1:', mask_step)
-        self.assertIsNone(mask_step)
+        df_steps, mask_spike = get_model_outliers(df)
+        logger_info('Model 1:', df_steps)
+        self.assertIsNone(df_steps)
         self.assertIsNone(mask_spike)
 
         # Test 1b -  series with multiple values per x -- raises ValueError
@@ -681,7 +741,7 @@ class TestForecastModel(PandasTest):
         df = pd.concat([df.head(5), df.head(6).tail(2)]).pipe(normalize_df)
 
         with self.assertRaises(ValueError):
-            mask_step, mask_spike = get_model_outliers(df)
+            df_steps, mask_spike = get_model_outliers(df)
 
         # Test 2 - short series with gap value - no real outliers
         a_y = np.arange(0, 10.)
@@ -689,17 +749,17 @@ class TestForecastModel(PandasTest):
         df = pd.DataFrame({'y': a_y, 'date': a_date})
         df = pd.concat([df.head(5), df.tail(-6)]).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger_info('Model 1:', mask_step)
-        self.assertIsNotNone(mask_step)  # Incorrectly finds a step
+        df_steps, mask_spike = get_model_outliers(df)
+        logger_info('Model 1:', df_steps)
+        self.assertIsNotNone(df_steps)  # Incorrectly finds a step
         self.assertIsNone(mask_spike)  # No spikes
 
         # Test 2b - after interpolating, can get outliers - finds none
 
         df_nogap = df.pipe(interpolate_df, include_mask=True)
-        mask_step, mask_spike = get_model_outliers(df_nogap)
+        df_steps, mask_spike = get_model_outliers(df_nogap)
         logger_info('df 1 - no gap:', df_nogap)
-        self.assertIsNone(mask_step)  # No steps
+        self.assertIsNone(df_steps)  # No steps
         self.assertIsNone(mask_spike)  # No spikes
 
         # # Test 3 - short series with gap value - with outliers
@@ -710,18 +770,18 @@ class TestForecastModel(PandasTest):
         df2 = pd.DataFrame({'y': a_y2, 'date': a_date})
         df = pd.concat([df.head(5), df2.tail(-6)]).pipe(normalize_df)
 
-        mask_step, mask_spike = get_model_outliers(df)
-        logger_info('Model 1:', mask_step)
-        self.assertIsNotNone(mask_step)  # Incorrectly finds a step
+        df_steps, mask_spike = get_model_outliers(df)
+        logger_info('Model 1:', df_steps)
+        self.assertIsNotNone(df_steps)  # Incorrectly finds a step
         self.assertIsNone(mask_spike)  # No spikes
 
         # Test 3b - after interpolating with interpolate_df() - TODO: REMOVE
         # THIS
 
         df_nogap = df.pipe(interpolate_df, include_mask=True)
-        mask_step, mask_spike = get_model_outliers(df_nogap)
+        df_steps, mask_spike = get_model_outliers(df_nogap)
 
-        df_nogap['mask_step'] = mask_step
+        df_nogap['mask_step'] = df_steps
         df_nogap['step_in_filled_gap'] = df_nogap.mask_step * \
             df_nogap.is_gap_filled
 
@@ -747,13 +807,13 @@ class TestForecastModel(PandasTest):
 
         # Test 3c - same, with function
 
-        mask_step, mask_spike = get_model_outliers_withgap(df)
-        logger_info('Model 3c:', mask_step)
+        df_steps, mask_spike = get_model_outliers_withgap(df)
+        logger_info('Model 3c:', df_steps)
         self.assert_array_equal(
-            mask_step, array_ones_in_indices(
+            df_steps, array_ones_in_indices(
                 df_nogap.index.size, [5]))
         logger_info('mask_spike:', mask_spike)
-        logger_info('mask_step:', mask_step)
+        logger_info('mask_step:', df_steps)
 
         self.assertIsNone(mask_spike)  # No spikes
 

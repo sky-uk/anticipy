@@ -1037,6 +1037,83 @@ model_ramp = ForecastModel(
     _f_init_bounds_ramp)
 
 
+# - Step and Ramp function: :math:`Y = {0, if x < A | B*(x-A) + C, if x >= A}`
+# A is the time of step, B is the change in trend, and C is the step
+def _f_step_and_ramp(a_x, a_date, params, is_mult=False, **kwargs):
+    (A, B, C) = params
+    if is_mult:
+        y = 1 + ((a_x - A) * B + C) * np.heaviside(a_x - A, 1)
+    else:
+        y = ((a_x - A) * B + C) * np.heaviside(a_x - A, 1)
+    return y
+
+
+def _f_init_params_step_and_ramp(a_x=None, a_y=None, a_date=None, is_mult=False):
+    # TODO: set boundaries: a_x (0.2, 0.8)
+    if a_y is None:
+        if a_x is not None:
+            nfirst_last = int(np.ceil(0.15 * a_x.size))
+            a = np.random.uniform(a_x[nfirst_last], a_x[-nfirst_last - 1], 1)
+        else:
+            a = np.random.uniform(0, 1, 1)
+        b = np.random.uniform(0, 1, 1)
+        c = np.random.uniform(0, 1, 1)
+
+        return np.concatenate([a, b, c])
+    else:
+        # TODO: FILTER A_Y BY 20-80 PERCENTILE IN A_X
+        df = pd.DataFrame({'b': a_y})
+        if a_x is not None:
+            #
+            df['x'] = a_x
+            # Required because we support input with multiple samples per x
+            # value
+            df = df.drop_duplicates('x')
+            df = df.set_index('x')
+        # max difference between consecutive values -- this assumes no null
+        # values in series
+        df['diff2'] = df.diff().diff().abs()
+
+        # We ignore the last 15% of the time series
+        skip_samples = int(np.ceil(df.index.size * 0.15))
+
+        a = (df.head(-skip_samples).tail(
+            -skip_samples).nlargest(1, 'diff2').index[0]
+        )
+        b = df['diff2'].loc[a]
+        c = np.random.uniform(0, 1, 1)
+        # TODO: replace b with estimation of slope in segment 2
+        #   minus slope in segment 1 - see init_params_linear
+        return np.array([a, b, c])
+
+
+def _f_init_bounds_step_and_ramp(a_x=None, a_y=None, a_date=None):
+    if a_x is None:
+        a_min = -np.inf
+        a_max = np.inf
+    else:
+        # a_min = np.min(a_x)
+        nfirst_last = int(np.ceil(0.15 * a_x.size))
+        a_min = a_x[nfirst_last]
+        a_max = a_x[-nfirst_last]
+        # a_min = np.percentile(a_x, 15)
+        # a_max = np.percentile(a_x,85)
+    b_min = -np.inf
+    b_max = np.inf
+    c_min = -np.inf
+    c_max = np.inf
+    # logger_info('DEBUG: BOUNDS:',(a_min, b_min,a_max, b_max))
+    return [a_min, b_min, c_min], [a_max, b_max, c_max]
+
+
+model_step_and_ramp = ForecastModel(
+    'step_and_ramp',
+    3,
+    _f_step_and_ramp,
+    _f_init_params_step_and_ramp,
+    _f_init_bounds_step_and_ramp)
+
+
 # - Weekday seasonality
 
 def _f_model_season_wday(a_x, a_date, params, is_mult=False, **kwargs):
@@ -1328,7 +1405,9 @@ def get_model_outliers(df, window=3):
     )
 
     if df_outl.empty:  # No outliers - nothing to do
-        return np.full(dfo.index.size, False), np.full(dfo.index.size, False)
+        dfo['mask_step'] = False
+        df_steps = dfo[['mask_step', 'dif_filt', 'change_group']]
+        return df_steps, np.full(dfo.index.size, False)
 
     dfo = dfo.merge(df_outl, how='left')
     # Get the start and end points in dfo
@@ -1355,13 +1434,62 @@ def get_model_outliers(df, window=3):
                             (dfo.x >= dfo.outl_start) &
                             (dfo.x <= dfo.outl_end))
 
-    return dfo.mask_step.values, dfo.mask_spike.values
+    # Combine mask_step, dif_filt (the step change)
+    # and the step numbers, to provide the full picture
+    df_steps = dfo[['mask_step', 'dif_filt', 'change_group']]
+    # Keep the change group only for the actual changes
+    # excluding the values before and after due to the window
+    df_steps.change_group = df_steps.change_group * df_steps.mask_step.astype(int)
+    # Also keep the dif_filt only for step changes, ignore spikes
+    df_steps.dif_filt = df_steps.dif_filt * df_steps.mask_step.astype(int)
+    # reorder
+    df_steps = df_steps[['mask_step', 'dif_filt', 'change_group']]
+    return df_steps, dfo.mask_spike.values
 
 
 def create_fixed_step(diff, x):
     # Generate a fixed step model
     fixed_params = [x, diff]
     return get_fixed_model(model_step, fixed_params)
+
+
+def create_fixed_location_step_and_ramp(location, step_increase):
+    # Allow room for change in the step increase
+    step_perc_room = 0.1
+    # Location is the fixed param a of model_ramp
+    a = location
+    # TODO: approximate it
+    b = np.random.uniform(0, 1, 1)
+    c = step_increase
+    b_min = -np.inf
+    b_max = np.inf
+    c_min = c - step_perc_room * abs(c)
+    c_max = c + step_perc_room * abs(c)
+
+    def _f_init_params_step_and_ramp_fixed_location(
+            a_x=None, a_y=None, a_date=None, is_mult=False):
+        return [b, c]
+
+    def _f_step_and_ramp_fixed_location(a_x, a_date, params,
+                                        is_mult=False, **kwargs):
+        b = params[0]
+        c = params[1]
+        # add the fixed location a
+        ramp_params = [a, b, c]
+        return _f_step_and_ramp(a_x, a_date, ramp_params,
+                                is_mult=is_mult, kwargs=kwargs)
+
+    def _f_bounds_step_fixed_location(a_x=None, a_y=None, a_date=None):
+        return [b_min, c_min], [b_max, c_max]
+
+    model_ramp_fixed_location = ForecastModel(
+        name='ramp_fixed_location',
+        n_params=2,
+        f_model=_f_step_and_ramp_fixed_location,
+        f_init_params=_f_init_params_step_and_ramp_fixed_location,
+        f_bounds=_f_bounds_step_fixed_location)
+
+    return model_ramp_fixed_location
 
 
 def create_fixed_spike(diff, x, duration):
