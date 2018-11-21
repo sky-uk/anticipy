@@ -27,7 +27,7 @@ entry_points = {
 # -- Edit Stop
 
 
-with open("pypi-description.rst", "r") as fh:
+with open("PKG-INFO", "r") as fh:
     long_description = fh.read()
 
 setup(
