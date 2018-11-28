@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 # -- Edit Start
 zip_safe = False
@@ -27,7 +27,7 @@ entry_points = {
 # -- Edit Stop
 
 
-with open("pypi-description.rst", "r") as fh:
+with open("PKG-INFO", "r") as fh:
     long_description = fh.read()
 
 setup(
