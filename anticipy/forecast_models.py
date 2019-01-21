@@ -19,6 +19,9 @@ import logging
 import numpy as np
 import pandas as pd
 import itertools
+from pandas.tseries.offsets import DateOffset
+from pandas.tseries.holiday import Holiday, AbstractHolidayCalendar,\
+    MO, nearest_workday, GoodFriday, EasterMonday
 
 # -- Private Imports
 from anticipy import model_utils
@@ -1437,6 +1440,8 @@ def get_f_model_dummy(dummy):
 
     if callable(dummy):  # If dummy is a function, use it
         f_dummy = dummy
+    elif isinstance(dummy, Holiday):
+        f_dummy = get_f_dummy_from_holiday(dummy)
     else:
         # If dummy is a list, convert to function
         f_dummy = get_f_dummy_from_list(dummy)
@@ -1452,7 +1457,7 @@ def get_f_model_dummy(dummy):
         if not is_mult:
             a_result = A * mask
         else:
-            a_result = (A - 1.) * mask + 1
+            a_result = (A) * mask + 1
         return a_result
 
     return f_model_check
@@ -1494,6 +1499,22 @@ def get_f_dummy_from_list(list_check):
                 'date-like values: %s', list_check)
 
 
+def get_f_dummy_from_holiday(holiday):
+    def f_dummy_holiday(a_x, a_date, **kwargs):
+        # TODO: If we can pass dict_cal as an argument,
+        #       use pre-loaded list of dates for performance
+        # if dict_cal in kwargs.keys():
+        #    list_check_date = dict_cal.get(holiday.name)
+        # else:
+
+        # TODO: If we can guarantee sorted dates,
+        #       change this to a_date[0], a_date[-1] for performance
+        list_check_date = holiday.dates(a_date.min(), a_date.max())
+        return np.isin(a_date, list_check_date).astype(float)
+
+    return f_dummy_holiday
+
+
 model_season_wday_2 = get_model_dummy(
     'season_wday_2', lambda a_x, a_date, **kwargs:
     (a_date.weekday < 5).astype(float))
@@ -1507,6 +1528,58 @@ model_dummy_christmas = get_model_dummy(
 model_dummy_month_start = get_model_dummy(
     'dummy_month_start', lambda a_x, a_date, **kwargs:
     (a_date.day == 1).astype(float))
+
+
+class UKCalendar(AbstractHolidayCalendar):
+    rules = [
+        Holiday('New Year\'s Day', month=1, day=1, observance=nearest_workday),
+        Holiday('Christmas', month=12, day=25, observance=nearest_workday),
+        Holiday('Boxing Day', month=10, day=26, observance=nearest_workday),
+        GoodFriday,
+        EasterMonday,
+        # Early May Bank Holiday - first Monday in May
+        # Spring Bank Holiday - Last Monday in May - Same as US Memorial Day
+        Holiday('Early May Bank Holiday', month=5, day=1,
+                offset=DateOffset(weekday=MO(1))
+               ),
+        Holiday('Spring Bank Holiday', month=5, day=31,
+                        offset=DateOffset(weekday=MO(-1))
+               ),
+        # August Bank holiday - Last Monday in August
+        Holiday('August Bank Holiday', month=8, day=1,
+                        offset=DateOffset(weekday=MO(1))
+               )
+        ]
+
+
+def get_model_from_calendar(calendar):
+    l_model_dummy = [get_model_dummy(rule.name, rule)
+                     for rule in calendar.rules]
+    assert (len(l_model_dummy)), 'Need 1+ rules in calendar'
+    f_model_prod = np.prod(l_model_dummy)
+    f_model_sum = np.sum(l_model_dummy)
+
+    def _f_init_params_calendar(
+            a_x=None, a_y=None, a_date=None, is_mult=False):
+        if is_mult:
+            return np.ones(len(l_model_dummy))
+        else:
+            return np.zeros(len(l_model_dummy))
+
+    def _f_model_calendar(a_x, a_date, params, is_mult=False, **kwargs):
+        f_all_dummies = f_model_prod if is_mult else f_model_sum
+        return f_all_dummies(a_x, a_date, params, is_mult, **kwargs)
+
+    model_calendar = ForecastModel(
+        calendar.name,
+        len(l_model_dummy),
+        _f_model_calendar,
+        _f_init_params_calendar
+    )
+    return model_calendar
+
+
+model_ukcalendar = get_model_from_calendar(UKCalendar())
 
 
 # Utility functions
