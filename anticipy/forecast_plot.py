@@ -404,7 +404,7 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
                                           show_legend)
             path = '{}.html'.format(path)
             py.offline.plot(fig, filename=path, show_link=False,
-                            auto_open=auto_open, include_plotlyjs=True)
+                            auto_open=auto_open, include_plotlyjs='cdn')
         else:
             logger.error('Please install plotly library to enable this '
                          'feature.')
