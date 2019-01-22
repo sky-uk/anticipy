@@ -7,11 +7,11 @@ Created on 04/12/2015
 import unittest
 from argparse import Namespace
 
-from anticipy.utils_test import PandasTest
 from anticipy import forecast_models
-from anticipy.forecast_models import *
 from anticipy.forecast import normalize_df
+from anticipy.forecast_models import *
 from anticipy.model_utils import interpolate_df
+from anticipy.utils_test import PandasTest
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -258,22 +258,16 @@ class TestForecastModel(PandasTest):
                     is_mult),
                 a)
 
-        # test_model('ukcalendar', model_ukcalendar,[0.]*8,np.ones(10),
-        #            l_is_mult=[True])
-        # test_model('ukcalendar', model_ukcalendar,[0.]*8,np.zeros(10),
-        #            l_is_mult=[False])
         test_model('ukcalendar', model_ukcalendar,
-                   array_ones_in_indices(8,0),
+                   array_ones_in_indices(8, 0),
                    # First parameter changes value of New Year
-                   array_ones_in_indices(10, 0)+np.ones(10),
+                   array_ones_in_indices(10, 0) + np.ones(10),
                    l_is_mult=[True])
         test_model('ukcalendar', model_ukcalendar,
-                   array_ones_in_indices(8,0),
+                   array_ones_in_indices(8, 0),
                    # First parameter changes value of New Year
-                   array_ones_in_indices(10, 0)+np.zeros(10),
+                   array_ones_in_indices(10, 0) + np.zeros(10),
                    l_is_mult=[False])
-
-
 
     def test_forecast_model_composite(self):
         a_x = np.arange(1, 11.)

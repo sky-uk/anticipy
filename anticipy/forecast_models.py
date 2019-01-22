@@ -14,14 +14,15 @@ initialisation parameters.
 # http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
 # docstrings
 
+import itertools
 # -- Public Imports
 import logging
+
 import numpy as np
 import pandas as pd
-import itertools
-from pandas.tseries.offsets import DateOffset
-from pandas.tseries.holiday import Holiday, AbstractHolidayCalendar,\
+from pandas.tseries.holiday import Holiday, AbstractHolidayCalendar, \
     MO, nearest_workday, GoodFriday, EasterMonday
+from pandas.tseries.offsets import DateOffset
 
 # -- Private Imports
 from anticipy import model_utils
@@ -1541,15 +1542,15 @@ class UKCalendar(AbstractHolidayCalendar):
         # Spring Bank Holiday - Last Monday in May - Same as US Memorial Day
         Holiday('Early May Bank Holiday', month=5, day=1,
                 offset=DateOffset(weekday=MO(1))
-               ),
+                ),
         Holiday('Spring Bank Holiday', month=5, day=31,
-                        offset=DateOffset(weekday=MO(-1))
-               ),
+                offset=DateOffset(weekday=MO(-1))
+                ),
         # August Bank holiday - Last Monday in August
         Holiday('August Bank Holiday', month=8, day=1,
-                        offset=DateOffset(weekday=MO(1))
-               )
-        ]
+                offset=DateOffset(weekday=MO(1))
+                )
+    ]
 
 
 def get_model_from_calendar(calendar):
