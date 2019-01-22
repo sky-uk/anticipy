@@ -269,6 +269,17 @@ class TestForecastModel(PandasTest):
                    array_ones_in_indices(10, 0) + np.zeros(10),
                    l_is_mult=[False])
 
+        test_model('uscalendar', model_uscalendar,
+                   array_ones_in_indices(10, 0),
+                   # First parameter changes value of New Year
+                   array_ones_in_indices(10, 0) + np.ones(10),
+                   l_is_mult=[True])
+        test_model('uscalendar', model_uscalendar,
+                   array_ones_in_indices(10, 0),
+                   # First parameter changes value of New Year
+                   array_ones_in_indices(10, 0) + np.zeros(10),
+                   l_is_mult=[False])
+
     def test_forecast_model_composite(self):
         a_x = np.arange(1, 11.)
         a_y = np.arange(1, 11.)

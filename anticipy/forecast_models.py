@@ -21,7 +21,7 @@ import logging
 import numpy as np
 import pandas as pd
 from pandas.tseries.holiday import Holiday, AbstractHolidayCalendar, \
-    MO, nearest_workday, GoodFriday, EasterMonday
+    MO, nearest_workday, GoodFriday, EasterMonday, USFederalHolidayCalendar
 from pandas.tseries.offsets import DateOffset
 
 # -- Private Imports
@@ -1581,6 +1581,7 @@ def get_model_from_calendar(calendar):
 
 
 model_ukcalendar = get_model_from_calendar(UKCalendar())
+model_uscalendar = get_model_from_calendar(USFederalHolidayCalendar())
 
 
 # Utility functions
