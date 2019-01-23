@@ -1661,6 +1661,7 @@ def get_model_from_datelist(name=None, *args):
     )
     return model_date_list
 
+
 # Utility functions
 
 def fix_params_fmodel(forecast_model, l_params_fixed):

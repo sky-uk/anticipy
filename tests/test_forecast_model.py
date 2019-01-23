@@ -997,14 +997,14 @@ class TestForecastModel(PandasTest):
                 None, None, a_date_complete))
 
     def test_get_model_from_calendar(self):
-        model_calendar=get_model_from_calendar(UKCalendar())
+        model_calendar = get_model_from_calendar(UKCalendar())
         logger_info('model_calendar:', model_calendar)
         logger_info('parameters:', model_calendar.n_params)
 
     def test_get_model_from_date_list(self):
-        model_datelist=get_model_from_datelist(
+        model_datelist = get_model_from_datelist(
             'datelist',
-            ['2018-01-01','2018-01-02'],
+            ['2018-01-01', '2018-01-02'],
             ['2018-12-25', '2019-12-25']
         )
         logger_info('model_datelist:', model_datelist)
