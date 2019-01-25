@@ -5,12 +5,12 @@ Created on 04/12/2015
 
 """
 
-import platform
 import os
+import platform
 import unittest
 
-from anticipy.utils_test import PandasTest
 from anticipy.forecast import *
+from anticipy.utils_test import PandasTest
 
 # Dask dependencies - not currently used
 # from dask import delayed
@@ -2957,7 +2957,8 @@ class TestForecast(PandasTest):
 
     def test_run_forecast_linalgerror(self):
         # Testing a dataset that raises a linalgerror from run_forecast()
-        path_df_in=os.path.join(base_folder,'df_test_forecast_linalgerror.csv')
+        path_df_in = os.path.join(base_folder,
+                                  'df_test_forecast_linalgerror.csv')
         df_in = pd.read_csv(path_df_in, parse_dates=['date'])
         dict_result = run_forecast(df_in, simplify_output=False,
                                    include_all_fits=True)

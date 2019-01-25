@@ -12,18 +12,18 @@ Functions to run forecast
 # http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
 # docstrings
 
+import itertools
 # -- Public Imports
 import logging
+
 import numpy as np
-from numpy.linalg import LinAlgError
 import pandas as pd
 import scipy
+from numpy.linalg import LinAlgError
 from scipy import optimize
-import itertools
 
 # -- Private Imports
 from anticipy import forecast_models, model_utils
-
 # -- Globals
 from anticipy.model_utils import detect_freq
 
@@ -160,11 +160,11 @@ def optimize_least_squares(
             kwargs={
                 'a_weights': a_weights,
                 'df_actuals': df_actuals},
-                  # method='lm',
-                  method='trf',
-                  x_scale='jac',
-                  # verbose=1,
-                  bounds=bounds
+            # method='lm',
+            method='trf',
+            x_scale='jac',
+            # verbose=1,
+            bounds=bounds
         )
         dict_result_df = {
             'optimality': result['optimality'],
