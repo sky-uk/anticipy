@@ -2954,3 +2954,12 @@ class TestForecast(PandasTest):
         logger_info('df_data:', df_data)
         # Output only includes actuals due to no fit
         self.assertEquals(df_data.index.size, 14)
+
+    def test_run_forecast_linalgerror(self):
+        # Testing a dataset that raises a linalgerror from run_forecast()
+        path_df_in=os.path.join(base_folder,'df_test_forecast_linalgerror.csv')
+        df_in = pd.read_csv(path_df_in, parse_dates=['date'])
+        dict_result = run_forecast(df_in, simplify_output=False,
+                                   include_all_fits=True)
+        df_metadata = dict_result['metadata']
+        logger_info('df_metadata', df_metadata)

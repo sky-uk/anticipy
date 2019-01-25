@@ -15,6 +15,7 @@ Functions to run forecast
 # -- Public Imports
 import logging
 import numpy as np
+from numpy.linalg import LinAlgError
 import pandas as pd
 import scipy
 from scipy import optimize
@@ -152,28 +153,42 @@ def optimize_least_squares(
 
     # Set up arguments for get_residuals
     f_model_args = (model, a_x, a_y, a_date)
+    try:
+        result = scipy.optimize.least_squares(
+            get_residuals, initial_guess,
+            args=f_model_args,
+            kwargs={
+                'a_weights': a_weights,
+                'df_actuals': df_actuals},
+                  # method='lm',
+                  method='trf',
+                  x_scale='jac',
+                  # verbose=1,
+                  bounds=bounds
+        )
+        dict_result_df = {
+            'optimality': result['optimality'],
+            'success': result['success'],
+            'cost': result['cost'],
+            'iterations': result['nfev'],
+            'jac_evals': result['njev'],
+            'status': result['status'],
+            'message': result['message'],
+            'params': [result['x']]
+        }
+    except LinAlgError as e:
+        logger.info('LinAlgError: Model did not converge - %s', model)
+        dict_result_df = {
+            'optimality': 0.,
+            'success': False,
+            'cost': np.NaN,
+            'iterations': 0.,
+            'jac_evals': 0.,
+            'status': 0,
+            'message': 'LinAlgError',
+            'params': None
+        }
 
-    result = scipy.optimize.least_squares(get_residuals, initial_guess,
-                                          args=f_model_args,
-                                          kwargs={
-                                              'a_weights': a_weights,
-                                              'df_actuals': df_actuals},
-                                          # method='lm',
-                                          method='trf',
-                                          x_scale='jac',
-                                          # verbose=1,
-                                          bounds=bounds
-                                          )
-    dict_result_df = {
-        'optimality': result['optimality'],
-        'success': result['success'],
-        'cost': result['cost'],
-        'iterations': result['nfev'],
-        'jac_evals': result['njev'],
-        'status': result['status'],
-        'message': result['message'],
-        'params': [result['x']]
-    }
     df_result = pd.DataFrame(data=dict_result_df, index=pd.Index([0]))
     df_result = df_result[['success',
                            'params',
