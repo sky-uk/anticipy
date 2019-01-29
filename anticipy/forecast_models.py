@@ -1148,13 +1148,7 @@ def _f_init_params_fourier(a_x=None, a_y=None, a_date=None, is_mult=False):
 
 
 def _f_init_bounds_fourier_nparams(n_params, a_x=None, a_y=None, a_date=None):
-    if a_y is None:
-        return n_params * [-np.inf], n_params * [np.inf]
-    if a_y.ndim > 1:
-        a_y = a_y[:, 0]
-
-    diff = a_y.max() - a_y.min()
-    return n_params * [-2 * diff], n_params * [2 * diff]
+    return n_params * [-np.inf], n_params * [np.inf]
 
 
 def _f_init_bounds_fourier_yearly(a_x=None, a_y=None, a_date=None):
