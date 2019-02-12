@@ -14,11 +14,15 @@ initialisation parameters.
 # http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
 # docstrings
 
+import itertools
 # -- Public Imports
 import logging
+
 import numpy as np
 import pandas as pd
-import itertools
+from pandas.tseries.holiday import Holiday, AbstractHolidayCalendar, \
+    MO, nearest_workday, GoodFriday, EasterMonday, USFederalHolidayCalendar
+from pandas.tseries.offsets import DateOffset
 
 # -- Private Imports
 from anticipy import model_utils
@@ -1431,6 +1435,8 @@ def get_f_model_dummy(dummy):
 
     if callable(dummy):  # If dummy is a function, use it
         f_dummy = dummy
+    elif isinstance(dummy, Holiday):
+        f_dummy = get_f_dummy_from_holiday(dummy)
     else:
         # If dummy is a list, convert to function
         f_dummy = get_f_dummy_from_list(dummy)
@@ -1446,7 +1452,7 @@ def get_f_model_dummy(dummy):
         if not is_mult:
             a_result = A * mask
         else:
-            a_result = (A - 1.) * mask + 1
+            a_result = (A) * mask + 1
         return a_result
 
     return f_model_check
@@ -1465,6 +1471,7 @@ def get_f_dummy_from_list(list_check):
     # Generate a f_dummy function that defines a dummy variable, can be used
     # for dummy models
     s_check = pd.Series(list_check)
+    assert s_check.size, 'Input list cannot be empty'
     if pd.api.types.is_numeric_dtype(s_check):
         list_check_numeric = s_check
 
@@ -1488,6 +1495,22 @@ def get_f_dummy_from_list(list_check):
                 'date-like values: %s', list_check)
 
 
+def get_f_dummy_from_holiday(holiday):
+    def f_dummy_holiday(a_x, a_date, **kwargs):
+        # TODO: If we can pass dict_cal as an argument,
+        #       use pre-loaded list of dates for performance
+        # if dict_cal in kwargs.keys():
+        #    list_check_date = dict_cal.get(holiday.name)
+        # else:
+
+        # TODO: If we can guarantee sorted dates,
+        #       change this to a_date[0], a_date[-1] for performance
+        list_check_date = holiday.dates(a_date.min(), a_date.max())
+        return np.isin(a_date, list_check_date).astype(float)
+
+    return f_dummy_holiday
+
+
 model_season_wday_2 = get_model_dummy(
     'season_wday_2', lambda a_x, a_date, **kwargs:
     (a_date.weekday < 5).astype(float))
@@ -1501,6 +1524,136 @@ model_dummy_christmas = get_model_dummy(
 model_dummy_month_start = get_model_dummy(
     'dummy_month_start', lambda a_x, a_date, **kwargs:
     (a_date.day == 1).astype(float))
+
+
+class UKCalendar(AbstractHolidayCalendar):
+    rules = [
+        Holiday('New Year\'s Day', month=1, day=1, observance=nearest_workday),
+        Holiday('Christmas', month=12, day=25, observance=nearest_workday),
+        Holiday('Boxing Day', month=10, day=26, observance=nearest_workday),
+        GoodFriday,
+        EasterMonday,
+        # Early May Bank Holiday - first Monday in May
+        Holiday('Early May Bank Holiday', month=5, day=1,
+                offset=DateOffset(weekday=MO(1))
+                ),
+        # Spring Bank Holiday - Last Monday in May
+        Holiday('Spring Bank Holiday', month=5, day=31,
+                offset=DateOffset(weekday=MO(-1))
+                ),
+        # August Bank holiday - Last Monday in August
+        Holiday('August Bank Holiday', month=8, day=1,
+                offset=DateOffset(weekday=MO(1))
+                )
+    ]
+
+
+def get_model_from_calendar(calendar):
+    """
+    Create a ForecastModel based on a pandas Calendar.
+
+    :param calendar:
+    :type calendar: pandas.tseries.AbstractHolidayCalendar
+    :return: model based on the input calendar
+    :rtype: ForecastModel
+
+    In pandas, Holidays and calendars provide a simple way to define
+    holiday rules, to be used in any analysis that requires a predefined
+    set of holidays. This function converts a Calendar object into a
+    ForecastModel that assigns a parameter to each calendar rule.
+
+    As an example, a Calendar with 1 rule defining Christmas dates
+    generates a model with a single parameter, which
+    determines the amount added/multiplied to samples falling on Christmas.
+    A calendar with 2 rules for Christmas and New Year will have two parameters
+    - the first one applying to samples in Christmas, and the second
+    one applying to samples in New Year.
+
+    Usage::
+
+        from pandas.tseries.holiday import USFederalHolidayCalendar
+        model_calendar = get_model_from_calendar(USFederalHolidayCalendar())
+
+    """
+    l_model_dummy = [get_model_dummy(rule.name, rule)
+                     for rule in calendar.rules]
+    assert (len(l_model_dummy)), 'Need 1+ rules in calendar'
+    f_model_prod = np.prod(l_model_dummy)
+    f_model_sum = np.sum(l_model_dummy)
+
+    def _f_init_params_calendar(
+            a_x=None, a_y=None, a_date=None, is_mult=False):
+        if is_mult:
+            return np.ones(len(l_model_dummy))
+        else:
+            return np.zeros(len(l_model_dummy))
+
+    def _f_model_calendar(a_x, a_date, params, is_mult=False, **kwargs):
+        f_all_dummies = f_model_prod if is_mult else f_model_sum
+        return f_all_dummies(a_x, a_date, params, is_mult, **kwargs)
+
+    model_calendar = ForecastModel(
+        calendar.name,
+        len(l_model_dummy),
+        _f_model_calendar,
+        _f_init_params_calendar
+    )
+    return model_calendar
+
+
+model_ukcalendar = get_model_from_calendar(UKCalendar())
+model_uscalendar = get_model_from_calendar(USFederalHolidayCalendar())
+
+
+def get_model_from_datelist(name=None, *args):
+    """
+    Create a ForecastModel based on one or more lists of dates.
+
+    :param name: Model name
+    :type name: str
+    :param args: Each element in args is a list of dates.
+    :type args:
+    :return: model based on the input lists of dates
+    :rtype: ForecastModel
+
+    Usage::
+
+        model_datelist1=get_model_from_date_list('datelist1',
+                                                 [date1, date2, date3])
+        model_datelists23 = get_model_from_date_list('datelists23',
+                                                [date1, date2], [date3, date4])
+
+    In the example above, model_datelist1 will have one parameter, which
+    determines the amount added/multiplied to samples with dates matching
+    either date1, date2 or date3. model_datelists23 will have two parameters
+    - the first one applying to samples in date1 and date2, and the second
+    one applying to samples in date 3 and date4
+
+    """
+    l_model_dummy = [get_model_dummy('model_dummy', pd.to_datetime(l_date))
+                     for l_date in args]
+    assert (len(l_model_dummy)), 'Need 1+ lists of dates'
+    f_model_prod = np.prod(l_model_dummy)
+    f_model_sum = np.sum(l_model_dummy)
+
+    def _f_init_params_date_list(
+            a_x=None, a_y=None, a_date=None, is_mult=False):
+        if is_mult:
+            return np.ones(len(l_model_dummy))
+        else:
+            return np.zeros(len(l_model_dummy))
+
+    def _f_model_date_list(a_x, a_date, params, is_mult=False, **kwargs):
+        f_all_dummies = f_model_prod if is_mult else f_model_sum
+        return f_all_dummies(a_x, a_date, params, is_mult, **kwargs)
+
+    model_date_list = ForecastModel(
+        name,
+        len(l_model_dummy),
+        _f_model_date_list,
+        _f_init_params_date_list
+    )
+    return model_date_list
 
 
 # Utility functions

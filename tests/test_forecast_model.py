@@ -7,11 +7,11 @@ Created on 04/12/2015
 import unittest
 from argparse import Namespace
 
-from anticipy.utils_test import PandasTest
 from anticipy import forecast_models
-from anticipy.forecast_models import *
 from anticipy.forecast import normalize_df
+from anticipy.forecast_models import *
 from anticipy.model_utils import interpolate_df
+from anticipy.utils_test import PandasTest
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -257,6 +257,28 @@ class TestForecastModel(PandasTest):
                     'model_season_fourier_yearly',
                     is_mult),
                 a)
+
+        test_model('ukcalendar', model_ukcalendar,
+                   array_ones_in_indices(8, 0),
+                   # First parameter changes value of New Year
+                   array_ones_in_indices(10, 0) + np.ones(10),
+                   l_is_mult=[True])
+        test_model('ukcalendar', model_ukcalendar,
+                   array_ones_in_indices(8, 0),
+                   # First parameter changes value of New Year
+                   array_ones_in_indices(10, 0) + np.zeros(10),
+                   l_is_mult=[False])
+
+        test_model('uscalendar', model_uscalendar,
+                   array_ones_in_indices(10, 0),
+                   # First parameter changes value of New Year
+                   array_ones_in_indices(10, 0) + np.ones(10),
+                   l_is_mult=[True])
+        test_model('uscalendar', model_uscalendar,
+                   array_ones_in_indices(10, 0),
+                   # First parameter changes value of New Year
+                   array_ones_in_indices(10, 0) + np.zeros(10),
+                   l_is_mult=[False])
 
     def test_forecast_model_composite(self):
         a_x = np.arange(1, 11.)
@@ -973,3 +995,17 @@ class TestForecastModel(PandasTest):
         self.assertTrue(
             model_season_wday.validate_input(
                 None, None, a_date_complete))
+
+    def test_get_model_from_calendar(self):
+        model_calendar = get_model_from_calendar(UKCalendar())
+        logger_info('model_calendar:', model_calendar)
+        logger_info('parameters:', model_calendar.n_params)
+
+    def test_get_model_from_date_list(self):
+        model_datelist = get_model_from_datelist(
+            'datelist',
+            ['2018-01-01', '2018-01-02'],
+            ['2018-12-25', '2019-12-25']
+        )
+        logger_info('model_datelist:', model_datelist)
+        logger_info('parameters:', model_datelist.n_params)
