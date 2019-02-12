@@ -301,7 +301,7 @@ def detect_freq(a_date):
         else:
             return 'Y'
     elif min_date_delta >= pd.Timedelta(23, unit='h'):
-            # and min_date_delta <= pd.Timedelta(1, unit='d')\
+        # and min_date_delta <= pd.Timedelta(1, unit='d')\
         return 'D'
     else:
         return None
