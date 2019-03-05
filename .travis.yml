@@ -11,8 +11,6 @@ language: python
 matrix:
   include:
     - os: linux
-      python: 2.7.10
-    - os: linux
       python: 2.7.15
     - os: linux
       python: 3.6
@@ -54,8 +52,9 @@ install:
   - pip install codecov
 
 script:
-  - coverage run -m unittest discover
   - pycodestyle ./ --ignore=E402,W
+  - coverage run -m unittest discover
+
 
 after_success:
   - codecov
