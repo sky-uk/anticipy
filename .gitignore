@@ -22,3 +22,4 @@ setup.py~
 htmlcov/
 *.html
 tests/test_plots/
+.asv
