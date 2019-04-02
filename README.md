@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/sky-uk/anticipy.svg?branch=master)](https://travis-ci.com/sky-uk/anticipy)
 [![Documentation Status](https://readthedocs.org/projects/anticipy/badge/?version=latest)](https://anticipy.readthedocs.io/en/latest/?badge=latest)
 [![Code Coverage](https://codecov.io/github/sky-uk/anticipy/branch/master/graph/badge.svg)](https://codecov.io/github/sky-uk/anticipy/)
-![pulls](https://img.shields.io/docker/pulls/skyuk/anticipy.svg)
+[![pulls](https://img.shields.io/docker/pulls/skyuk/anticipy.svg)](https://cloud.docker.com/u/skyuk/repository/docker/skyuk/anticipy/general)
 
 
 # Anticipy
