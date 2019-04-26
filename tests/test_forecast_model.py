@@ -258,24 +258,24 @@ class TestForecastModel(PandasTest):
                     is_mult),
                 a)
 
-        test_model('ukcalendar', model_ukcalendar,
-                   array_ones_in_indices(8, 0),
+        test_model('ukcalendar', model_calendar_uk,
+                   [1, 1],
                    # First parameter changes value of New Year
                    array_ones_in_indices(10, 0) + np.ones(10),
                    l_is_mult=[True])
-        test_model('ukcalendar', model_ukcalendar,
-                   array_ones_in_indices(8, 0),
+        test_model('ukcalendar', model_calendar_uk,
+                   [1, 1],
                    # First parameter changes value of New Year
                    array_ones_in_indices(10, 0) + np.zeros(10),
                    l_is_mult=[False])
 
-        test_model('uscalendar', model_uscalendar,
-                   array_ones_in_indices(10, 0),
+        test_model('uscalendar', model_calendar_us,
+                   [1],
                    # First parameter changes value of New Year
                    array_ones_in_indices(10, 0) + np.ones(10),
                    l_is_mult=[True])
-        test_model('uscalendar', model_uscalendar,
-                   array_ones_in_indices(10, 0),
+        test_model('uscalendar', model_calendar_us,
+                   [1],
                    # First parameter changes value of New Year
                    array_ones_in_indices(10, 0) + np.zeros(10),
                    l_is_mult=[False])
@@ -996,9 +996,18 @@ class TestForecastModel(PandasTest):
             model_season_wday.validate_input(
                 None, None, a_date_complete))
 
-    def test_get_model_from_calendar(self):
-        model_calendar = get_model_from_calendar(UKCalendar())
+    def test_get_model_from_calendars(self):
+        model_calendar = get_model_from_calendars(CalendarChristmasUK())
         logger_info('model_calendar:', model_calendar)
+        self.assertEquals(model_calendar.n_params, 1)
+        logger_info('parameters:', model_calendar.n_params)
+
+        model_calendar = get_model_from_calendars(
+            [CalendarChristmasUK(), CalendarBankHolUK()],
+            'calendar2'
+        )
+        logger_info('model_calendar:', model_calendar)
+        self.assertEquals(model_calendar.n_params, 2)
         logger_info('parameters:', model_calendar.n_params)
 
     def test_get_model_from_date_list(self):
