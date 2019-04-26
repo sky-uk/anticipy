@@ -912,7 +912,7 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                 l_season_weekly,
                 l_model_naive=l_model_naive,
                 l_model_calendar=l_model_calendar
-              )
+            )
             l_dict_result += [dict_result_tmp]
     # Generate output
     dict_result = aggregate_forecast_dict_results(l_dict_result)
@@ -1091,11 +1091,34 @@ def run_forecast_single(df_y,
     l_df_data += [df_actuals]
 
     if l_model_trend is None:
+        # By default use linear trend, and piecewise linear for series > 2y
+        if 'date' in df_y.columns:
+            # Add calendar models
+            s_date_tmp = df_y.date
+            if 'weight' in df_y.columns:
+                s_date_tmp = s_date_tmp.loc[df_y.weight > 0]
+
+            s_date = s_date_tmp.sort_values().drop_duplicates()
+            max_date_delta = s_date.max() - s_date.min()
+
+            if pd.isna(max_date_delta):
+                use_ramp = False
+            else:
+                use_ramp = (
+                    # Need more than 2 full years
+                    (max_date_delta > pd.Timedelta(2 * 365, unit='d'))
+                )
+        else:
+            use_ramp = False
         # By default, try linear and piecewise linear
-        l_model_trend = [
-            # forecast_models.model_naive,
-            forecast_models.model_linear,
-            forecast_models.model_linear + forecast_models.model_ramp]
+        if use_ramp:
+            l_model_trend = [
+                # forecast_models.model_naive,
+                forecast_models.model_linear,
+                forecast_models.model_linear + forecast_models.model_ramp]
+        else:
+            l_model_trend = [forecast_models.model_linear]
+
     l_model_season_add = None
     l_model_season_mult = None
     if l_model_season is None:
