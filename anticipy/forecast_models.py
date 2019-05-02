@@ -1601,8 +1601,6 @@ def get_model_from_calendars(l_calendar, name=None):
     if isinstance(l_calendar, AbstractHolidayCalendar):
         l_calendar = [l_calendar]
 
-    print(l_calendar)
-
     # Filter out calendars without rules
     l_calendar = [calendar for calendar in l_calendar if calendar.rules]
 
