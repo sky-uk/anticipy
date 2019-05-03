@@ -1437,6 +1437,8 @@ def get_f_model_dummy(dummy):
         f_dummy = dummy
     elif isinstance(dummy, Holiday):
         f_dummy = get_f_dummy_from_holiday(dummy)
+    elif isinstance(dummy, AbstractHolidayCalendar):
+        f_dummy = get_f_dummy_from_calendar(dummy)
     else:
         # If dummy is a list, convert to function
         f_dummy = get_f_dummy_from_list(dummy)
@@ -1495,6 +1497,21 @@ def get_f_dummy_from_list(list_check):
                 'date-like values: %s', list_check)
 
 
+def get_f_dummy_from_calendar(calendar):
+    # Generate dummy model function from a pandas HolidayCalendar
+
+    def f_dummy_calendar(a_x, a_date, **kwargs):
+        # TODO: If we can pass dict_cal as an argument,
+        #       use pre-loaded list of dates for performance
+
+        # TODO: If we can guarantee sorted dates,
+        #       change this to a_date[0], a_date[-1] for performance
+        list_check_date = calendar.holidays(a_date.min(), a_date.max())
+        return np.isin(a_date, list_check_date).astype(float)
+
+    return f_dummy_calendar
+
+
 def get_f_dummy_from_holiday(holiday):
     def f_dummy_holiday(a_x, a_date, **kwargs):
         # TODO: If we can pass dict_cal as an argument,
@@ -1526,11 +1543,8 @@ model_dummy_month_start = get_model_dummy(
     (a_date.day == 1).astype(float))
 
 
-class UKCalendar(AbstractHolidayCalendar):
+class CalendarBankHolUK(AbstractHolidayCalendar):
     rules = [
-        Holiday('New Year\'s Day', month=1, day=1, observance=nearest_workday),
-        Holiday('Christmas', month=12, day=25, observance=nearest_workday),
-        Holiday('Boxing Day', month=10, day=26, observance=nearest_workday),
         GoodFriday,
         EasterMonday,
         # Early May Bank Holiday - first Monday in May
@@ -1542,15 +1556,23 @@ class UKCalendar(AbstractHolidayCalendar):
                 offset=DateOffset(weekday=MO(-1))
                 ),
         # August Bank holiday - Last Monday in August
-        Holiday('August Bank Holiday', month=8, day=1,
-                offset=DateOffset(weekday=MO(1))
+        Holiday('August Bank Holiday', month=8, day=30,
+                offset=DateOffset(weekday=MO(-1))
                 )
     ]
 
 
-def get_model_from_calendar(calendar):
+class CalendarChristmasUK(AbstractHolidayCalendar):
+    rules = [
+        Holiday('New Year\'s Day', month=1, day=1, observance=nearest_workday),
+        Holiday('Christmas', month=12, day=25, observance=nearest_workday),
+        Holiday('Boxing Day', month=12, day=26, observance=nearest_workday),
+    ]
+
+
+def get_model_from_calendars(l_calendar, name=None):
     """
-    Create a ForecastModel based on a pandas Calendar.
+    Create a ForecastModel based on a list of pandas Calendars.
 
     :param calendar:
     :type calendar: pandas.tseries.AbstractHolidayCalendar
@@ -1575,9 +1597,20 @@ def get_model_from_calendar(calendar):
         model_calendar = get_model_from_calendar(USFederalHolidayCalendar())
 
     """
-    l_model_dummy = [get_model_dummy(rule.name, rule)
-                     for rule in calendar.rules]
-    assert (len(l_model_dummy)), 'Need 1+ rules in calendar'
+
+    if isinstance(l_calendar, AbstractHolidayCalendar):
+        l_calendar = [l_calendar]
+
+    # Filter out calendars without rules
+    l_calendar = [calendar for calendar in l_calendar if calendar.rules]
+
+    assert len(l_calendar), 'Need 1+ valid calendars'
+
+    if name is None:
+        name = l_calendar[0].name
+
+    l_model_dummy = [get_model_dummy(calendar.name, calendar)
+                     for calendar in l_calendar]
     f_model_prod = np.prod(l_model_dummy)
     f_model_sum = np.sum(l_model_dummy)
 
@@ -1593,7 +1626,7 @@ def get_model_from_calendar(calendar):
         return f_all_dummies(a_x, a_date, params, is_mult, **kwargs)
 
     model_calendar = ForecastModel(
-        calendar.name,
+        name,
         len(l_model_dummy),
         _f_model_calendar,
         _f_init_params_calendar
@@ -1601,8 +1634,10 @@ def get_model_from_calendar(calendar):
     return model_calendar
 
 
-model_ukcalendar = get_model_from_calendar(UKCalendar())
-model_uscalendar = get_model_from_calendar(USFederalHolidayCalendar())
+model_calendar_uk = get_model_from_calendars(
+    [CalendarChristmasUK(), CalendarBankHolUK()], 'calendar_uk')
+model_calendar_us = get_model_from_calendars(USFederalHolidayCalendar(),
+                                             'calendar_us')
 
 
 def get_model_from_datelist(name=None, *args):

@@ -789,7 +789,8 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                  l_season_yearly=None,
                  l_season_weekly=None,
                  verbose=None,
-                 l_model_naive=None
+                 l_model_naive=None,
+                 l_model_calendar=None
                  ):
     """
     Generate forecast for one or more input time series
@@ -888,27 +889,30 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                                    find_outliers,
                                    l_season_yearly,
                                    l_season_weekly,
-                                   l_model_naive=l_model_naive
+                                   l_model_naive=l_model_naive,
+                                   l_model_calendar=l_model_calendar
                                    )
     else:
         for src_tmp in df_y.source.drop_duplicates():
             if verbose:
                 logger.info('Running forecast for source: %s', src_tmp)
             df_y_tmp = df_y.loc[df_y.source == src_tmp].reset_index(drop=True)
-            dict_result_tmp = run_forecast_single(df_y_tmp,
-                                                  l_model_trend,
-                                                  l_model_season,
-                                                  date_start_actuals,
-                                                  src_tmp,
-                                                  extrapolate_years,
-                                                  season_add_mult,
-                                                  include_all_fits,
-                                                  False,  # Simplify output
-                                                  find_outliers,
-                                                  l_season_yearly,
-                                                  l_season_weekly,
-                                                  l_model_naive=l_model_naive
-                                                  )
+            dict_result_tmp = run_forecast_single(
+                df_y_tmp,
+                l_model_trend,
+                l_model_season,
+                date_start_actuals,
+                src_tmp,
+                extrapolate_years,
+                season_add_mult,
+                include_all_fits,
+                False,  # Simplify output
+                find_outliers,
+                l_season_yearly,
+                l_season_weekly,
+                l_model_naive=l_model_naive,
+                l_model_calendar=l_model_calendar
+            )
             l_dict_result += [dict_result_tmp]
     # Generate output
     dict_result = aggregate_forecast_dict_results(l_dict_result)
@@ -969,7 +973,8 @@ def run_forecast_single(df_y,
                         find_outliers=False,
                         l_season_yearly=None,
                         l_season_weekly=None,
-                        l_model_naive=None
+                        l_model_naive=None,
+                        l_model_calendar=None,
                         ):
     """
     Generate forecast for one input time series
@@ -1086,11 +1091,34 @@ def run_forecast_single(df_y,
     l_df_data += [df_actuals]
 
     if l_model_trend is None:
+        # By default use linear trend, and piecewise linear for series > 2y
+        if 'date' in df_y.columns:
+            # Add calendar models
+            s_date_tmp = df_y.date
+            if 'weight' in df_y.columns:
+                s_date_tmp = s_date_tmp.loc[df_y.weight > 0]
+
+            s_date = s_date_tmp.sort_values().drop_duplicates()
+            max_date_delta = s_date.max() - s_date.min()
+
+            if pd.isna(max_date_delta):
+                use_ramp = False
+            else:
+                use_ramp = (
+                    # Need more than 2 full years
+                    (max_date_delta > pd.Timedelta(2 * 365, unit='d'))
+                )
+        else:
+            use_ramp = False
         # By default, try linear and piecewise linear
-        l_model_trend = [
-            # forecast_models.model_naive,
-            forecast_models.model_linear,
-            forecast_models.model_linear + forecast_models.model_ramp]
+        if use_ramp:
+            l_model_trend = [
+                # forecast_models.model_naive,
+                forecast_models.model_linear,
+                forecast_models.model_linear + forecast_models.model_ramp]
+        else:
+            l_model_trend = [forecast_models.model_linear]
+
     l_model_season_add = None
     l_model_season_mult = None
     if l_model_season is None:
@@ -1117,6 +1145,33 @@ def run_forecast_single(df_y,
 
     l_model_add = get_list_model(l_model_trend, l_model_season_add, 'add')
     l_model_mult = get_list_model(l_model_trend, l_model_season_mult, 'mult')
+
+    if l_model_calendar is not None and 'date' in df_y.columns:
+        # Add calendar models
+
+        s_date_tmp = df_y.date
+        if 'weight' in df_y.columns:
+            s_date_tmp = s_date_tmp.loc[df_y.weight > 0]
+
+        # Requires daily samples, at least one year worth of data
+        # TODO: Should also check for missing calendar dates
+        s_date = s_date_tmp.sort_values().drop_duplicates()
+        min_date_delta = s_date.diff().min()
+        max_date_delta = s_date.max() - s_date.min()
+
+        if pd.isna(min_date_delta) or pd.isna(max_date_delta):
+            use_calendar = False
+        else:
+            use_calendar = (
+                # Need more than a full year
+                (max_date_delta > pd.Timedelta(365, unit='d')) &
+                # Need at least daily samples
+                (min_date_delta <= pd.Timedelta(1, unit='d'))
+            )
+        if use_calendar:
+            l_model_add = get_list_model(l_model_add, l_model_calendar, 'add')
+            l_model_mult = get_list_model(
+                l_model_mult, l_model_calendar, 'mult')
 
     if season_add_mult == 'add':
         l_model = l_model_add
