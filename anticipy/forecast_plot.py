@@ -52,7 +52,8 @@ except ImportError:
 # ---- Plotting functions
 def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                                 width=None, height=None, title=None, dpi=70,
-                                show_legend=True):
+                                show_legend=True,
+                                include_interval=False):
     """
     Creates matplotlib plot from forecast dataframe
 
@@ -122,7 +123,8 @@ def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
             color=for_col, marker='None', linestyle='solid', label='Forecast')
 
         # Fill area between 5th and 95th prediction interval
-        if ('q5' in df_fcast.columns) and ('q95' in df_fcast.columns):
+        if include_interval and \
+                ('q5' in df_fcast.columns) and ('q95' in df_fcast.columns):
             where_to_fill = (source_filt &
                              (~df_fcast['is_actuals']) &
                              (~df_fcast['q5'].isnull()) &
@@ -131,7 +133,8 @@ def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                             where=where_to_fill,
                             facecolor=for_col, alpha=0.2)
 
-        if ('q20' in df_fcast.columns) and ('q80' in df_fcast.columns):
+        if include_interval and\
+                ('q20' in df_fcast.columns) and ('q80' in df_fcast.columns):
             # Fill area between 20th and 80th prediction interval
             where_to_fill_2 = (source_filt &
                                (~df_fcast['is_actuals']) &
@@ -169,7 +172,8 @@ def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
 
 def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                             width=None, height=None, title=None,
-                            show_legend=False, add_rangeslider=False):
+                            show_legend=False, add_rangeslider=False,
+                            include_interval=False):
     """
     Creates matplotlib plot from forecast dataframe
 
@@ -265,7 +269,8 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
         fig.append_trace(forecast, x, y)
 
         # Fill area between 5th and 95th prediction interval
-        if ('q5' in df_fcast.columns) and ('q95' in df_fcast.columns):
+        if include_interval and \
+                ('q5' in df_fcast.columns) and ('q95' in df_fcast.columns):
             q5 = go.Scatter(
                 x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
                 y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].q5,
@@ -290,7 +295,8 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
             fig.append_trace(q95, x, y)
 
         # Fill area between 5th and 95th prediction interval
-        if ('q20' in df_fcast.columns) and ('q80' in df_fcast.columns):
+        if include_interval and \
+                ('q20' in df_fcast.columns) and ('q80' in df_fcast.columns):
             q20 = go.Scatter(
                 x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
                 y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].q20,
@@ -361,7 +367,9 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
 
 
 def plot_forecast(df_fcast, output, path=None, width=None, height=None,
-                  title=None, dpi=70, show_legend=True, auto_open=False):
+                  title=None, dpi=70, show_legend=True, auto_open=False,
+                  include_interval=False,
+                  ):
     """
     Generates matplotlib or plotly plot and saves it respectively as png or
     html
@@ -396,6 +404,7 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
     """
 
     assert isinstance(df_fcast, pd.DataFrame)
+    add_rangeslider = False   # Feature currently disabled
 
     if not path and (output == 'html' or output == 'png'):
         logger.error('No export path provided.')
@@ -418,11 +427,12 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
         if _matplotlib_imported:
             fig = _matplotlib_forecast_create(df_fcast, subplots, sources,
                                               nrows, ncols, width, height,
-                                              title, dpi, show_legend)
+                                              title, dpi, show_legend,
+                                              include_interval)
 
             path = '{}.png'.format(path)
             dirname, fname = os.path.split(path)
-            if not os.path.exists(dirname):
+            if dirname != '' and not os.path.exists(dirname):
                 logger.error('Path missing {}'.format(path))
                 os.makedirs(dirname)
             plt.savefig(path, dpi=dpi)
@@ -437,7 +447,9 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
         if _plotly_imported:
             fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
-                                          show_legend)
+                                          show_legend,
+                                          add_rangeslider,
+                                          include_interval)
             path = '{}.html'.format(path)
             py.offline.plot(fig, filename=path, show_link=False,
                             auto_open=auto_open, include_plotlyjs='cdn')
@@ -449,7 +461,9 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
             py.offline.init_notebook_mode(connected=True)
             fig = _plotly_forecast_create(df_fcast, subplots, sources, nrows,
                                           ncols, width, height, title,
-                                          show_legend)
+                                          show_legend,
+                                          add_rangeslider,
+                                          include_interval)
             return py.offline.iplot(fig, show_link=False)
         else:
             logger.error('Please make sure that both plotly and ipython '
