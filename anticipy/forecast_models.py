@@ -1561,6 +1561,25 @@ class CalendarBankHolUK(AbstractHolidayCalendar):
                 )
     ]
 
+# Bank Holidays for Italy
+class CalendarBankHolIta(AbstractHolidayCalendar):
+    rules = [
+        GoodFriday,
+        EasterMonday,
+        # Early May Bank Holiday - first Monday in May
+        Holiday('Early May Bank Holiday', month=5, day=1,
+                offset=DateOffset(weekday=MO(1))
+                ),
+        # Spring Bank Holiday - Last Monday in May
+        Holiday('Spring Bank Holiday', month=5, day=31,
+                offset=DateOffset(weekday=MO(-1))
+                ),
+        # August Bank holiday - Last Monday in August
+        Holiday('August Bank Holiday', month=8, day=30,
+                offset=DateOffset(weekday=MO(-1))
+                )
+    ]
+
 
 class CalendarChristmasUK(AbstractHolidayCalendar):
     rules = [
@@ -1638,6 +1657,9 @@ model_calendar_uk = get_model_from_calendars(
     [CalendarChristmasUK(), CalendarBankHolUK()], 'calendar_uk')
 model_calendar_us = get_model_from_calendars(USFederalHolidayCalendar(),
                                              'calendar_us')
+# Calendar for Italy
+model_calendar_ita = get_model_from_calendars(
+    [CalendarChristmasUK(), CalendarBankHolUK()], 'calendar_uk')
 
 
 def get_model_from_datelist(name=None, *args):
