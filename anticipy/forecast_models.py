@@ -1562,25 +1562,6 @@ class CalendarBankHolUK(AbstractHolidayCalendar):
                 )
     ]
 
-# Bank Holidays for Italy
-class CalendarBankHolIta(AbstractHolidayCalendar):
-    rules = [
-        GoodFriday,
-        EasterMonday,
-        # Early May Bank Holiday - first Monday in May
-        Holiday('Early May Bank Holiday', month=5, day=1,
-                offset=DateOffset(weekday=MO(1))
-                ),
-        # Spring Bank Holiday - Last Monday in May
-        Holiday('Spring Bank Holiday', month=5, day=31,
-                offset=DateOffset(weekday=MO(-1))
-                ),
-        # August Bank holiday - Last Monday in August
-        Holiday('August Bank Holiday', month=8, day=30,
-                offset=DateOffset(weekday=MO(-1))
-                )
-    ]
-
 
 class CalendarChristmasUK(AbstractHolidayCalendar):
     rules = [
@@ -1588,6 +1569,29 @@ class CalendarChristmasUK(AbstractHolidayCalendar):
         Holiday('Christmas', month=12, day=25, observance=next_monday),
         Holiday('Boxing Day', month=12, day=26,
                 observance=next_monday_or_tuesday),
+    ]
+
+
+# Bank Holidays for Italy
+class CalendarBankHolIta(AbstractHolidayCalendar):
+    rules = [
+        EasterMonday,
+        Holiday('Festa della Liberazione', month=4, day=25),
+        Holiday('Festa del lavoro', month=5, day=1),
+        Holiday('Festa della Repubblica', month=6, day=2),
+        Holiday('Ferragosto', month=8, day=15),
+        Holiday('Tutti i Santi', month=11, day=1),
+        Holiday('Immacolata Concezione', month=12, day=8),
+    ]
+
+
+class CalendarChristmasIta(AbstractHolidayCalendar):
+    rules = [
+        Holiday('New Year\'s Day', month=1, day=1, observance=next_monday),
+        Holiday('Christmas', month=12, day=25, observance=next_monday),
+        Holiday('Santo Stefano', month=12, day=26,
+                observance=next_monday_or_tuesday),
+        Holiday('Epiphany', month=1, day=6, observance=next_monday),
     ]
 
 
