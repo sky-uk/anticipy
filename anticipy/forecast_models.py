@@ -21,7 +21,8 @@ import logging
 import numpy as np
 import pandas as pd
 from pandas.tseries.holiday import Holiday, AbstractHolidayCalendar, \
-    MO, nearest_workday, GoodFriday, EasterMonday, USFederalHolidayCalendar
+    MO, nearest_workday, next_monday, next_monday_or_tuesday, \
+    GoodFriday, EasterMonday, USFederalHolidayCalendar
 from pandas.tseries.offsets import DateOffset
 
 # -- Private Imports
@@ -1583,9 +1584,10 @@ class CalendarBankHolIta(AbstractHolidayCalendar):
 
 class CalendarChristmasUK(AbstractHolidayCalendar):
     rules = [
-        Holiday('New Year\'s Day', month=1, day=1, observance=nearest_workday),
-        Holiday('Christmas', month=12, day=25, observance=nearest_workday),
-        Holiday('Boxing Day', month=12, day=26, observance=nearest_workday),
+        Holiday('New Year\'s Day', month=1, day=1, observance=next_monday),
+        Holiday('Christmas', month=12, day=25, observance=next_monday),
+        Holiday('Boxing Day', month=12, day=26,
+                observance=next_monday_or_tuesday),
     ]
 
 
