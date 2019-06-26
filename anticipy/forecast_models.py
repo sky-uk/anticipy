@@ -284,6 +284,7 @@ class ForecastModel:
        With boundaries to ensure model slope >=0"
        "model_quasilinear",3, "y=A*(x^B) + C", "Quasilinear model"
        "model_exp",2, "y=A * B^x", "Exponential model"
+       "model_decay",4, "Y = A * e^(B*(x-C)) + D", "Exponential decay model"
        "model_step",2, "y=0 if x<A, y=B if x>=A", "Step model"
        "model_two_steps",4, "see model_step", "2 step models.
        Parameter initialization is aware of # of steps."
@@ -723,6 +724,7 @@ model_quasilinear = ForecastModel('quasilinear', 3, _f_model_quasilinear)
 
 
 # - Exponential model: math::  Y = A * B^t
+# TODO: Deprecate - not safe to use
 def _f_model_exp(a_x, a_date, params, is_mult=False, **kwargs):
     (A, B) = params
     y = A * np.power(B, a_x)
@@ -732,20 +734,33 @@ def _f_model_exp(a_x, a_date, params, is_mult=False, **kwargs):
 model_exp = ForecastModel('exponential', 2, _f_model_exp)
 
 
-def f_init_params_exp_dec(a_x=None, a_y=None, a_date=None, is_mult=False):
-    """ B param must be <= 1 to have exponential decreasing """
-    params = _get_f_init_params_default(2)(a_x, a_y, a_date)
-    return params
+# - Exponential decay model: math::  Y = A * e^(B*(x-C)) + D
+def _f_model_decay(a_x, a_date, params, is_mult=False, **kwargs):
+    (A, B, C, D) = params
+    y = A * np.exp(B * (a_x - C)) + D
+    return y
 
 
-def f_bounds_exp_dec(a_x=None, a_y=None, a_date=None):
-    # first param should be between 0 and inf
-    return [-np.inf, -1], [np.inf, 1]
+def f_init_params_decay(a_x=None, a_y=None, a_date=None, is_mult=False):
+    if a_y is None:
+        return np.array([0, 0, 0, 0])
+    A = a_y[0] - a_y[-1]
+    B = np.log(np.min(a_y) / np.max(a_y)) / (len(a_y) - 1)
+    if B > 0 or B == -np.inf:
+        B = -0.5
+    C = 0.
+    D = a_y[-1]
+    return np.array([A, B, C, D])
 
 
-model_exp_dec = ForecastModel('exponential_dec', 2, _f_model_exp,
-                              f_init_params=f_init_params_exp_dec,
-                              f_bounds=f_bounds_exp_dec)
+def f_bounds_decay(a_x=None, a_y=None, a_date=None):
+    # B should be between 0 and inf
+    return [-np.inf, -np.inf, -np.inf, -np.inf], [np.inf, 0, np.inf, np.inf]
+
+
+model_decay = ForecastModel('decay', 4, _f_model_decay,
+                            f_init_params=f_init_params_decay,
+                            f_bounds=f_bounds_decay)
 
 
 # - Step function: :math:`Y = {0, if x < A | B, if x >= A}`

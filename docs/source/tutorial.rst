@@ -241,6 +241,7 @@ The following trend and seasonality models are currently supported. They are ava
    "model_linear_nondec",2, "y=Ax + B", "Non decreasing linear model. With boundaries to ensure model slope >=0"
    "model_quasilinear",3, "y=A*(x^B) + C", "Quasilinear model"
    "model_exp",2, "y=A * B^x", "Exponential model"
+   "model_decay",4, "Y = A * e^(B*(x-C)) + D", "Exponential decay model"
    "model_step",2, "y=0 if x<A, y=B if x>=A", "Step model"
    "model_two_steps",4, "see model_step", "2 step models. Parameter initialization is aware of # of steps."
    "model_sigmoid_step",3, "y = A + (B - A) / (1 + np.exp(- D * (x - C)))", "Sigmoid step model"
