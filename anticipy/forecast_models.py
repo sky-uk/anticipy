@@ -21,7 +21,8 @@ import logging
 import numpy as np
 import pandas as pd
 from pandas.tseries.holiday import Holiday, AbstractHolidayCalendar, \
-    MO, nearest_workday, GoodFriday, EasterMonday, USFederalHolidayCalendar
+    MO, nearest_workday, next_monday, next_monday_or_tuesday, \
+    GoodFriday, EasterMonday, USFederalHolidayCalendar
 from pandas.tseries.offsets import DateOffset
 
 # -- Private Imports
@@ -1564,9 +1565,33 @@ class CalendarBankHolUK(AbstractHolidayCalendar):
 
 class CalendarChristmasUK(AbstractHolidayCalendar):
     rules = [
-        Holiday('New Year\'s Day', month=1, day=1, observance=nearest_workday),
-        Holiday('Christmas', month=12, day=25, observance=nearest_workday),
-        Holiday('Boxing Day', month=12, day=26, observance=nearest_workday),
+        Holiday('New Year\'s Day', month=1, day=1, observance=next_monday),
+        Holiday('Christmas', month=12, day=25, observance=next_monday),
+        Holiday('Boxing Day', month=12, day=26,
+                observance=next_monday_or_tuesday),
+    ]
+
+
+# Bank Holidays for Italy
+class CalendarBankHolIta(AbstractHolidayCalendar):
+    rules = [
+        EasterMonday,
+        Holiday('Festa della Liberazione', month=4, day=25),
+        Holiday('Festa del lavoro', month=5, day=1),
+        Holiday('Festa della Repubblica', month=6, day=2),
+        Holiday('Ferragosto', month=8, day=15),
+        Holiday('Tutti i Santi', month=11, day=1),
+        Holiday('Immacolata Concezione', month=12, day=8),
+    ]
+
+
+class CalendarChristmasIta(AbstractHolidayCalendar):
+    rules = [
+        Holiday('New Year\'s Day', month=1, day=1, observance=next_monday),
+        Holiday('Christmas', month=12, day=25, observance=next_monday),
+        Holiday('Santo Stefano', month=12, day=26,
+                observance=next_monday_or_tuesday),
+        Holiday('Epiphany', month=1, day=6, observance=next_monday),
     ]
 
 
@@ -1638,6 +1663,9 @@ model_calendar_uk = get_model_from_calendars(
     [CalendarChristmasUK(), CalendarBankHolUK()], 'calendar_uk')
 model_calendar_us = get_model_from_calendars(USFederalHolidayCalendar(),
                                              'calendar_us')
+# Calendar for Italy
+model_calendar_ita = get_model_from_calendars(
+    [CalendarChristmasUK(), CalendarBankHolUK()], 'calendar_uk')
 
 
 def get_model_from_datelist(name=None, *args):
