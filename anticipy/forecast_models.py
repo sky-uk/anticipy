@@ -737,7 +737,7 @@ model_exp = ForecastModel('exponential', 2, _f_model_exp)
 # - Exponential decay model: math::  Y = A * e^(B*(x-C)) + D
 def _f_model_decay(a_x, a_date, params, is_mult=False, **kwargs):
     (A, B, C, D) = params
-    y = A * np.exp(B * (a_x - C)) + D
+    y = A * np.exp(B * (a_x + C)) + D
     return y
 
 
@@ -755,7 +755,7 @@ def f_init_params_decay(a_x=None, a_y=None, a_date=None, is_mult=False):
 
 def f_bounds_decay(a_x=None, a_y=None, a_date=None):
     # B should be between 0 and inf
-    return [-np.inf, -np.inf, -np.inf, -np.inf], [np.inf, 0, np.inf, np.inf]
+    return [-np.inf, -np.inf, 0, -np.inf], [np.inf, 0, np.inf, np.inf]
 
 
 model_decay = ForecastModel('decay', 4, _f_model_decay,
