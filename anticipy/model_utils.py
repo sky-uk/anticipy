@@ -113,6 +113,7 @@ dict_dateoffset_input = dict(
     H='hours'
 )
 
+
 def get_s_x_extrapolate(
         date_start_actuals,
         date_end_actuals,
@@ -173,8 +174,6 @@ def get_s_x_extrapolate(
                         extrapolate_units}
         date_end_forecast = date_end_actuals + \
             pd.DateOffset(**offset_input)
-            #pd.to_timedelta(extrapolate_units, unit=freq_short)
-
 
         index = pd.date_range(
             date_start_actuals,
