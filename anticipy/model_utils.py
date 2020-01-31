@@ -271,7 +271,7 @@ def get_s_aic_c_best_result_key(s_aic_c):
     if s_aic_c.empty or s_aic_c.isnull().all():
         return None
     if (s_aic_c.values == -np.inf).any():
-        (key_best_result,) = (s_aic_c == -np.inf).nonzero()
+        (key_best_result,) = (s_aic_c == -np.inf).to_numpy().nonzero()[0]
         key_best_result = s_aic_c.index[key_best_result.min()]
     else:
         key_best_result = s_aic_c.argmin()
