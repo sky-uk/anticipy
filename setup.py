@@ -15,7 +15,8 @@ dependencies = [
 ]
 
 extras_require = {
-    'extras': ['matplotlib>=2.2.3', 'ipython>=5.8.0']
+    'extras': ['matplotlib>=2.2.3', 'ipython>=5.8.0',
+               'notebook>=5.3', 'ipywidgets==7.5']
 }
 
 dependency_links = [
