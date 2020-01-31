@@ -118,7 +118,8 @@ class PandasTest(unittest.TestCase):
         """
         le = left
         ri = right
-        pdt._check_isinstance(le, ri, pd.Series)
+        self.assertIsInstance(le, pd.Series)
+        self.assertIsInstance(ri, pd.Series)
         if ignore_index:
             le = le.reset_index(drop=True)
             ri = ri.reset_index(drop=True)
