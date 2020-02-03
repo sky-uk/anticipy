@@ -114,17 +114,13 @@ class TestModelUtils(PandasTest):
             self.assertLessEqual(
                 s_x.index.max(),
                 ts.index.max() +
-                1.1 *
-                pd.Timedelta(
-                    1,
-                    'Y'))
+                # add 1.1 years
+                1.1 * pd.Timedelta(365, 'D'))
             self.assertGreaterEqual(
                 s_x.index.max(),
                 ts.index.max() +
-                0.9 *
-                pd.Timedelta(
-                    1,
-                    'Y'))
+                # add 0.9 years
+                0.9 * pd.Timedelta(365, 'D'))
 
             # Check that all actuals values are in extrapolated series
             self.assertEquals(np.setdiff1d(ts.index, s_x.index).size, 0)

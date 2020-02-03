@@ -1251,11 +1251,13 @@ def run_forecast_single(df_y,
         l_df_optimize_info,
         sort=False,
         ignore_index=True)
-
     # Determine best fits
     df_best_fit = (
-        df_metadata.loc[df_metadata.is_fit].sort_values('aic_c').groupby(
-            'source', as_index=False).first()[['source_long', 'model']]
+        df_metadata.loc[df_metadata.is_fit]
+        .sort_values('aic_c')
+        [['source', 'source_long', 'model']]
+        .groupby('source', as_index=False)
+        .first()
     )
     df_best_fit['is_best_fit'] = True
 

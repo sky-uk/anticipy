@@ -94,14 +94,24 @@ def apply_a_x_scaling(a_x, model=None, scaling_factor=100.0):
     return a_x
 
 
-dict_freq_units_per_year = {
-    'A': 1.0,
-    'Y': 1.0,
-    'D': 365.0,
-    'W': 52.0,
-    'M': 12,
-    'Q': 4,
-    'H': 24 * 365.0}
+dict_freq_units_per_year = dict(
+    A=1.0,
+    Y=1.0,
+    D=365.0,
+    W=52.0,
+    M=12,
+    Q=4,
+    H=24 * 365.0
+)
+
+dict_dateoffset_input = dict(
+    Y='years',
+    A='years',
+    M='months',
+    W='weeks',
+    D='days',
+    H='hours'
+)
 
 
 def get_s_x_extrapolate(
@@ -160,8 +170,10 @@ def get_s_x_extrapolate(
         # change to dict to support more frequencies
         freq_units_per_year = dict_freq_units_per_year.get(freq_short, 365.0)
         extrapolate_units = extrapolate_years * freq_units_per_year
+        offset_input = {dict_dateoffset_input.get(freq_short):
+                        extrapolate_units}
         date_end_forecast = date_end_actuals + \
-            pd.to_timedelta(extrapolate_units, unit=freq_short)
+            pd.DateOffset(**offset_input)
 
         index = pd.date_range(
             date_start_actuals,
@@ -258,7 +270,7 @@ def get_s_aic_c_best_result_key(s_aic_c):
     if s_aic_c.empty or s_aic_c.isnull().all():
         return None
     if (s_aic_c.values == -np.inf).any():
-        (key_best_result,) = (s_aic_c == -np.inf).nonzero()
+        (key_best_result,) = (s_aic_c == -np.inf).to_numpy().nonzero()[0]
         key_best_result = s_aic_c.index[key_best_result.min()]
     else:
         key_best_result = s_aic_c.argmin()
