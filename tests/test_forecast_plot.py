@@ -111,13 +111,15 @@ class TestForecastPlot(PandasTest):
         path = get_file_path(base_folder, 'test_pi_mpl')
         forecast_plot.plot_forecast(df_forecast_pi, 'png', path, 900, 600,
                                     'Test Plot', show_legend=True,
-                                    auto_open=False)
+                                    auto_open=False,
+                                    include_interval=True)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
         path = get_file_path(base_folder, 'test_pi_facet_mpl')
         forecast_plot.plot_forecast(df_forecast_pi_facet, 'png', path, 1200,
                                     900, 'Test Plot', show_legend=True,
-                                    auto_open=False)
+                                    auto_open=False,
+                                    include_interval=True)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
         # Test the case where a 'None' or an empty path is provided
@@ -153,13 +155,15 @@ class TestForecastPlot(PandasTest):
         path = get_file_path(base_folder, 'test_pi_plotly')
         forecast_plot.plot_forecast(df_forecast_pi, 'html', path, 900, 600,
                                     'Test Plot', show_legend=False,
-                                    auto_open=False)
+                                    auto_open=False,
+                                    include_interval=True)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
         path = get_file_path(base_folder, 'test_pi_facet_plotly')
         forecast_plot.plot_forecast(df_forecast_pi_facet, 'html', path, 1900,
                                     1200, 'Test Plot', show_legend=False,
-                                    auto_open=False)
+                                    auto_open=False,
+                                    include_interval=True)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
         # Test the case where a 'None' or an empty path is provided
