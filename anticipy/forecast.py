@@ -1557,7 +1557,6 @@ def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1,
 
         # Take filtered actuals
         df_actuals_unfiltered = df_forecast.loc[df_forecast.is_actuals &
-                                                ~df_forecast.is_weight &
                                                 ~df_forecast.y.isnull()]
         df_actuals = (df_actuals_unfiltered[['date', 'y']]
                       .merge(df_filtered_dates, how='inner')
