@@ -2577,15 +2577,23 @@ class TestForecast(PandasTest):
         df1b.source = 's2'
         df2 = pd.concat([df1, df1b], sort=False)
 
-        # df_result2 = df2.groupby('source').apply(get_pi, n_sims=100).reset_index(drop=True)  # noqa
         df_result = get_pi(df2, n_sims=100)
         # logger_info('df_result2:', df_result2)
-        logger_info('df_result1:', df_result.groupby(
+        logger_info('df_result:', df_result.groupby(
             ['source', 'model']).head(2))
-        logger_info('df_result1:', df_result.groupby(
+        logger_info('df_result:', df_result.groupby(
             ['source', 'model']).tail(2))
         # TODO: Add checks
+        check_result(df_result)
 
+        logger.info('Test 2b - n_cum>1')
+        df_result = get_pi(df2, n_sims=100, n_cum=5)
+        # logger_info('df_result2:', df_result2)
+        logger_info('df_result:', df_result.groupby(
+            ['source', 'model']).head(2))
+        logger_info('df_result:', df_result.groupby(
+            ['source', 'model']).tail(2))
+        # TODO: Add checks
         check_result(df_result)
 
         # Test 3 - Input has actuals but no forecast - can happen if fit not
@@ -2858,18 +2866,73 @@ class TestForecast(PandasTest):
         check_result(df_result)
 
     def test_forecast_pi_missing(self):
+        logger.info('Test1a - Generate forecast, check PI is added')
         path_candy = os.path.join(base_folder, 'candy_production.csv')
-        df_monthly_candy = pd.read_csv(path_candy)
+        df_monthly_candy = pd.read_csv(path_candy).head(100)
         dict_result = run_forecast(
             df_monthly_candy,
             col_name_y='IPG3113N',
             col_name_date='observation_date',
             extrapolate_years=2,
+            l_model_season=[],
+            simplify_output=False)
+        df_fcast = dict_result.get('forecast')
+        logger_info('df_fcast: ', df_fcast.tail())
+        self.assertIn('q5', df_fcast.columns)
+
+        logger.info('Test1b - Generate forecast with n_cum=30')
+        dict_result = run_forecast(
+            df_monthly_candy,
+            col_name_y='IPG3113N',
+            col_name_date='observation_date',
+            extrapolate_years=2,
+            l_model_season=[],
+            simplify_output=False,
+            n_cum=30
+        )
+
+        df_fcast = dict_result.get('forecast')
+        logger_info('df_result2:', df_fcast.groupby(
+            ['source', 'model']).tail(2))
+        self.assertIn('q5', df_fcast.columns)
+
+        logger.info('Test2a - Generate forecast, multiple models,'
+                    ' check PI is added')
+
+        df_monthly_candy2 = pd.concat(
+            [df_monthly_candy.assign(source='s1'),
+             df_monthly_candy.assign(source='s2')]
+        )
+        dict_result = run_forecast(
+            df_monthly_candy2,
+            col_name_y='IPG3113N',
+            col_name_date='observation_date',
+            extrapolate_years=2,
+            l_model_season=[],
             simplify_output=False)
 
         df_fcast = dict_result.get('forecast')
-        logger_info('df_fcast: ', df_fcast.tail())
+        logger_info('df_result head:', df_fcast.groupby(
+            ['source', 'model']).head(2))
+        logger_info('df_result tail :', df_fcast.groupby(
+            ['source', 'model']).tail(2))
+        self.assertIn('q5', df_fcast.columns)
 
+        logger.info('Test2b - Generate forecast with n_cum=30')
+        dict_result = run_forecast(
+            df_monthly_candy2,
+            col_name_y='IPG3113N',
+            col_name_date='observation_date',
+            extrapolate_years=2,
+            l_model_season=[],
+            simplify_output=False,
+            n_cum=300
+        )
+        df_fcast = dict_result.get('forecast')
+        logger_info('df_result head:', df_fcast.groupby(
+            ['source', 'model']).head(2))
+        logger_info('df_result tail :', df_fcast.groupby(
+            ['source', 'model']).tail(2))
         self.assertIn('q5', df_fcast.columns)
 
     def test_run_forecast_yearly_model(self):

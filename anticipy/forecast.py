@@ -920,7 +920,8 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                 l_season_yearly,
                 l_season_weekly,
                 l_model_naive=l_model_naive,
-                l_model_calendar=l_model_calendar
+                l_model_calendar=l_model_calendar,
+                n_cum=n_cum
             )
             l_dict_result += [dict_result_tmp]
     # Generate output
@@ -1455,7 +1456,7 @@ def get_pi(df_forecast, n_sims=100, n_cum=1):
     if 'source' in df_forecast.columns and df_forecast.source.nunique() > 1:
         df_result = (
             df_forecast.groupby('source', as_index=False)
-            .apply(_get_pi_single_source, n_sims, n_cum)
+            .apply(_get_pi_single_source, n_sims=n_sims, n_cum=n_cum)
             .sort_values(['source', 'is_actuals', 'date'])
             .reset_index(drop=True)
         )
