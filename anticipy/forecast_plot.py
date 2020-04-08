@@ -287,14 +287,14 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                 y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].q95,
                 name="95% PI",
                 fill='tonexty',
-                fillcolor='rgba(248,118,109,0.1)',
+                fillcolor='rgba(248,118,109,0.2)',
                 line=dict(color='#F8766D', width=0),
                 mode='lines',
                 showlegend=False,
                 legendgroup='forecast')
             fig.append_trace(q95, x, y)
 
-        # Fill area between 5th and 95th prediction interval
+        # Fill area between 20th and 80th prediction interval
         if include_interval and \
                 ('q20' in df_fcast.columns) and ('q80' in df_fcast.columns):
             q20 = go.Scatter(
@@ -313,7 +313,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                 y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].q80,
                 name="80% PI",
                 fill='tonexty',
-                fillcolor='rgba(248,118,109,0.1)',
+                fillcolor='rgba(248,118,109,0.2)',
                 line=dict(color='#F8766D', width=0),
                 mode='lines',
                 showlegend=False,
