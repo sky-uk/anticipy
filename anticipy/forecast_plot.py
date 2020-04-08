@@ -358,6 +358,8 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
 def plot_forecast(df_fcast, output, path=None, width=None, height=None,
                   title=None, dpi=70, show_legend=True, auto_open=False,
                   include_interval=False,
+                  pi_q1=5,
+                  pi_q2=20
                   ):
     """
     Generates matplotlib or plotly plot and saves it respectively as png or
@@ -387,7 +389,10 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
     :param auto_open: Indicates whether the output will be displayed
                       automatically
     :type auto_open: bool
-
+    :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
+    :type pi_q1: int
+    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :type pi_q2: int
     :return: Success or failure code.
     :rtype: int
     """
@@ -438,7 +443,7 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
                                           ncols, width, height, title,
                                           show_legend,
                                           add_rangeslider,
-                                          include_interval)
+                                          include_interval, pi_q1, pi_q2)
             path = '{}.html'.format(path)
             py.offline.plot(fig, filename=path, show_link=False,
                             auto_open=auto_open, include_plotlyjs='cdn')
@@ -452,7 +457,7 @@ def plot_forecast(df_fcast, output, path=None, width=None, height=None,
                                           ncols, width, height, title,
                                           show_legend,
                                           add_rangeslider,
-                                          include_interval)
+                                          include_interval, pi_q1, pi_q2)
             return py.offline.iplot(fig, show_link=False)
         else:
             logger.error('Please make sure that both plotly and ipython '
