@@ -1547,11 +1547,12 @@ def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1,
     else:
         l_cols = ['date']
 
-    if 'weight' in df_forecast.columns and (df_forecast.weight==0).any():
+    if 'weight' in df_forecast.columns and (df_forecast.weight == 0).any():
 
         # Filter out dates for outliers with weight=0
         df_filtered_dates = (
-            df_forecast.loc[df_forecast.weight > 0]
+            df_forecast.loc[(df_forecast.weight > 0) &
+                            (df_forecast.is_actuals)]
             [['date', 'source']]
         )
 
