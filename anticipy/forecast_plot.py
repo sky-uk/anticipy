@@ -288,7 +288,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                 q_low = go.Scatter(
                     x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
                     y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']]
-                        [[str_q_low]],
+                    [str_q_low],
                     name="{}% PI".format(pi_q),
                     line=dict(color='#F8766D', width=0),
                     mode='lines',
@@ -300,7 +300,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                 q_hi = go.Scatter(
                     x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
                     y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']]
-                        [[str_q_hi]],
+                    [str_q_hi],
                     name="{}% PI".format(100-pi_q),
                     fill='tonexty',
                     fillcolor='rgba(248,118,109,0.2)',
