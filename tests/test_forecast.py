@@ -2520,7 +2520,7 @@ class TestForecast(PandasTest):
 
         # First test with single source
         # then test applied function on df grouped by source
-
+        logger.info('Test 1a - Single source')
         a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
         a_y_actuals = np.arange(0, 10.)
         df_actuals = (
@@ -2542,47 +2542,57 @@ class TestForecast(PandasTest):
 
         df1 = pd.concat([df_actuals, df_fcast], ignore_index=True, sort=False)
 
-        df_result = get_pi(df1, n=100)
-        df_result0 = df_result
-        # logger_info('df_result1:', df_result1)
+        df_result = get_pi(df1, n_sims=100)
         logger_info('df_result1:', df_result.groupby(
-            ['source', 'model']).head(1))
+            ['source', 'model']).head(2))
         logger_info('df_result1:', df_result.groupby(
-            ['source', 'model']).tail(1))
+            ['source', 'model']).tail(2))
         # TODO: Add checks
         check_result(df_result)
 
-        # Test 1b - input dataframe without is_best_fit column, source column
+        logger.info('Test 1b - n_cum>1')
+        df_result = get_pi(df1, n_sims=100, n_cum=7)
+        logger_info('df_result1:', df_result.groupby(
+            ['source', 'model']).head(2))
+        logger_info('df_result1:', df_result.groupby(
+            ['source', 'model']).tail(2))
+        # TODO: Add checks
+        check_result(df_result)
+
+        # Test 1c - input dataframe without is_best_fit column, source column
+        logger.info('Test 1c - Single source, no source column')
         df1c = df1[['date', 'is_actuals', 'model', 'y']]
-        df_result = get_pi(df1c, n=100)
+        df_result = get_pi(df1c, n_sims=100)
         # logger_info('df_result1:', df_result1)
-        logger_info('df_result1:', df_result.groupby(['model']).head(1))
-        logger_info('df_result1:', df_result.groupby(['model']).tail(1))
+        logger_info('df_result1:', df_result.groupby(
+            ['model']).head(2))
+        logger_info('df_result1:', df_result.groupby(
+            ['model']).tail(2))
 
         check_result(df_result)
 
         # Test 2 - 2 sources
-
+        logger.info('Test 2 - 2 sources')
         df1b = df1.copy()
         df1b.source = 's2'
         df2 = pd.concat([df1, df1b], sort=False)
 
-        # df_result2 = df2.groupby('source').apply(get_pi, n=100).reset_index(drop=True)  # noqa
-        df_result = get_pi(df2, n=100)
+        # df_result2 = df2.groupby('source').apply(get_pi, n_sims=100).reset_index(drop=True)  # noqa
+        df_result = get_pi(df2, n_sims=100)
         # logger_info('df_result2:', df_result2)
-        logger_info('df_result2:', df_result.groupby(
-            ['source', 'model']).head(1))
-        logger_info('df_result2:', df_result.groupby(
-            ['source', 'model']).tail(1))
+        logger_info('df_result1:', df_result.groupby(
+            ['source', 'model']).head(2))
+        logger_info('df_result1:', df_result.groupby(
+            ['source', 'model']).tail(2))
         # TODO: Add checks
 
         check_result(df_result)
 
         # Test 3 - Input has actuals but no forecast - can happen if fit not
         # possible
-
+        logger.info('Test 3 - Input missing forecast')
         df3 = df_actuals
-        df_result = get_pi(df3, n=100)
+        df_result = get_pi(df3, n_sims=100)
         self.assertIsNotNone(df3)
         self.assertFalse('q5' in df_result.columns)
         # logger_info('df_result1:', df_result1)
@@ -2592,6 +2602,7 @@ class TestForecast(PandasTest):
             ['source', 'model']).tail(1))
         #
         # Test 4 - Input has null values at the end
+        logger.info('Test 4 - Input with nulls at end')
         a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
         a_y_actuals = np.arange(0, 10.)
         df_actuals = (
@@ -2612,7 +2623,7 @@ class TestForecast(PandasTest):
                                   'model': 'linear'}))
 
         df1 = pd.concat([df_actuals, df_fcast], ignore_index=True, sort=False)
-        df_result = get_pi(df1, n=100)
+        df_result = get_pi(df1, n_sims=100)
 
         a_date_actuals_withnull = pd.date_range(
             '2014-01-01', periods=20, freq='W')
@@ -2628,7 +2639,7 @@ class TestForecast(PandasTest):
 
         df1_withnull = pd.concat(
             [df_actuals_withnull, df_fcast], ignore_index=True, sort=False)
-        df_result_withnull = get_pi(df1_withnull, n=100)
+        df_result_withnull = get_pi(df1_withnull, n_sims=100)
 
         logger_info('df_result:', df_result.groupby(
             ['source', 'model']).tail(3))
@@ -2646,7 +2657,7 @@ class TestForecast(PandasTest):
                                                     'is_actuals',
                                                     'model',
                                                     'y']])
-
+        logger.info('Test 4b - Input with nulls at end, weight column')
         # Test 4b - Input with null values at the end, weight column
         df_weight = (pd.DataFrame({'date': a_date,
                                    'y': 1,
@@ -2669,8 +2680,8 @@ class TestForecast(PandasTest):
         df1b_withnull = pd.concat(
             [df1_withnull, df_weight_withnull], ignore_index=True, sort=False)
 
-        df_result_b = get_pi(df1b, n=100)
-        df_result_b_withnull = get_pi(df1b_withnull, n=100)
+        df_result_b = get_pi(df1b, n_sims=100)
+        df_result_b_withnull = get_pi(df1b_withnull, n_sims=100)
 
         logger_info('df_result b :', df_result_b.groupby(
             ['source', 'model']).tail(3))
@@ -2687,6 +2698,7 @@ class TestForecast(PandasTest):
         check_result(df_result_b_withnull)
 
         # Test 4C - Input has null values at the start of actuals series
+        logger.info('Test 4c - Input with nulls at start')
         a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
         a_y_actuals = np.arange(0, 10.)
         df_actuals = (
@@ -2707,7 +2719,7 @@ class TestForecast(PandasTest):
                                   'model': 'linear'}))
 
         df1 = pd.concat([df_actuals, df_fcast], ignore_index=True, sort=False)
-        df_result = get_pi(df1, n=100)
+        df_result = get_pi(df1, n_sims=100)
 
         a_date_actuals_withnull = pd.date_range(
             '2014-01-01', periods=10, freq='W')
@@ -2724,7 +2736,7 @@ class TestForecast(PandasTest):
 
         df1_withnull = pd.concat(
             [df_actuals_withnull, df_fcast], ignore_index=True, sort=False)
-        df_result_withnull = get_pi(df1_withnull, n=100)
+        df_result_withnull = get_pi(df1_withnull, n_sims=100)
 
         logger_info('df_actuals_withnull:', df_actuals_withnull.groupby(
             ['source', 'model']).head(20))
@@ -2736,7 +2748,8 @@ class TestForecast(PandasTest):
         # self.assert_frame_equal(df_result[['date', 'source', 'is_actuals', 'model', 'y']],  # noqa
         # df_result_withnull[['date', 'source', 'is_actuals', 'model', 'y']])
 
-        # Test 4D - Input has null values at the start of actuals series
+        # Test 4D - Input has null values at the start of forecast series
+        logger.info('Test 4d - Input with nulls at start of forecast')
         a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
         a_y_actuals = np.arange(0, 10.)
         df_actuals = (
@@ -2765,11 +2778,11 @@ class TestForecast(PandasTest):
         )
 
         df1 = pd.concat([df_actuals, df_fcast], ignore_index=True, sort=False)
-        df_result = get_pi(df1, n=100)
+        df_result = get_pi(df1, n_sims=100)
 
         df1_withnull = pd.concat(
             [df_actuals, df_fcast_withnull], ignore_index=True, sort=False)
-        df_result_withnull = get_pi(df1_withnull, n=100)
+        df_result_withnull = get_pi(df1_withnull, n_sims=100)
 
         logger_info('df_fcast_withnull:', df_fcast_withnull.groupby(
             ['source', 'model']).head(20))
@@ -2812,7 +2825,7 @@ class TestForecast(PandasTest):
         df = pd.concat([df_actuals_gap, df_fcast],
                        ignore_index=True, sort=False)
 
-        df_result = get_pi(df, n=100)
+        df_result = get_pi(df, n_sims=100)
         # logger_info('df_result1:', df_result1)
         logger_info('df_result1:', df_result.groupby(
             ['source', 'model']).head(2))
@@ -2831,7 +2844,7 @@ class TestForecast(PandasTest):
         df = pd.concat([df_actuals_null, df_fcast],
                        ignore_index=True, sort=False)
 
-        df_result = get_pi(df, n=100)
+        df_result = get_pi(df, n_sims=100)
         # logger_info('df_result1:', df_result1)
         logger_info('df_result2:', df_result.groupby(
             ['source', 'model']).head(20))
