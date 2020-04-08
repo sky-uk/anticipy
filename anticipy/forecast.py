@@ -12,15 +12,16 @@ Functions to run forecast
 # http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
 # docstrings
 
-import itertools
-# -- Public Imports
-import logging
 
+# -- Public Imports
+import itertools
+import logging
 import numpy as np
 import pandas as pd
 import scipy
 from numpy.linalg import LinAlgError
 from scipy import optimize
+from datetime import datetime
 
 # -- Private Imports
 from anticipy import forecast_models, model_utils
@@ -1092,7 +1093,7 @@ def run_forecast_single(df_y,
         weights = '{}-{}'.format(df_y['weight'].min(), df_y['weight'].max())
 
     # Get long source_id
-    if isinstance(date_start_actuals, pd.datetime):
+    if isinstance(date_start_actuals, datetime):
         date_start_actuals_short = date_start_actuals.date()
         date_end_actuals_short = date_end_actuals.date()
     else:
