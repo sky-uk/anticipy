@@ -2508,14 +2508,14 @@ class TestForecast(PandasTest):
         def check_result(df_result):
             self.assertTrue('q5' in df_result.columns)
             df_result_actuals = df_result.loc[df_result.is_actuals]
-            if 'is_weight' in df_result_actuals.columns:
+            if 'weight' in df_result_actuals.columns:
                 df_result_actuals = df_result_actuals.loc[
                     ~df_result_actuals.is_weight]
             date_max_actuals = df_result_actuals.date.max()
             logger_info('debug: date max actuals', date_max_actuals)
 
-            df_result_forecast = df_result.loc[~df_result.is_actuals & (
-                df_result.date > date_max_actuals)]
+            df_result_forecast = df_result.loc[
+                ~df_result.is_actuals & (df_result.date > date_max_actuals)]
             self.assertFalse(df_result_forecast.q5.isnull().any())
 
         # First test with single source
@@ -2673,16 +2673,16 @@ class TestForecast(PandasTest):
                                    'is_actuals': False,
                                    'is_best_fit': True,
                                    'model': 'linear',
-                                   'is_weight': True}))
+                                   'weight': 1.0}))
         df_weight_withnull = (
             pd.DataFrame({'date': a_date_withnull, 'y': 1,
                           'source': 's1', 'is_actuals': False,
                           'is_best_fit': True, 'model': 'linear',
-                          'is_weight': True})
+                          'weight': 1.0})
         )
 
-        df1['is_weight'] = False
-        df1_withnull['is_weight'] = False
+        df1['weight'] = 1.
+        df1_withnull['weight'] = 1.
 
         df1b = pd.concat([df1, df_weight], ignore_index=True, sort=False)
         df1b_withnull = pd.concat(
