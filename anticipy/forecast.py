@@ -1501,7 +1501,8 @@ def _df_add_pi_percentiles(df_fcast, a_sample,
     :type a_sample: numpy.array
     :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
     :type pi_q1: int
-    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :param pi_q2: Percentile for inner prediction interval
+        (defaults to 20%-80%)
     :type pi_q2: int
     """
     assert 0 < pi_q1 < 100 and 0 < pi_q2 < 100
@@ -1620,12 +1621,13 @@ def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1,
     # Series with residuals samples - base width of prediction interval
     a_sample_base = (
         s_residuals
-        .sample(n_samples_fcast * n_sims, replace=True)
-        .values.reshape(n_sims, n_samples_fcast)
+            .sample(n_samples_fcast * n_sims, replace=True)
+            .values.reshape(n_sims, n_samples_fcast)
     )
     a_sample = a_sample_base + a_sample_pi_cum_expanded
 
-    df_forecast_pi = _df_add_pi_percentiles(df_forecast_pi, a_sample)
+    df_forecast_pi = _df_add_pi_percentiles(
+        df_forecast_pi, a_sample, pi_q1, pi_q2)
 
     df_forecast_pi['is_actuals'] = False
 
