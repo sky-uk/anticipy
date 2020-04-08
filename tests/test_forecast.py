@@ -2807,8 +2807,7 @@ class TestForecast(PandasTest):
         def check_result(df_result):
             self.assertTrue('q5' in df_result.columns)
 
-        # Test 1 - Input has gaps
-
+        logger.info('Test 1 - Input has gaps')
         a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
         a_y_actuals = np.arange(0, 10.)
         df_actuals = (
@@ -2833,23 +2832,47 @@ class TestForecast(PandasTest):
         df = pd.concat([df_actuals_gap, df_fcast],
                        ignore_index=True, sort=False)
 
-        df_result = get_pi(df, n_sims=100)
-        # logger_info('df_result1:', df_result1)
-        logger_info('df_result1:', df_result.groupby(
-            ['source', 'model']).head(2))
-        logger_info('df_result1:', df_result.groupby(
-            ['source', 'model']).tail(2))
+        # df_result = get_pi(df, n_sims=100)
+        # # logger_info('df_result1:', df_result1)
+        # logger_info('df_result1:', df_result.groupby(
+        #     ['source', 'model']).head(2))
+        # logger_info('df_result1:', df_result.groupby(
+        #     ['source', 'model']).tail(2))
+        #
+        # check_result(df_result)
+        #
+        # logger.info('Test 2 - Input has nulls')
+        # df_actuals_null = df_actuals.copy()
+        # df_actuals_null.loc[5, 'y'] = np.NaN
+        #
+        # logger_info('df_actuals_null:', df_actuals_null)
+        #
+        # df = pd.concat([df_actuals_null, df_fcast],
+        #                ignore_index=True, sort=False)
+        #
+        # df_result = get_pi(df, n_sims=100)
+        # # logger_info('df_result1:', df_result1)
+        # logger_info('df_result2:', df_result.groupby(
+        #     ['source', 'model']).head(20))
+        # logger_info('df_result2:', df_result.groupby(
+        #     ['source', 'model']).tail(20))
+        #
+        # self.assertFalse(
+        #     df_result.loc[df_result.date >
+        #                   df_actuals.date.max()].q5.isnull().any())
+        #
+        # check_result(df_result)
 
-        check_result(df_result)
+        logger.info('Test 3 - Input has weight 0')
+        df_actuals_weight0 = df_actuals.copy()
+        # df_actuals_null.loc[5, 'y'] = np.NaN
+        df_actuals_weight0['weight'] = 1.
+        df_actuals_weight0.loc[5, 'weight'] = 0.
+        df_actuals_weight0.loc[5, 'y'] = -5000.
 
-        # Test 2 - Input has nulls
+        logger_info('df_actuals_weight0:', df_actuals_weight0)
 
-        df_actuals_null = df_actuals.copy()
-        df_actuals_null.loc[5, 'y'] = np.NaN
-
-        logger_info('df_actuals_null:', df_actuals_null)
-
-        df = pd.concat([df_actuals_null, df_fcast],
+        df = pd.concat([df_actuals_weight0, df_fcast],
                        ignore_index=True, sort=False)
 
         df_result = get_pi(df, n_sims=100)
@@ -2864,6 +2887,45 @@ class TestForecast(PandasTest):
                           df_actuals.date.max()].q5.isnull().any())
 
         check_result(df_result)
+
+    def test_forecast_pi_weight0(self):
+        logger.info('Test 1 - Input has gaps')
+        a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
+        a_y_actuals = np.arange(0, 10.)
+        df_actuals = (
+            pd.DataFrame({'date': a_date_actuals, 'y': a_y_actuals,
+                          'source': 's1', 'is_actuals': True,
+                          'is_best_fit': False, 'model': 'actuals'})
+        )
+
+        a_date = pd.date_range('2014-01-01', periods=20, freq='W')
+        a_y = np.arange(0, 20.) + (
+                np.tile([-1, 1], (10)) * np.arange(2, 0., -0.1))
+
+        df_fcast = (pd.DataFrame({'date': a_date,
+                                  'y': a_y,
+                                  'source': 's1',
+                                  'is_actuals': False,
+                                  'is_best_fit': True,
+                                  'model': 'linear'}))
+
+        df_actuals_weight0 = df_actuals.copy()
+        # df_actuals_null.loc[5, 'y'] = np.NaN
+        df_actuals_weight0['weight'] = 1.
+        df_actuals_weight0.loc[5, 'weight'] = 0.
+        df_actuals_weight0.loc[5, 'y'] = -5000.
+
+        logger_info('df_actuals_weight0:', df_actuals_weight0)
+
+        df_result = run_forecast(
+            df_actuals_weight0,
+            extrapolate_years=0,
+            l_model_season=[],
+            simplify_output=True)
+
+        logger_info('df_result', df_result)
+        # Extremely low values mean weight filter is not working
+        assert df_result.q5.min() > -4000
 
     def test_forecast_pi_missing(self):
         logger.info('Test1a - Generate forecast, check PI is added')
