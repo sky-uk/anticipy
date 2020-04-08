@@ -173,7 +173,10 @@ def _matplotlib_forecast_create(df_fcast, subplots, sources, nrows, ncols,
 def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                             width=None, height=None, title=None,
                             show_legend=False, add_rangeslider=False,
-                            include_interval=False):
+                            include_interval=False,
+                            pi_q1=5,
+                            pi_q2=20
+                            ):
     """
     Creates matplotlib plot from forecast dataframe
 
@@ -200,6 +203,14 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
     :type height: int
     :param show_legend: Indicates whether legends will be displayed
     :type show_legend: bool
+    :param add_rangeslider:
+    :type add_rangeslider: bool
+    :param include_interval:
+    :type include_interval: bool
+    :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
+    :type pi_q1: int
+    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :type pi_q2: int
 
     :return: The plot
     :rtype: plotly plot instance
@@ -267,59 +278,37 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
         )
 
         fig.append_trace(forecast, x, y)
+        for pi_q in [pi_q1, pi_q2]:
+            # Fill prediction interval area
+            str_q_low = 'q{}'.format(pi_q)
+            str_q_hi = 'q{}'.format(100 - pi_q)
+            if include_interval and \
+                    (str_q_low in df_fcast.columns) and \
+                    (str_q_hi in df_fcast.columns):
+                q_low = go.Scatter(
+                    x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
+                    y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']]
+                        [[str_q_low]],
+                    name="{}% PI".format(pi_q),
+                    line=dict(color='#F8766D', width=0),
+                    mode='lines',
+                    showlegend=False,
+                    legendgroup='forecast')
 
-        # Fill area between 5th and 95th prediction interval
-        if include_interval and \
-                ('q5' in df_fcast.columns) and ('q95' in df_fcast.columns):
-            q5 = go.Scatter(
-                x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
-                y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].q5,
-                name="5% PI",
-                line=dict(color='#F8766D', width=0),
-                mode='lines',
-                showlegend=False,
-                legendgroup='forecast')
+                fig.append_trace(q_low, x, y)
 
-            fig.append_trace(q5, x, y)
-
-            q95 = go.Scatter(
-                x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
-                y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].q95,
-                name="95% PI",
-                fill='tonexty',
-                fillcolor='rgba(248,118,109,0.2)',
-                line=dict(color='#F8766D', width=0),
-                mode='lines',
-                showlegend=False,
-                legendgroup='forecast')
-            fig.append_trace(q95, x, y)
-
-        # Fill area between 20th and 80th prediction interval
-        if include_interval and \
-                ('q20' in df_fcast.columns) and ('q80' in df_fcast.columns):
-            q20 = go.Scatter(
-                x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
-                y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].q20,
-                name="20% PI",
-                line=dict(color='#F8766D', width=0),
-                showlegend=False,
-                mode='lines',
-                legendgroup='forecast')
-
-            fig.append_trace(q20, x, y)
-
-            q80 = go.Scatter(
-                x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
-                y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].q80,
-                name="80% PI",
-                fill='tonexty',
-                fillcolor='rgba(248,118,109,0.2)',
-                line=dict(color='#F8766D', width=0),
-                mode='lines',
-                showlegend=False,
-                legendgroup='forecast')
-
-            fig.append_trace(q80, x, y)
+                q_hi = go.Scatter(
+                    x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
+                    y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']]
+                        [[str_q_hi]],
+                    name="{}% PI".format(100-pi_q),
+                    fill='tonexty',
+                    fillcolor='rgba(248,118,109,0.2)',
+                    line=dict(color='#F8766D', width=0),
+                    mode='lines',
+                    showlegend=False,
+                    legendgroup='forecast')
+                fig.append_trace(q_hi, x, y)
 
         y += 1
         if y > ncols:
