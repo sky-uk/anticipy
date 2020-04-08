@@ -14,16 +14,17 @@ initialisation parameters.
 # http://sphinx.pocoo.org/rest.html          -   Use Restructured Text for
 # docstrings
 
-import itertools
-# -- Public Imports
-import logging
 
+# -- Public Imports
+import itertools
+import logging
 import numpy as np
 import pandas as pd
 from pandas.tseries.holiday import Holiday, AbstractHolidayCalendar, \
     MO, nearest_workday, next_monday, next_monday_or_tuesday, \
     GoodFriday, EasterMonday, USFederalHolidayCalendar
 from pandas.tseries.offsets import DateOffset
+from datetime import datetime
 
 # -- Private Imports
 from anticipy import model_utils
@@ -1130,7 +1131,7 @@ def _f_model_yearly_season_fourier(
     return _f_model_season_fourier(a_date, params, period, harmonics, is_mult)
 
 
-date_origin = pd.datetime(1970, 1, 1)
+date_origin = datetime(1970, 1, 1)
 
 
 def _f_model_season_fourier(a_date, params, period, harmonics, is_mult=False):

@@ -17,6 +17,7 @@ import logging
 import math
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 # -- Private Imports
 
@@ -158,7 +159,7 @@ def get_s_x_extrapolate(
             date_start_actuals,
             str) or isinstance(
             date_start_actuals,
-            pd.datetime):  # Use dates if available
+            datetime):  # Use dates if available
         date_start_actuals = pd.to_datetime(date_start_actuals)
         date_end_actuals = pd.to_datetime(date_end_actuals)
 
