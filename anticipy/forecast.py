@@ -1449,8 +1449,7 @@ class ForecastInput:
 
 
 def get_pi(df_forecast, n_sims=100, n_cum=1,
-           pi_q1=5, pi_q2=20
-           ):
+           pi_q1=5, pi_q2=20):
     """
     Generate prediction intervals for a table with multiple forecasts,
     using bootstrapped residuals.
