@@ -792,7 +792,9 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                  verbose=None,
                  l_model_naive=None,
                  l_model_calendar=None,
-                 n_cum=1
+                 n_cum=1,
+                 pi_q1=5,
+                 pi_q2=20
                  ):
     """
     Generate forecast for one or more input time series
@@ -858,6 +860,10 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
     :param n_cum: Used for widening prediction interval. Interval widens every
         n_sims samples.
     :type n_cum: int
+    :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
+    :type pi_q1: int
+    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :type pi_q2: int
     :return:
         | With simplify_output=False, returns a dictionary with 4 dataframes:
         | - forecast: output time series with prediction interval
@@ -899,7 +905,9 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                                    l_season_weekly,
                                    l_model_naive=l_model_naive,
                                    l_model_calendar=l_model_calendar,
-                                   n_cum=n_cum
+                                   n_cum=n_cum,
+                                   pi_q1=pi_q1,
+                                   pi_q2=pi_q2
                                    )
     else:
         for src_tmp in df_y.source.drop_duplicates():
@@ -921,7 +929,9 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                 l_season_weekly,
                 l_model_naive=l_model_naive,
                 l_model_calendar=l_model_calendar,
-                n_cum=n_cum
+                n_cum=n_cum,
+                pi_q1=pi_q1,
+                pi_q2=pi_q2
             )
             l_dict_result += [dict_result_tmp]
     # Generate output
@@ -985,7 +995,9 @@ def run_forecast_single(df_y,
                         l_season_weekly=None,
                         l_model_naive=None,
                         l_model_calendar=None,
-                        n_cum=1
+                        n_cum=1,
+                        pi_q1=5,
+                        pi_q2=20
                         ):
     """
     Generate forecast for one input time series
@@ -1037,6 +1049,10 @@ def run_forecast_single(df_y,
     :param n_cum: Used for widening prediction interval. Interval widens every
         n_sims samples.
     :type n_cum: int
+    :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
+    :type pi_q1: int
+    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :type pi_q2: int
     :return:
         | With simplify_output=False, returns a dictionary with 4 dataframes:
         | - forecast: output time series with prediction interval
@@ -1290,7 +1306,8 @@ def run_forecast_single(df_y,
         df_data = df_data.loc[df_data.is_best_fit |
                               df_data.is_actuals].reset_index(drop=True)
 
-    df_forecast = df_data.pipe(get_pi, n_sims=100, n_cum=n_cum)
+    df_forecast = df_data.pipe(get_pi, n_sims=100, n_cum=n_cum,
+                               pi_q1=pi_q1, pi_q2=pi_q2)
     dict_result = {
         'forecast': df_forecast,
         'data': df_data,
@@ -1431,7 +1448,9 @@ class ForecastInput:
                    weights_y_values, date_start_actuals)
 
 
-def get_pi(df_forecast, n_sims=100, n_cum=1):
+def get_pi(df_forecast, n_sims=100, n_cum=1,
+           pi_q1=5, pi_q2=20
+           ):
     """
     Generate prediction intervals for a table with multiple forecasts,
     using bootstrapped residuals.
@@ -1443,6 +1462,10 @@ def get_pi(df_forecast, n_sims=100, n_cum=1):
     :param n_cum: Used for widening prediction interval. Interval widens every
         n_sims samples.
     :type n_cum: int
+    :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
+    :type pi_q1: int
+    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :type pi_q2: int
     :return:
         | Forecast time series table with added columns:
         | - q5: 5% percentile of prediction interval
@@ -1456,17 +1479,19 @@ def get_pi(df_forecast, n_sims=100, n_cum=1):
     if 'source' in df_forecast.columns and df_forecast.source.nunique() > 1:
         df_result = (
             df_forecast.groupby('source', as_index=False)
-            .apply(_get_pi_single_source, n_sims=n_sims, n_cum=n_cum)
+            .apply(_get_pi_single_source,
+                   n_sims=n_sims, n_cum=n_cum, pi_q1=pi_q1, pi_q2=pi_q2)
             .sort_values(['source', 'is_actuals', 'date'])
             .reset_index(drop=True)
         )
     else:
-        df_result = _get_pi_single_source(df_forecast, n_sims, n_cum)
+        df_result = _get_pi_single_source(
+            df_forecast, n_sims, n_cum, pi_q1, pi_q2)
     return df_result
 
 
 def _df_add_pi_percentiles(df_fcast, a_sample,
-                           q1=5, q2=20):
+                           pi_q1=5, pi_q2=20):
     """
     Given a forecast dataframe and an array of bootstrapped residual samples,
     add quantile columns (defining prediction interval) to forecast dataframe
@@ -1475,13 +1500,13 @@ def _df_add_pi_percentiles(df_fcast, a_sample,
     :type df_fcast: pandas.DataFrame
     :param a_sample: 2D array with shape (n_sims, df_fcast.index.size)
     :type a_sample: numpy.array
-    :param q1: Percentile for outer prediction interval (defaults to 5%-95%)
-    :type q1: n
-    :param q2: Percentile for inner prediction interval (defaults to 20%-80%)
-    :type q2: n
+    :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
+    :type pi_q1: int
+    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :type pi_q2: int
     """
-    assert 0 < q1 < 100 and 0 < q2 < 100
-    l_percentiles = q1, 100 - q1, q2, 100 - q2
+    assert 0 < pi_q1 < 100 and 0 < pi_q2 < 100
+    l_percentiles = pi_q1, 100 - pi_q1, pi_q2, 100 - pi_q2
     # dict of arrays with percentile values
     dict_q = {'q{}'.format(q): np.percentile(a_sample, q, axis=0)
               for q in l_percentiles}
@@ -1492,7 +1517,8 @@ def _df_add_pi_percentiles(df_fcast, a_sample,
     return df_fcast
 
 
-def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1):
+def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1,
+                          pi_q1=5, pi_q2=20):
     """
     Generate prediction interval for a single forecast
 
@@ -1503,6 +1529,10 @@ def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1):
     :param n_cum: Used for widening prediction interval. Interval widens every
         n_sims samples.
     :type n_cum: int
+    :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
+    :type pi_q1: int
+    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :type pi_q2: int
     :return:
     :rtype: pandas.DataFrame
     """
@@ -1613,7 +1643,8 @@ def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1):
         .sample(n_samples_fcast_past * n_sims, replace=True)
         .values.reshape(n_sims, n_samples_fcast_past)
     )
-    df_forecast_past = _df_add_pi_percentiles(df_forecast_past, a_sample_past)
+    df_forecast_past = _df_add_pi_percentiles(
+        df_forecast_past, a_sample_past, pi_q1, pi_q2)
 
     df_actuals_unfiltered = df_actuals_unfiltered[
         l_cols + ['is_actuals', 'model', 'y']]
