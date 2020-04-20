@@ -8,12 +8,18 @@ sudo: false
 
 language: python
 
-matrix:
-  include:
-    - os: linux
-      python: 2.7.15
-    - os: linux
-      python: 3.6
+os: linux
+
+python:
+  - 2.7.15
+  - 3.6
+
+#matrix:
+#  include:
+#    - os: linux
+#      python: 2.7.15
+#    - os: linux
+#      python: 3.6
 #    - os: osx
 #      language: generic
 #      env: PYTHON=2.7
@@ -52,9 +58,17 @@ install:
   - pip install codecov
 
 script:
-  - pycodestyle ./ --ignore=E402,W
   - coverage run -m unittest discover
 
 
 after_success:
   - codecov
+
+jobs:
+  allow_failures:
+    - stage: pep8
+  include:
+    - stage: pep8
+      python: 3.6
+      script: pycodestyle ./ --ignore=E402,W
+      after_success: skip
