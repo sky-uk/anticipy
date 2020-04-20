@@ -2256,6 +2256,8 @@ class TestForecast(PandasTest):
             mask, [1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1])
 
     def test_run_forecast_auto_season(self):
+        """Test run_forecast with automatic seasonality detection"""
+
         # Yearly sinusoidal function
 
         # With daily samples
@@ -2306,6 +2308,66 @@ class TestForecast(PandasTest):
         l_model_expected.sort()
 
         self.assert_array_equal(df_metadata.model.values, l_model_expected)
+        logger_info('df_metadata:', df_metadata)
+
+    def test_run_forecast_auto_composition(self):
+        """Test run_forecast with automatic model composition detection"""
+
+        np.random.seed(1)  # Ensure predictable test results
+
+        logger.info('Test 1 - detect additive model')
+
+        # With daily samples
+        length = 2 * 365
+        # size will be 100 +-10 +- uniform error
+        a_date = pd.date_range(start='2018-01-01', freq='D', periods=length)
+        a_y = (100 + np.random.uniform(low=0, high=1, size=length) +
+               10 * (np.sin(np.linspace(-4 * np.pi, 4 * np.pi, length))))
+        df_y = pd.DataFrame({'y': a_y}, index=a_date)
+
+        dict_result = run_forecast(
+            df_y,
+            season_add_mult='auto',
+            simplify_output=False,
+            include_all_fits=True,
+            l_model_trend=[
+                forecast_models.model_linear])
+        df_metadata = dict_result['metadata']
+
+        l_model_expected = sorted(
+            ['linear',
+             '(linear+(season_wday+season_fourier_yearly))',
+             '(linear+season_wday)',
+             '(linear+season_fourier_yearly)'])
+        self.assert_array_equal(df_metadata.model, l_model_expected)
+        logger_info('df_metadata:', df_metadata)
+
+        logger.info('Test 2 - detect multiplicative model')
+
+        # With daily samples
+        length = 2 * 365
+        # size will be +-10 +- uniform error
+        a_date = pd.date_range(start='2018-01-01', freq='D', periods=length)
+        a_y = (1000 +
+               0.1 * np.arange(length) *
+               (1 + (np.sin(np.linspace(-40 * np.pi, 40 * np.pi, length)))))
+        df_y = pd.DataFrame({'y': a_y}, index=a_date)
+
+        dict_result = run_forecast(
+            df_y,
+            season_add_mult='auto',
+            simplify_output=False,
+            include_all_fits=True,
+            l_model_trend=[
+                forecast_models.model_linear])
+        df_metadata = dict_result['metadata']
+
+        l_model_expected = sorted(
+            ['linear',
+             '(linear*(season_wday*season_fourier_yearly))',
+             '(linear*season_wday)',
+             '(linear*season_fourier_yearly)'])
+        self.assert_array_equal(df_metadata.model, l_model_expected)
         logger_info('df_metadata:', df_metadata)
 
     def test_run_forecast_with_weight(self):

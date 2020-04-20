@@ -1197,14 +1197,18 @@ def run_forecast_single(df_y,
         else:
             use_calendar = (
                 # Need more than a full year
-                (max_date_delta > pd.Timedelta(365, unit='d')) &
-                # Need at least daily samples
-                (min_date_delta <= pd.Timedelta(1, unit='d'))
+                    (max_date_delta > pd.Timedelta(365, unit='d')) &
+                    # Need at least daily samples
+                    (min_date_delta <= pd.Timedelta(1, unit='d'))
             )
         if use_calendar:
             l_model_add = get_list_model(l_model_add, l_model_calendar, 'add')
             l_model_mult = get_list_model(
                 l_model_mult, l_model_calendar, 'mult')
+
+    if season_add_mult == 'auto':  # detect
+        is_mult = model_utils.is_multiplicative(df_y)
+        season_add_mult = 'mult' if is_mult else 'add'
 
     if season_add_mult == 'add':
         l_model = l_model_add
