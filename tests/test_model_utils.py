@@ -9,6 +9,7 @@ import itertools
 # This line fixes import errors
 from anticipy.utils_test import PandasTest
 from anticipy.model_utils import *
+from anticipy.model_utils import _get_mult_sum_stats
 from anticipy.forecast import normalize_df
 from anticipy import forecast_models
 
@@ -285,3 +286,75 @@ class TestModelUtils(PandasTest):
         df_result = df_test.pipe(interpolate_df, include_mask=True)
         logger_info('df_result:', df_result)
         self.assertEqual(df_result.index.size, 9)
+
+    def test_get_mult_sum_stats(self):
+        a_date = pd.date_range('2018-01-01', '2018-04-08', freq='D')
+        df_in = pd.DataFrame(dict(date=a_date))
+
+        # Time series with additive seasonality
+        df_sum = df_in.assign(
+            x=df_in.index,
+            y=(100. + df_in.date.dt.weekday + df_in.index))
+        # Time series with multiplicative seasonality
+        df_mult = df_in.assign(
+            x=df_in.index,
+            y=(100. + df_in.date.dt.weekday * df_in.index))
+        df_mult2 = df_in.assign(
+            x=df_in.index,
+            y=(500. + 0.5 * df_in.date.dt.weekday * df_in.index))
+        # Add noise
+        np.random.seed(1)  # Ensure predictable test results
+        df_mult3 = df_mult.assign(
+            y=df_mult.y + np.random.normal(0, 50, df_mult.index.size))
+
+        logger.info('Test 1: additive')
+        df_result = _get_mult_sum_stats(df_sum)
+        logger_info('result:', df_result)
+
+        logger.info('Test 2: mult')
+        df_result = _get_mult_sum_stats(df_mult)
+        logger_info('result:', df_result)
+
+        logger.info('Test 3: mult')
+        df_result = _get_mult_sum_stats(df_mult2)
+        logger_info('result:', df_result)
+
+        logger.info('Test 4: mult with noise')
+        df_result = _get_mult_sum_stats(df_mult3)
+        logger_info('result:', df_result)
+
+    def test_is_multiplicative(self):
+        a_date = pd.date_range('2018-01-01', '2018-04-08', freq='D')
+        df_in = pd.DataFrame(dict(date=a_date))
+
+        # Time series with additive seasonality
+        df_sum = df_in.assign(
+            x=df_in.index,
+            y=(100. + df_in.date.dt.weekday + df_in.index))
+        # Time series with multiplicative seasonality
+        df_mult = df_in.assign(
+            x=df_in.index,
+            y=(100. + df_in.date.dt.weekday * df_in.index))
+        df_mult2 = df_in.assign(
+            x=df_in.index,
+            y=(500. + 0.5 * df_in.date.dt.weekday * df_in.index))
+        # Add noise
+        np.random.seed(1)  # Ensure predictable test results
+        df_mult3 = df_mult.assign(
+            y=df_mult.y + np.random.normal(0, 50, df_mult.index.size))
+
+        logger.info('Test 1: additive')
+        result = is_multiplicative(df_sum)
+        self.assertFalse(result)
+
+        logger.info('Test 2: mult')
+        result = is_multiplicative(df_mult)
+        self.assertTrue(result)
+
+        logger.info('Test 3: mult')
+        result = is_multiplicative(df_mult2)
+        self.assertTrue(result)
+
+        logger.info('Test 4: mult with noise')
+        result = is_multiplicative(df_mult3)
+        self.assertTrue(result)

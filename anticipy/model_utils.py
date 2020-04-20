@@ -352,12 +352,92 @@ def interpolate_df(df, include_mask=False):
             return df
         df_result = (
             df.set_index('date')
-            .asfreq(freq)
-            .interpolate()
-            .reset_index()
+                .asfreq(freq)
+                .interpolate()
+                .reset_index()
         )
     if 'x' in df.columns:
         df_result['x'] = df_result['x'].astype(df.x.dtype)
         if include_mask:
             df_result['is_gap_filled'] = ~df_result.x.isin(df.x)
     return df_result
+
+
+# Functions to check for multiplicative/additive model composition
+def _fit_linear(df):
+    """Fit linear model based on df"""
+    from anticipy.forecast import fit_model, extrapolate_model
+    from anticipy.forecast_models import model_linear
+    dict_result = fit_model(model_linear, df)
+    params = dict_result.get('metadata').params.iloc[0]
+    df_pred = extrapolate_model(
+        model_linear, params, df.x.min(), df.x.max() + 1,
+        extrapolate_years=0)
+
+    df_out = (
+        df.merge(
+            df_pred
+                .rename(columns=dict(y='y_pred'))
+                # RENAME AXIS ONLY WORKS FOR NUMERIC SERIES
+                #  - TIME SERIES WOULD BE DATE
+                .rename_axis('x')
+                .reset_index(),
+            how='left')
+    )
+    return df_out
+
+
+def _get_mult_sum_stats(df, freq='M'):
+    """
+    - fit linear model
+    - then look at stats of residuals, to check for multiplicative composition
+    """
+    # Fit linear model, get residuals
+    df_pred = _fit_linear(df)
+    df_res = df_pred.assign(res=df_pred.y_pred - df_pred.y)
+
+    # Get statistics from residuals
+    df_mean = (
+        df_res
+            .set_index('date').y
+            .resample(freq).agg([np.mean]).rename(columns=dict(mean='y_mean'))
+    )
+    df_res_var = (
+        df_res
+            .set_index('date').res
+            .resample(freq).agg([np.var]).rename(columns=dict(var='res_var'))
+    )
+    df_out = df_mean.join(df_res_var)
+
+    df_out['corr_mean_to_var'] = df_out.res_var.corr(df_out.y_mean)
+    return df_out.reset_index()
+
+
+def is_multiplicative(df, freq='M'):
+    """
+    For an input time series, check if model composition
+    should be multiplicative.
+
+    Return True if multiplicative is best - otherwise, use additive
+    composition.
+
+    We assume multiplicative composition is best if variance
+    correlates heavily (>0.8) with mean. We aggregate data
+    on a monthly basis by default for this analysis. Use
+
+    The following exceptions apply:
+
+    - If any time series value is <=0, use additive
+    - If date information is unavailable (only x column), use additive
+    - If less than 2 periods worth of data are available, use additive
+    """
+    if (df.y <= 0).any():
+        return False
+    if 'date' not in df.columns:
+        return False
+    if (df.date.max() - df.date.min()) < pd.Timedelta('60 days'):
+        return False
+    df_stats = _get_mult_sum_stats(df, freq)
+    # Column corr_mean_to_var is constant
+    corr_mean_to_var = df_stats.corr_mean_to_var.iloc[0]
+    return corr_mean_to_var >= 0.8
