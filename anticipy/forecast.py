@@ -14,6 +14,7 @@ Functions to run forecast
 
 
 # -- Public Imports
+from __future__ import division  # Required to avoid python 2 divison bugs
 import itertools
 import logging
 import numpy as np
