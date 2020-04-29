@@ -368,6 +368,8 @@ def _fit_linear(df):
     """Fit linear model based on df"""
     from anticipy.forecast import fit_model, extrapolate_model
     from anticipy.forecast_models import model_linear
+
+    assert df.index.size >= 4, 'Linear model requires 4+ samples'
     dict_result = fit_model(model_linear, df)
     params = dict_result.get('metadata').params.iloc[0]
     df_pred = extrapolate_model(
@@ -436,6 +438,8 @@ def is_multiplicative(df, freq='M'):
     if 'date' not in df.columns:
         return False
     if (df.date.max() - df.date.min()) < pd.Timedelta('60 days'):
+        return False
+    if df.index.size < 4:  # Not enough samples to fit a linear model
         return False
     df_stats = _get_mult_sum_stats(df, freq)
     # Column corr_mean_to_var is constant
