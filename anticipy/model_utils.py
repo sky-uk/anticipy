@@ -439,7 +439,11 @@ def is_multiplicative(df, freq='M'):
         return False
     if (df.date.max() - df.date.min()) < pd.Timedelta('60 days'):
         return False
-    if df.index.size < 4:  # Not enough samples to fit a linear model
+    # Check for series size
+    df_filtered = df.loc[~df.y.pipe(pd.isna)]
+    if 'weight' in df_filtered.columns:
+        df_filtered = df_filtered.loc[df_filtered.weight > 0]
+    if df_filtered.index.size < 4:  # Not enough samples to fit a linear model
         return False
     df_stats = _get_mult_sum_stats(df, freq)
     # Column corr_mean_to_var is constant
