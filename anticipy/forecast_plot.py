@@ -222,15 +222,17 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
 
     if subplots:
         titles = map(str, sources)
-        fig = tools.make_subplots(rows=nrows,
-                                  cols=ncols,
-                                  subplot_titles=list(titles),
-                                  print_grid=False,
-                                  horizontal_spacing=0.08,
-                                  vertical_spacing=vertical_spacing)
+        fig = py.subplots.make_subplots(
+            rows=nrows,
+            cols=ncols,
+            subplot_titles=list(titles),
+            print_grid=False,
+            horizontal_spacing=0.08,
+            vertical_spacing=vertical_spacing)
         margin_top = 60
     else:
-        fig = tools.make_subplots(rows=nrows, cols=ncols, print_grid=False)
+        fig = py.subplots.make_subplots(
+            rows=nrows, cols=ncols, print_grid=False)
         margin_top = 30
 
     x = 1
@@ -265,7 +267,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
             showlegend=is_first_source,
         )
 
-        fig.append_trace(actuals, x, y)
+        fig.add_trace(actuals, x, y)
 
         forecast = go.Scatter(
             x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
@@ -277,7 +279,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
             showlegend=is_first_source,
         )
 
-        fig.append_trace(forecast, x, y)
+        fig.add_trace(forecast, x, y)
         for pi_q in [pi_q1, pi_q2]:
             # Fill prediction interval area
             str_q_low = 'q{}'.format(pi_q)
@@ -295,7 +297,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                     showlegend=False,
                     legendgroup='forecast')
 
-                fig.append_trace(q_low, x, y)
+                fig.add_trace(q_low, x, y)
 
                 q_hi = go.Scatter(
                     x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
@@ -308,7 +310,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                     mode='lines',
                     showlegend=False,
                     legendgroup='forecast')
-                fig.append_trace(q_hi, x, y)
+                fig.add_trace(q_hi, x, y)
 
         y += 1
         if y > ncols:
