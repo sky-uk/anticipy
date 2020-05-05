@@ -556,6 +556,19 @@ class TestForecast(PandasTest):
         logger_info('Result summary:', df_result)
         logger_info('Optimize info summary:', df_optimize_info)
 
+    def test_fit_model_metadata(self):
+        # Check that weight column in metadata is correct
+        df_in = pd.DataFrame(
+            dict(x=np.arange(20), y=10., weight=[0] + [1.] * 19))
+        dict_result = fit_model(
+            forecast_models.model_constant,
+            df_in,
+        )
+        df_metadata = dict_result.get('metadata')
+        logger_info('metadata:', df_metadata)
+        str_weights = df_metadata.weights.iloc[0]
+        self.assertEqual(str_weights, '0.0-1.0')
+
     @unittest.skip('Dask not supported yet')
     def test_fit_model_dask(self):
         # Input dataframes must have an y column, and may have columns x,date,

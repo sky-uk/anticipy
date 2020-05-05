@@ -439,17 +439,17 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
     # Filter out any sample where df_y is null
     df_y = df_y.loc[~df_y[col_name_y].pipe(pd.isna)]
 
-    # Filter out any sample where a_weights is 0
-    if col_name_weight in df_y.columns:
-        df_y[col_name_weight] = df_y[col_name_weight].fillna(0)
-        df_y = df_y.loc[df_y[col_name_weight] >= 0]
-
     # Metadata
     if col_name_weight not in df_y.columns:
         weights = '1'
     else:
         weights = '{}-{}'.format(df_y[col_name_weight].min(),
                                  df_y[col_name_weight].max())
+
+    # Filter out any sample where a_weights is 0
+    if col_name_weight in df_y.columns:
+        df_y[col_name_weight] = df_y[col_name_weight].fillna(0)
+        df_y = df_y.loc[df_y[col_name_weight] > 0]
 
     # Residual normalization
     if df_y[col_name_x].duplicated().any():
@@ -1292,16 +1292,18 @@ def run_forecast_single(df_y,
     # Determine best fits
     df_best_fit = (
         df_metadata.loc[df_metadata.is_fit]
-        .sort_values('aic_c')
+            .sort_values('aic_c')
         [['source', 'source_long', 'model']]
-        .groupby('source', as_index=False)
-        .first()
+            .groupby('source', as_index=False)
+            .first()
     )
     df_best_fit['is_best_fit'] = True
 
     df_metadata = df_metadata.merge(df_best_fit, how='left')
     df_metadata['is_best_fit'] = df_metadata['is_best_fit'].fillna(
         False).astype(bool)
+    # Adjust weight column - fit_model may be missing filtered 0-weight rows
+    df_metadata['weights'] = weights
     df_data = df_data.merge(df_best_fit, how='left').reset_index(drop=True)
     df_data['is_best_fit'] = df_data['is_best_fit'].fillna(False).astype(bool)
 
