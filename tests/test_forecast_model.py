@@ -6,10 +6,12 @@ Created on 04/12/2015
 
 import unittest
 from argparse import Namespace
+from datetime import datetime
 
 from anticipy import forecast_models
 from anticipy.forecast import normalize_df
 from anticipy.forecast_models import *
+from anticipy.forecast_models import _fillna_wday
 from anticipy.model_utils import interpolate_df
 from anticipy.utils_test import PandasTest
 
@@ -64,6 +66,23 @@ class TestForecastModel(PandasTest):
         # a_y_result = (model_naive + model_linear) (a_x, a_date, a_params,
         #   df_actuals=df_actuals)
         # logger_info('a_y result: ', a_y_result)
+
+    def test_fillna_wday(self):
+        a_x = np.arange(0, 70)
+        a_date = pd.date_range('2014-01-01', periods=70, freq='D')
+        a_y = 1. * a_x
+
+        a_y_gap = np.where(np.isin(a_x, [5, 10, 15, 20]), np.NaN, a_y)
+
+        df_actuals = pd.DataFrame({'date': a_date, 'x': a_x,
+                                   'y': a_y_gap})
+
+        time_start = datetime.now()
+        df_result = _fillna_wday(df_actuals)
+        runtime = datetime.now() - time_start
+        logger_info('run time: ', runtime)
+        logger_info('df_actuals:', df_actuals)
+        logger_info('df_result:', df_result)
 
     def test_model_snaive_wday(self):
         a_x = np.arange(0, 21)

@@ -515,48 +515,38 @@ model_naive = ForecastModel('naive', 0, _f_model_naive)
 # with the rest of the library
 
 def _fillna_wday(df):
-    df = df.copy()
-    df['wday'] = df.date.dt.weekday
-    df_tmp = df[['date', 'x']].copy()
-    for wday in np.arange(0, 7):
-        wday_name = 'wday_{}'.format(wday)
-        df_tmp[wday_name] = (
-            # for each wday column, set to null all values from other weekdays
-            # fill nulls with last weekly sample
-            df.y.where(df.wday == wday, np.NaN) .fillna(
-                # shift so that model for each sample is last non-null weekly
-                # sample
-                method='ffill').shift(1).where(
-                # set values for other weekdays to null, so we can aggregate
-                # with sum
-                df.wday == wday, np.NaN)
-        )
+    """
+    In a time series, shift samples by 1 week
+    and fill gaps with data from same weekday
+    """
 
-    # logger_info('debug: df_tmp: ', df_tmp)
+    def add_col_y_out(df):
+        df = df.assign(y_out=df.y.shift(1).fillna(method='ffill'))
+        return df
 
-    # Aggregate: add all weekly columns together, keep null only if all
-    # columns are null
-    def aggregate_wday(s_tmp):
-        if np.all(np.isnan(s_tmp)):
-            return np.NaN
-        else:
-            return np.nansum(s_tmp)
-
-    df['y_out'] = df_tmp.loc[:, df_tmp.columns.str.startswith(
-        'wday_')].apply(aggregate_wday, axis=1)
-    return df
+    df_out = (
+        df
+            .assign(wday=df.date.dt.weekday)
+            .groupby('wday', as_index=False).apply(add_col_y_out)
+            .sort_values(['x'])
+            .reset_index(drop=True)
+    )
+    return df_out
 
 
 def _f_model_snaive_wday(a_x, a_date, params, is_mult=False, df_actuals=None):
+    """Naive model - takes last valid weekly sample"""
     if df_actuals is None:
         raise ValueError('model_snaive_wday requires a df_actuals argument')
 
     df_actuals_model = _fillna_wday(df_actuals.drop_duplicates('x'))
 
-    df_last_week = df_actuals_model.drop_duplicates('wday', keep='last')[
-        ['wday', 'y']]
-    df_last_week['y_out'] = df_last_week['y']
-    df_last_week = df_last_week[['wday', 'y_out']]
+    df_last_week = (
+        df_actuals_model
+            .drop_duplicates('wday', keep='last')
+        [['wday', 'y']]
+            .rename(columns=dict(y='y_out'))
+    )
 
     df_out_tmp = pd.DataFrame({'date': a_date, 'x': a_x})
     df_out_tmp['wday'] = df_out_tmp.date.dt.weekday
