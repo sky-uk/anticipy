@@ -252,21 +252,25 @@ class TestModelUtils(PandasTest):
 
     def test_interpolate_df(self):
 
-        # Test 1: DF with date column, gap
+        logger.info('Test 1 - df with date column, gap')
         a_y = np.arange(0, 10.)
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
-        df_expected = pd.DataFrame(
-            {'y': a_y, 'date': a_date}).pipe(normalize_df)
+        df_expected = pd.DataFrame(dict(date=a_date, y=a_y))
         df = pd.concat([df_expected.head(5),
-                        df_expected.tail(-6)]).pipe(normalize_df)
+                        df_expected.tail(-6)])
 
         df_result = df.pipe(interpolate_df)
         logger_info('df_result:', df_result)
         self.assert_frame_equal(df_result, df_expected)
 
         df_result = df.pipe(interpolate_df, include_mask=True)
+        logger_info('df_result with mask:', df_result)
 
-        # Test 1: DF with no date column, gap
+        logger.info('Test 1b - interpolate_y=False')
+        df_result = df.pipe(interpolate_df, interpolate_y=False)
+        logger_info('df_result:', df_result)
+
+        logger.info('Test 2 - df with no date column, gap')
         a_y = np.arange(0, 10.)
         a_date = pd.date_range(start='2018-01-01', periods=len(a_y), freq='D')
         df_expected = pd.DataFrame({'y': a_y}).pipe(normalize_df)
@@ -280,12 +284,21 @@ class TestModelUtils(PandasTest):
         df_result = df.pipe(interpolate_df, include_mask=True)
         logger_info('df_result:', df_result)
 
-        # Test 2: Sparse series with date gaps
-        df_test = pd.DataFrame({'date': pd.to_datetime(
-            ['2018-08-01', '2018-08-09']), 'y': [1., 2.]})
-        df_result = df_test.pipe(interpolate_df, include_mask=True)
+        logger.info('Test 2b - interpolate_y=False')
+        df_result = df.pipe(interpolate_df, interpolate_y=False)
+        logger_info('df_result:', df_result)
+
+        logger.info('Test 3 - Sparse series with date gaps')
+        df = pd.DataFrame(
+            {'date': pd.to_datetime(['2018-08-01', '2018-08-09']),
+             'y': [1., 2.]})
+        df_result = df.pipe(interpolate_df, include_mask=True)
         logger_info('df_result:', df_result)
         self.assertEqual(df_result.index.size, 9)
+
+        logger.info('Test 3b - interpolate_y=False')
+        df_result = df.pipe(interpolate_df, interpolate_y=False)
+        logger_info('df_result:', df_result)
 
     def test_get_mult_sum_stats(self):
         a_date = pd.date_range('2018-01-01', '2018-04-08', freq='D')

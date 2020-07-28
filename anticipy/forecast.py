@@ -361,10 +361,12 @@ def normalize_df(df_y,
         if col_name_x not in df_y_tmp.columns:
             if col_name_date in df_y_tmp.columns:
                 # Need to extract numeric index from a_date
-                df_date_interp = (df_y_tmp[[col_name_date]].drop_duplicates().
-                                  pipe(
-                    model_utils.interpolate_df).rename_axis(
-                    col_name_x).reset_index())
+                df_date_interp = (
+                    df_y_tmp[[col_name_date]]
+                        .drop_duplicates()
+                        .pipe(model_utils.interpolate_df, interpolate_y=False)
+                        .rename_axis(col_name_x)
+                        .reset_index())
                 df_y_tmp = (
                     df_date_interp.merge(df_y_tmp)
                 )
@@ -985,6 +987,57 @@ def aggregate_forecast_dict_results(l_dict_result):
         'optimize_info': df_optimize_info}
 
 
+def _get_use_ramp(df_y):
+    # Return True if piecewise linear should be used
+    # By default,  piecewise linear requires > 2y
+    if 'date' in df_y.columns:
+        # Add calendar models
+        s_date_tmp = df_y.date
+        if 'weight' in df_y.columns:
+            s_date_tmp = s_date_tmp.loc[df_y.weight > 0]
+
+        s_date = s_date_tmp.sort_values().drop_duplicates()
+        max_date_delta = s_date.max() - s_date.min()
+
+        if pd.isna(max_date_delta):
+            use_ramp = False
+        else:
+            use_ramp = (
+                # Need more than 2 full years
+                (max_date_delta > pd.Timedelta(2 * 365, unit='d'))
+            )
+    else:
+        use_ramp = False
+    return use_ramp
+
+
+def _get_use_calendar(df_y):
+    # Return True if calendar models should be used
+    # use when x
+    if 'date' in df_y.columns:
+        # Add calendar models
+        s_date_tmp = df_y.date
+        if 'weight' in df_y.columns:
+            s_date_tmp = s_date_tmp.loc[df_y.weight > 0]
+
+        s_date = s_date_tmp.sort_values().drop_duplicates()
+        min_date_delta = s_date.diff().min()
+        max_date_delta = s_date.max() - s_date.min()
+
+        if pd.isna(min_date_delta) or pd.isna(max_date_delta):
+            use_calendar = False
+        else:
+            use_calendar = (
+                # Need more than a full year
+                    (max_date_delta > pd.Timedelta(365, unit='d')) &
+                    # Need at least daily samples
+                    (min_date_delta <= pd.Timedelta(1, unit='d'))
+            )
+    else:
+        use_calendar = False
+    return use_calendar
+
+
 def run_forecast_single(df_y,
                         l_model_trend=None,
                         l_model_season=None,
@@ -1129,28 +1182,8 @@ def run_forecast_single(df_y,
 
     if l_model_trend is None:
         # By default use linear trend, and piecewise linear for series > 2y
-        if 'date' in df_y.columns:
-            # Add calendar models
-            s_date_tmp = df_y.date
-            if 'weight' in df_y.columns:
-                s_date_tmp = s_date_tmp.loc[df_y.weight > 0]
-
-            s_date = s_date_tmp.sort_values().drop_duplicates()
-            max_date_delta = s_date.max() - s_date.min()
-
-            if pd.isna(max_date_delta):
-                use_ramp = False
-            else:
-                use_ramp = (
-                    # Need more than 2 full years
-                    (max_date_delta > pd.Timedelta(2 * 365, unit='d'))
-                )
-        else:
-            use_ramp = False
-        # By default, try linear and piecewise linear
-        if use_ramp:
+        if _get_use_ramp(df_y):
             l_model_trend = [
-                # forecast_models.model_naive,
                 forecast_models.model_linear,
                 forecast_models.model_linear + forecast_models.model_ramp]
         else:
@@ -1226,37 +1259,39 @@ def run_forecast_single(df_y,
 
     # exclude samples with weight = 0
     df_y = df_y.loc[df_y.weight > 0]
-    date_start_actuals = df_y.date.min()\
+    date_start_actuals = df_y.date.min() \
         if 'date' in df_y.columns else df_y.x.min()
     x_start_actuals = df_y.x.min()
 
-    df_actuals_cols = [c for c in ['date', 'x'] if c in df_y.columns]
-
-    df_actuals_interpolated = (  # Fills gaps, used for extrapolation
-        df_y_unfiltered.merge(
-            df_y_unfiltered[df_actuals_cols].drop_duplicates('x').pipe(
-                model_utils.interpolate_df), how='right').sort_values(
-            ['x']).reset_index(drop=True)
+    # Actuals table with filled x-axis gaps,
+    #  used for extrapolation, naive model fitting
+    df_actuals_interpolated = (
+        df_y_unfiltered
+            .pipe(model_utils.interpolate_df, interpolate_y=False)
+            .sort_values(['x'])
+            .reset_index(drop=True)
+            # Update weight column in df_actuals_interpolated
+            .drop(columns=['weight'], errors='ignore')
+            .merge(df_y[['x', 'weight']], how='left')
     )
-    # Update weight column in df_actuals_interpolated
-    df_actuals_interpolated = df_actuals_interpolated.drop(
-        columns=['weight'], errors='ignore')
-    df_actuals_interpolated = df_actuals_interpolated.merge(
-        df_y[['x', 'weight']], how='left')
-    df_actuals_interpolated['weight'] = df_actuals_interpolated.weight.fillna(
-        0)
+    df_actuals_interpolated['weight'] = \
+        df_actuals_interpolated.weight.fillna(0)
+    # Set all 0-weight samples to null
+    df_actuals_interpolated['y'] = \
+        df_actuals_interpolated['y'].where(
+            df_actuals_interpolated.weight > 0., np.NaN)
 
     # Note - In the above steps, we first remove any samples with weight = 0
-    # from the data used for fitting
-    # then we fill gaps in dates from the table used for extrapolating.
+    # from df_y, the data used for fitting
+    # then we fill gaps in dates from
+    # df_actuals_interpolated, the table used for extrapolating.
     # The filled gaps have NaN values in the y column, 0 weight
 
     l_model.sort()
-
     for model in l_model:
 
         dict_fit_model = fit_model(
-            model, df_y, freq, source, df_actuals=df_y_unfiltered)
+            model, df_y, freq, source, df_actuals=df_actuals_interpolated)
         df_metadata_tmp = dict_fit_model['metadata']
         df_optimize_info = dict_fit_model['optimize_info']
 

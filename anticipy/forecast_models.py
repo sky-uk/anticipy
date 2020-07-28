@@ -1197,43 +1197,6 @@ def get_iqr_thresholds(s_diff, low=0.25, high=0.75):
     return thr_low, thr_hi
 
 
-# TODO: REMOVE THIS FUNCTION
-def get_model_outliers_withgap(df, window=3):
-    # TODO: ADD CHECK, TO PREVENT REDUNDANT OPS IN DF WITHOUT GAPS
-
-    df_nogap = df.pipe(model_utils.interpolate_df, include_mask=True)
-    mask_step, mask_spike = get_model_outliers(df_nogap)
-
-    # TODO: FOR EACH OF MASK STEP, MASK SPIKE, IF IT IS NONE, RETURN NONE
-    if mask_spike is None and mask_step is None:
-        return None, None
-    if mask_spike is not None:
-        df_nogap['mask_spike'] = mask_spike
-    if mask_step is not None:
-        df_nogap['mask_step'] = mask_step
-        df_nogap['step_in_filled_gap'] = \
-            df_nogap.mask_step * df_nogap.is_gap_filled
-        df_nogap['mask_step_patch'] = df_nogap.step_in_filled_gap.shift(
-            -1).fillna(0)
-
-    df_nogap = df_nogap.loc[~df_nogap.is_gap_filled]
-
-    if mask_step is not None:
-        df_nogap['mask_step_patch'] = df_nogap.mask_step_patch.shift(
-            1).fillna(0)
-        df_nogap['mask_step'] = df_nogap.mask_step + df_nogap.mask_step_patch
-
-    logger_info('df 1 - no gap:', df_nogap)
-
-    if mask_step is not None:
-        mask_step = df_nogap.mask_step.values
-    if mask_spike is not None:
-        mask_spike = df_nogap.mask_spike.values
-    return mask_step, mask_spike
-
-    # todo - clean up, return
-
-
 # TODO: Add option - estimate_outl_size
 # TODO: Add option - sigmoid steps
 # TODO: ADD option - gaussian spikes

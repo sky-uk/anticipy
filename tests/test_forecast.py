@@ -1345,6 +1345,7 @@ class TestForecast(PandasTest):
         l_sources = df_y.source.drop_duplicates()
 
         for source in l_sources:
+            logger.info('Testing source: %s', source)
             df_y_tmp = df_y.loc[df_y.source == source]
 
             size_actuals_unique_tmp = df_y_tmp.drop_duplicates('x').index.size
@@ -1382,6 +1383,7 @@ class TestForecast(PandasTest):
             self.assertFalse(df_data_size_fcast.empty)
 
     def _test_run_forecast(self, freq='D'):
+        logger.info('Testing run_forecast - freq: %s', freq)
         # freq_short = freq[0:1]  # Changes e.g. W-MON to W
         # freq_units_per_year = 52.0 if freq_short == 'W' else 365.0
         # Todo: change to dict to support more frequencies
@@ -1455,11 +1457,13 @@ class TestForecast(PandasTest):
 
         # New test - forecast length
         logger.info('Testing Output Length')
+        logger.info('Testing Output Length - df_y1')
         self._test_run_forecast_check_length_new_api(
             df_y=df_y1,
             include_all_fits=False,
             l_model_trend=l_model_trend1b,
             source_id='source1')
+        logger.info('Testing Output Length - df_y2')
         self._test_run_forecast_check_length_new_api(
             df_y=df_y2,
             include_all_fits=False,
@@ -1503,195 +1507,217 @@ class TestForecast(PandasTest):
         logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60))
 
     def test_run_forecast_naive(self):
-        # # Test 1 - linear series, 1 source
-        # df1 = pd.DataFrame({'y': np.arange(0,10.)},
-        #                     index=pd.date_range('2014-01-01', periods=10,
-        #                                         freq='D'))
-        # dict_result = run_forecast(simplify_output=False, df_y=df1, l_model_trend = [forecast_models.model_naive], # noqa
-        #                            extrapolate_years=10./365)
-        #
-        # df_data = dict_result['data']
-        # df_metadata = dict_result['metadata']
-        # df_optimize_info = dict_result['optimize_info']
-        #
-        # logger_info('df_metadata:', df_metadata)
-        # logger_info('df_optimize_info:', df_optimize_info)
-        # logger_info('df_data:', df_data.groupby(['source', 'model']).tail(40)) # noqa
-        #
-        # # Test 2 - 2 sources
-        # df2 = pd.DataFrame({'y': np.arange(0,10.),'source' : ['src1']*5 + ['src2']*5}, # noqa
-        #                     index=pd.date_range('2014-01-01', periods=10, freq='D')) # noqa
-        # dict_result = run_forecast(simplify_output=False, df_y=df2, l_model_trend = [forecast_models.model_naive], # noqa
-        #                            extrapolate_years=10./365)
-        #
-        # df_data = dict_result['data']
-        # df_metadata = dict_result['metadata']
-        # df_optimize_info = dict_result['optimize_info']
-        #
-        # logger_info('df_metadata:', df_metadata)
-        # logger_info('df_optimize_info:', df_optimize_info)
-        # logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60)) # noqa
-        #
-        # # test 3: weight column
-        # df1 = pd.DataFrame({'y': np.arange(0, 10.), 'weight': array_zeros_in_indices(10,[5,6])}, # noqa
-        #                    index=pd.date_range('2014-01-01', periods=10, freq='D')) # noqa
-        # dict_result = run_forecast(simplify_output=False, df_y=df1, l_model_trend=[forecast_models.model_naive], # noqa
-        #                            extrapolate_years=10. / 365)
-        #
-        # df_data = dict_result['data']
-        # df_metadata = dict_result['metadata']
-        # df_optimize_info = dict_result['optimize_info']
-        #
-        # logger_info('df_metadata:', df_metadata)
-        # logger_info('df_optimize_info:', df_optimize_info)
-        # logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60)) # noqa
-        #
-        # a_y_result = df_data.loc[df_data.model=='naive'].y.values
-        # logger_info('a_y_result:', a_y_result)
-        # self.assert_array_equal(a_y_result,
-        #     np.concatenate([
-        #     np.array([0., 0., 1., 2., 3., 4., 4.,4.,7.,8., 9.,]),
-        #              np.full(9, 9.)
-        #     ]
-        # ))
-        #
-        # df_forecast = dict_result['forecast']
-        # logger_info('df_forecast',df_forecast)
-        #
-        # # Test 3b: weight column, season_add_mult = 'both'
-        #
-        # df1 = pd.DataFrame({'y': np.arange(0, 10.), 'weight': array_zeros_in_indices(10, [5, 6])}, # noqa
-        #                    index=pd.date_range('2014-01-01', periods=10, freq='D')) # noqa
-        # dict_result = run_forecast(simplify_output=False, df_y=df1, l_model_trend=[forecast_models.model_naive], # noqa
-        #                            extrapolate_years=10. / 365,
-        #                            season_add_mult='both')
-        #
-        # df_data = dict_result['data']
-        # df_metadata = dict_result['metadata']
-        # df_optimize_info = dict_result['optimize_info']
-        #
-        # logger_info('df_metadata:', df_metadata)
-        # logger_info('df_optimize_info:', df_optimize_info)
-        # logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60)) # noqa
-        #
-        # a_y_result = df_data.loc[df_data.model == 'naive'].y.values
-        # logger_info('a_y_result:', a_y_result)
-        # self.assert_array_equal(a_y_result,
-        #                         np.concatenate([
-        #                             np.array([0., 0., 1., 2., 3., 4., 4., 4., 7., 8., 9., ]), # noqa
-        #                             np.full(9, 9.)
-        #                         ]
-        #                         ))
-        #
-        # df_forecast = dict_result['forecast']
-        # logger_info('df_forecast', df_forecast)
-        #
-        # # Test 4: find_outliers
-        #
-        # df1 = pd.DataFrame({'y': np.arange(0, 10.)+10*array_ones_in_indices(10,[5,6])}, # noqa
-        #                    index=pd.date_range('2014-01-01', periods=10, freq='D')) # noqa
-        # dict_result = run_forecast(simplify_output=False, df_y=df1, l_model_trend=[forecast_models.model_naive], # noqa
-        #                            extrapolate_years=10. / 365, find_outliers=True) # noqa
-        #
-        # df_data = dict_result['data']
-        # df_metadata = dict_result['metadata']
-        # df_optimize_info = dict_result['optimize_info']
-        #
-        # logger_info('df_metadata:', df_metadata)
-        # logger_info('df_optimize_info:', df_optimize_info)
-        # logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60)) # noqa
-        #
-        # a_y_result = df_data.loc[df_data.model=='naive'].y.values
-        # logger_info('a_y_result:', a_y_result)
-        # self.assert_array_equal(a_y_result,
-        #     np.concatenate([
-        #     np.array([0., 0., 1., 2., 3., 4., 4.,4.,7.,8., 9.,]),
-        #              np.full(9, 9.)
-        #     ]
-        # ))
-        #
-        # df_forecast = dict_result['forecast']
-        # logger_info('df_forecast',df_forecast)
-        #
-        # # Test 4b: find_outliers, season_add_mult = 'both'
-        #
-        # df1 = pd.DataFrame({'y': np.arange(0, 10.)+10*array_ones_in_indices(10,[5,6])}, # noqa
-        #                    index=pd.date_range('2014-01-01', periods=10, freq='D')) # noqa
-        # dict_result = run_forecast(simplify_output=False, df_y=df1, l_model_trend=[forecast_models.model_naive], # noqa
-        #                            extrapolate_years=10. / 365, find_outliers=True, season_add_mult='both') # noqa
-        #
-        # df_data = dict_result['data']
-        # df_metadata = dict_result['metadata']
-        # df_optimize_info = dict_result['optimize_info']
-        #
-        # logger_info('df_metadata:', df_metadata)
-        # logger_info('df_optimize_info:', df_optimize_info)
-        # logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60)) # noqa
-        #
-        # a_y_result = df_data.loc[df_data.model=='naive'].y.values
-        # logger_info('a_y_result:', a_y_result)
-        # self.assert_array_equal(a_y_result,
-        #     np.concatenate([
-        #     np.array([0., 0., 1., 2., 3., 4., 4.,4.,7.,8., 9.,]),
-        #              np.full(9, 9.)
-        #     ]
-        # ))
-        #
-        # df_forecast = dict_result['forecast']
-        # logger_info('df_forecast',df_forecast)
+        logger.info('Test 1 - linear series, 1 source')
+        df1 = pd.DataFrame(
+            {'y': np.arange(0, 10.)},
+            index=pd.date_range('2014-01-01', periods=10, freq='D'))
+        dict_result = run_forecast(
+            simplify_output=False,
+            df_y=df1,
+            l_model_trend=[forecast_models.model_naive],
+            extrapolate_years=10. / 365)
 
-        # Test 5: Series with gap
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        df_optimize_info = dict_result['optimize_info']
 
-        # df1 = (
-        #           pd.DataFrame({'y': np.arange(0, 10.),
-        #                     #'weight': array_zeros_in_indices(10, [5, 6]),
-        #                     'date': pd.date_range('2014-01-01', periods=10, freq='D')}, # noqa
-        #                    )
-        #
-        # )
-        #
-        # df1 = pd.concat([df1.head(5), df1.tail(3)], sort=False, ignore_index=False).pipe(normalize_df) # noqa
-        #
-        # dict_result = run_forecast(simplify_output=False, df_y=df1,
-        #                            l_model_trend=[],
-        #                            l_model_naive=[forecast_models.model_naive, forecast_models.model_snaive_wday], # noqa
-        #                            extrapolate_years=10. / 365,
-        #                            season_add_mult='both')
-        #
-        #
-        # df_data = dict_result['data']
-        # df_metadata = dict_result['metadata']
-        # df_optimize_info = dict_result['optimize_info']
-        #
-        # logger_info('df_metadata:', df_metadata)
-        # logger_info('df_optimize_info:', df_optimize_info)
-        # logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60)) # noqa
-        #
-        # a_y_result = df_data.loc[df_data.model == 'naive'].y.values
-        # logger_info('a_y_result:', a_y_result)
-        # self.assert_array_equal(a_y_result,
-        #                         np.concatenate([
-        #                             np.array([0., 0., 1., 2., 3., 4., 4., 4., 7., 8., 9., ]), # noqa
-        #                             np.full(9, 9.)
-        #                         ]
-        #                         ))
-        #
-        # df_forecast = dict_result['forecast']
-        # logger_info('df_forecast', df_forecast)
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize_info)
+        logger_info('df_data:', df_data.groupby(['source', 'model']).tail(40))
 
-        # Test 6: Series with spike, find_outliers=True, use model_snaive_wday
+        logger.info('Test 2 - 2 sources')
+        df2 = pd.DataFrame(
+            {'y': np.arange(0, 10.), 'source': ['src1'] * 5 + ['src2'] * 5},
+            index=pd.date_range('2014-01-01', periods=10, freq='D'))
+        dict_result = run_forecast(
+            simplify_output=False, df_y=df2,
+            l_model_trend=[forecast_models.model_naive],
+            extrapolate_years=10. / 365)
 
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        df_optimize_info = dict_result['optimize_info']
+
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize_info)
+        logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60))
+
+        logger.info('test 3: weight column')
+        df1 = pd.DataFrame(
+            {'y': np.arange(0, 10.),
+             'weight': array_zeros_in_indices(10, [5, 6])},
+            index=pd.date_range('2014-01-01', periods=10, freq='D'))
+        dict_result = run_forecast(
+            simplify_output=False, df_y=df1,
+            l_model_trend=[forecast_models.model_naive],
+            extrapolate_years=10. / 365)
+
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        df_optimize_info = dict_result['optimize_info']
+
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize_info)
+        logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60))
+
+        a_y_result = df_data.loc[df_data.model == 'naive'].y.values
+        logger_info('a_y_result:', a_y_result)
+        self.assert_array_equal(
+            a_y_result,
+            np.concatenate([np.array(
+                [0., 0., 1., 2., 3., 4., 4., 4., 7., 8., 9., ]),
+                np.full(9, 9.)]))
+
+        df_forecast = dict_result['forecast']
+        logger_info('df_forecast', df_forecast)
+
+        logger.info('Test 3b: weight column, season_add_mult = \'both\'')
+
+        df1 = pd.DataFrame(
+            {'y': np.arange(0, 10.),
+             'weight': array_zeros_in_indices(10, [5, 6])},  # noqa
+            index=pd.date_range('2014-01-01', periods=10, freq='D'))  # noqa
+        dict_result = run_forecast(
+            simplify_output=False, df_y=df1,
+            l_model_trend=[forecast_models.model_naive],  # noqa
+            extrapolate_years=10. / 365,
+            season_add_mult='both')
+
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        df_optimize_info = dict_result['optimize_info']
+
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize_info)
+        logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60))
+
+        a_y_result = df_data.loc[df_data.model == 'naive'].y.values
+        logger_info('a_y_result:', a_y_result)
+        self.assert_array_equal(
+            a_y_result,
+            np.concatenate([
+                np.array([0., 0., 1., 2., 3., 4., 4., 4., 7., 8., 9., ]),
+                np.full(9, 9.)
+            ]))
+
+        df_forecast = dict_result['forecast']
+        logger_info('df_forecast', df_forecast)
+
+        logger.info('Test 4: find_outliers')
+
+        df1 = pd.DataFrame(
+            {'y': np.arange(0, 10.) + 10 * array_ones_in_indices(10, [5, 6])},
+            index=pd.date_range('2014-01-01', periods=10, freq='D'))
+        dict_result = run_forecast(
+            simplify_output=False, df_y=df1,
+            l_model_trend=[forecast_models.model_naive],
+            extrapolate_years=10. / 365, find_outliers=True)
+
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        df_optimize_info = dict_result['optimize_info']
+
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize_info)
+        logger_info('df_data:',
+                    df_data.groupby(['source', 'model']).tail(60))  # noqa
+
+        a_y_result = df_data.loc[df_data.model == 'naive'].y.values
+        logger_info('a_y_result:', a_y_result)
+        self.assert_array_equal(
+            a_y_result,
+            np.concatenate([
+                np.array([0., 0., 1., 2., 3., 4., 4., 4., 7., 8., 9., ]),
+                np.full(9, 9.)
+            ]))
+
+        df_forecast = dict_result['forecast']
+        logger_info('df_forecast', df_forecast)
+
+        logger.info('Test 4b: find_outliers, season_add_mult = \'both\'')
+
+        df1 = pd.DataFrame(
+            {'y': np.arange(0, 10.) + 10 * array_ones_in_indices(10, [5, 6])},
+            index=pd.date_range('2014-01-01', periods=10, freq='D'))
+        dict_result = run_forecast(
+            simplify_output=False, df_y=df1,
+            l_model_trend=[forecast_models.model_naive],
+            extrapolate_years=10. / 365, find_outliers=True,
+            season_add_mult='both')
+
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        df_optimize_info = dict_result['optimize_info']
+
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize_info)
+        logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60))
+
+        a_y_result = df_data.loc[df_data.model == 'naive'].y.values
+        logger_info('a_y_result:', a_y_result)
+        self.assert_array_equal(
+            a_y_result,
+            np.concatenate([
+                np.array([0., 0., 1., 2., 3., 4., 4., 4., 7., 8., 9., ]),
+                np.full(9, 9.)
+            ]
+            ))
+
+        df_forecast = dict_result['forecast']
+        logger_info('df_forecast', df_forecast)
+
+        logger.info('Test 5: Series with gap')
+
+        df1 = (
+            pd.DataFrame(
+                {'y': np.arange(0, 10.),
+                 # 'weight': array_zeros_in_indices(10, [5, 6]),
+                 'date': pd.date_range('2014-01-01', periods=10, freq='D')},
+            )
+        )
+
+        df1 = pd.concat(
+            [df1.head(5), df1.tail(3)],
+            sort=False, ignore_index=False
+        ).pipe(normalize_df)
+
+        dict_result = run_forecast(
+            simplify_output=False, df_y=df1,
+            l_model_trend=[],
+            l_model_naive=[forecast_models.model_naive,
+                           forecast_models.model_snaive_wday],
+            extrapolate_years=10. / 365,
+            season_add_mult='both')
+
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        df_optimize_info = dict_result['optimize_info']
+
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize_info)
+        logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60))
+
+        a_y_result = df_data.loc[df_data.model == 'naive'].y.values
+        logger_info('a_y_result:', a_y_result)
+        self.assert_array_equal(
+            a_y_result,
+            np.concatenate([
+                np.array([0., 0., 1., 2., 3., 4., 4., 4., 7., 8., 9., ]),
+                np.full(9, 9.)
+            ]))
+
+        df_forecast = dict_result['forecast']
+        logger_info('df_forecast', df_forecast)
+
+        logger.info('Test 6: Series with spike, '
+                    'find_outliers=True, use model_snaive_wday')
         df1 = (
             pd.DataFrame(
                 {'y': np.arange(0, 21.) + 10 * array_ones_in_indices(21, 7),
                  # 'weight': array_zeros_in_indices(10, [5, 6]),
                  'date': pd.date_range('2014-01-01', periods=21, freq='D')},
-            )
-
-        )
-
+            ))
         # array_ones_in_indices(n, l_indices)
-
         dict_result = run_forecast(
             simplify_output=False,
             df_y=df1,
@@ -1716,7 +1742,7 @@ class TestForecast(PandasTest):
         logger_info('a_y_result:', a_y_result)
         self.assert_array_equal(
             a_y_result,
-            np.array([0., 1., 2., 3., 4., 5., 6., 17., 8., 9., 10., 11., 12.,
+            np.array([0., 1., 2., 3., 4., 5., 6., 0., 8., 9., 10., 11., 12.,
                       13., 14., 15., 16., 17., 18., 19., 20., 14., 15., 16.,
                       17., 18., 19., 20., 14., 15., 16., 17., 18., 19.])
         )

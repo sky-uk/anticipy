@@ -789,18 +789,6 @@ class TestForecastModel(PandasTest):
         # - get list of steps
         # - if a step is in a filled gap, move to next sample
 
-        # Test 3c - same, with function
-
-        mask_step, mask_spike = get_model_outliers_withgap(df)
-        logger_info('Model 3c:', mask_step)
-        self.assert_array_equal(
-            mask_step, array_ones_in_indices(
-                df_nogap.index.size, [5]))
-        logger_info('mask_spike:', mask_spike)
-        logger_info('mask_step:', mask_step)
-
-        self.assertIsNone(mask_spike)  # No spikes
-
     def test_fixed_model_creation(self):
         a_x = np.arange(0, 10)
         a_date = pd.date_range('2014-01-01', periods=10, freq='D')
