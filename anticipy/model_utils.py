@@ -320,21 +320,27 @@ def detect_freq(a_date):
         return None
 
 
-def interpolate_df(df, include_mask=False):
-    # In a dataframe with date gaps, replace gaps with interpolation
-    if 'date' not in df.columns:    # interpolate by x column
-        if df.x.diff().nunique() <= 1:
+def interpolate_df(df, include_mask=False, interpolate_y=True):
+    # In a dataframe with date gaps, replace x-axis gaps with interpolation
+    if 'date' not in df.columns:  # interpolate by x column
+        if df.x.drop_duplicates().diff().nunique() <= 1:  # Regular intervals - no gaps
             return df
         else:
+            # With duplicate samples, gap filling not supported
+            if df.x.duplicated().any():
+                raise ValueError(
+                    'Cannot fill gaps on series with multiple '
+                    'samples per x')
             df_result = (
                 df.set_index('x')
-                .reindex(pd.RangeIndex(df.x.min(), df.x.max() + 1, name='x'))
-                .interpolate()
-                .reset_index()
+                    .reindex(
+                    pd.RangeIndex(df.x.min(), df.x.max() + 1, name='x'))
+                    .pipe(lambda x: x.interpolate() if interpolate_y else x)
+                    .reset_index()
             )
 
     else:   # df has date column - interpolate by date
-        s_date_diff = df.date.diff()
+        s_date_diff = df.date.drop_duplicates().diff()
         if s_date_diff.pipe(pd.isnull).all():
             s_date_diff_first = None
         else:
@@ -345,19 +351,27 @@ def interpolate_df(df, include_mask=False):
         # Exception: in sparse series with date gaps, we can randomly get
         # gaps that are constant but don't match any real period, e.g. 8 days
 
-        if s_date_diff.nunique() <= 1 and not (
-                freq == 'D' and s_date_diff_first > pd.to_timedelta(1, 'day')):
-            # TODO: Add additional check for e.g. 2-sample series with 8-day
-            # gap
+        if s_date_diff.nunique() <= 1 and not \
+                (freq == 'D' and
+                 s_date_diff_first > pd.to_timedelta(1, 'day')):
+            # TODO: Add additional check for
+            #  e.g. 2-sample series with 8-day gap
             return df
+
+        # At this point, we know there are irregular intervals
+        # We need to check if there are duplicate samples
+        # - if that is the case, we crash b.c. scenario not supported by asfreq
+        if df.date.duplicated().any():
+            raise ValueError('Cannot fill gaps on series with multiple '
+                             'samples per date')
         df_result = (
             df.set_index('date')
                 .asfreq(freq)
-                .interpolate()
+                .pipe(lambda x: x.interpolate() if interpolate_y else x)
                 .reset_index()
         )
     if 'x' in df.columns:
-        df_result['x'] = df_result['x'].astype(df.x.dtype)
+        df_result['x'] = df_result['x'].interpolate().astype(df.x.dtype)
         if include_mask:
             df_result['is_gap_filled'] = ~df_result.x.isin(df.x)
     return df_result
