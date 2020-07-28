@@ -1879,20 +1879,26 @@ def get_l_model_auto_season(a_date, min_periods=1.5, season_add_mult='add',
     l_season_yearly_default = [
         # model_season_month,
         model_season_fourier_yearly,
-        model_null] if l_season_yearly is None else l_season_yearly
+        model_null]
     l_season_weekly_default = [
         model_season_wday,
-        model_null] if l_season_weekly is None else l_season_weekly
+        model_null]
 
     if use_season_weekly:
-        l_season_weekly = l_season_weekly_default
+        if l_season_weekly is None:
+            l_season_weekly = l_season_weekly_default
+        elif not len(l_season_weekly):  # Empty list
+            l_season_weekly = [model_null]
+            # Otherwise, use input l_season_weekly
     else:
         l_season_weekly = [model_null]
 
     if use_season_yearly:
-        l_season_yearly = l_season_yearly_default
-        # TODO: add season_yearly_fourier
-        # TODO: add holiday list
+        if l_season_yearly is None:
+            l_season_yearly = l_season_yearly_default
+        elif not len(l_season_yearly):  # Empty list
+            l_season_yearly = [model_null]
+        # Otherwise, use input l_season_yearly
     else:
         l_season_yearly = [model_null]
 

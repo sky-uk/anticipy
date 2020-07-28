@@ -809,14 +809,13 @@ class TestForecastModel(PandasTest):
 
     def test_get_l_model_auto_season(self):
 
-        # 0. Test for series with single sample
+        logger.info('Test 0 - Test for series with single sample')
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=1, freq='D')
         l_expected = [model_null]
         l_result = get_l_model_auto_season(a_date)
         self.assert_array_equal(l_result, l_expected)
 
-        # 1. Tests for series with daily samples
-
+        logger.info('Test 1 - Tests for series with daily samples')
         # Test 1.1 - not enough samples for weekly seasonality
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=10, freq='D')
         l_expected = [model_null]
@@ -827,6 +826,11 @@ class TestForecastModel(PandasTest):
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=12, freq='D')
         l_expected = [model_null, model_season_wday]
         l_result = get_l_model_auto_season(a_date, min_periods=1.5)
+        self.assert_array_equal(l_result, l_expected)
+
+        # Test 1.2b - l_season_yearly is empty list
+        l_result = get_l_model_auto_season(
+            a_date, l_season_yearly=[], min_periods=1.5)
         self.assert_array_equal(l_result, l_expected)
 
         # Test 1.3 - Weekly and yearly seasonality
@@ -850,8 +854,19 @@ class TestForecastModel(PandasTest):
             a_date, min_periods=1.5, season_add_mult='add')
         self.assert_array_equal(l_result, l_expected)
 
-        # 2. Tests for series with weekly samples
+        # Test 1.3b - Weekly and yearly seasonality, empty l_season_yearly
+        l_result = get_l_model_auto_season(
+            a_date, l_season_yearly=[], min_periods=1.5, season_add_mult='add')
+        l_expected = [model_null, model_season_wday]
+        self.assert_array_equal(l_result, l_expected)
 
+        # Test 1.3c - Weekly and yearly seasonality, empty l_season_weekly
+        l_result = get_l_model_auto_season(
+            a_date, l_season_weekly=[], min_periods=1.5, season_add_mult='add')
+        l_expected = [model_null, model_season_fourier_yearly]
+        self.assert_array_equal(l_result, l_expected)
+
+        logger.info('Test 2 - Tests for series with weekly samples')
         # Test 2.2 - not enough samples for yearly seasonality
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=12, freq='W')
         l_expected = [model_null]
@@ -864,8 +879,7 @@ class TestForecastModel(PandasTest):
         l_result = get_l_model_auto_season(a_date, min_periods=1.5)
         self.assert_array_equal(l_result, l_expected)
 
-        # 3. Tests for series with monthly samples
-
+        logger.info('Test 3 - Tests for series with monthly samples')
         # Test 3.2 - not enough samples for yearly seasonality
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=12, freq='M')
         l_expected = [model_null]
@@ -878,8 +892,7 @@ class TestForecastModel(PandasTest):
         l_result = get_l_model_auto_season(a_date, min_periods=1.5)
         self.assert_array_equal(l_result, l_expected)
 
-        # 4. Tests for series with quarterly samples
-
+        logger.info('Test 4 - Tests for series with quarterly samples')
         # Test 4.2 - not enough samples for yearly seasonality
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=5, freq='Q')
         l_expected = [model_null]
