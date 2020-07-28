@@ -204,7 +204,8 @@ def optimize_least_squares(
 
 
 def _get_df_fit_model(source, model, weights, actuals_x_range, freq,
-                      is_fit, cost, aic_c, params, status):
+                      is_fit, cost, aic_c, params, status,
+                      fit_time=0):
     # Generate a metadata dataframe for the output of fit_model()
     if params is None:
         params = np.array([])
@@ -219,30 +220,26 @@ def _get_df_fit_model(source, model, weights, actuals_x_range, freq,
                 'is_fit',
                 'cost',
                 'aic_c',
+                'fit_time',
                 'params_str',
                 'status',
                 'source_long',
                 'params'],
-            data=[
-                [
-                    source,
-                    model,
-                    weights,
-                    actuals_x_range,
-                    freq,
-                    is_fit,
-                    cost,
-                    aic_c,
-                    np.array_str(
-                        params,
-                        precision=1),
-                    status,
-                    '{}:{}:{}:{}'.format(
-                        source,
-                        weights,
-                        freq,
-                        actuals_x_range),
-                    params]]))
+            data=[[
+                source,
+                model,
+                weights,
+                actuals_x_range,
+                freq,
+                is_fit,
+                cost,
+                aic_c,
+                fit_time,
+                np.array_str(params, precision=1),
+                status,
+                '{}:{}:{}:{}'.format(
+                    source, weights, freq, actuals_x_range),
+                params]]))
     return df_result
 
 
@@ -539,8 +536,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
         model = forecast_models.simplify_model(model, a_x, a_y, i_date)
 
         if model.n_params == 0:
-            # 0-parameter model, cannot be fit
-
+            # 0-parameter model, no fit required
             a_residuals = get_residuals(
                 None,
                 model,
@@ -555,7 +551,6 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
             status = 'FIT'
 
             # Process results
-
             aic_c = model_utils.get_aic_c(cost, len(df_y), n_params)
 
             df_result = _get_df_fit_model(
@@ -602,8 +597,10 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
                                                      'source_long',
                                                      'params']]
         else:
+            time_start = datetime.now()
             df_result_optimize = optimize_least_squares(
                 model, a_x, a_y, i_date, a_weights, df_actuals=df_actuals)
+            runtime = datetime.now() - time_start
             cost = df_result_optimize.cost.iloc[0]
             is_fit = df_result_optimize.success.iloc[0]
             params = df_result_optimize.params.iloc[0]
@@ -625,7 +622,9 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
                 cost,
                 aic_c,
                 params,
-                status)
+                status,
+                runtime
+            )
 
             df_result_optimize['source'] = source
             df_result_optimize['source_long'] = df_result.source_long.iloc[0]
