@@ -96,9 +96,11 @@ class TestForecastPlot(PandasTest):
         if not forecast_plot._matplotlib_imported:
             self.skipTest('Test skipped as Matplotlib is not installed...')
         path = get_file_path(base_folder, 'test_mpl')
-        forecast_plot.plot_forecast(df_forecast, 'png', path, 900, 600,
-                                    'Test Plot', show_legend=False,
-                                    auto_open=False)
+        result = forecast_plot.plot_forecast(
+            df_forecast, 'png', path, 900, 600,
+            'Test Plot', show_legend=False,
+            auto_open=False)
+        self.assertEquals(result, 0)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
         path = get_file_path(base_folder, 'test_facet_mpl')

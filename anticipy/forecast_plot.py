@@ -33,6 +33,7 @@ except ImportError:
 try:
     import plotly as py
     from plotly import tools
+    from plotly import subplots
     import plotly.graph_objs as go
 
     _plotly_imported = True
