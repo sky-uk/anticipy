@@ -85,6 +85,7 @@ class TestForecastModel(PandasTest):
         logger_info('df_result:', df_result)
 
     def test_model_snaive_wday(self):
+        logger.info('Test 1 - default settings')
         a_x = np.arange(0, 21)
         a_date = pd.date_range('2014-01-01', periods=21, freq='D')
         a_y = 10. * a_x
@@ -97,6 +98,15 @@ class TestForecastModel(PandasTest):
         a_y_expected = np.array(
             [np.NaN] * 7 + np.arange(0, 70., 10.).tolist() * 2)
         self.assert_array_equal(a_y_result, a_y_expected)
+
+        logger.info('Test 2 - null values on last week')
+        df_actuals = pd.DataFrame({'date': a_date, 'x': a_x,
+                                   'y': a_y}).head(14)
+        df_actuals.y.iloc[-1] = np.NaN
+        logger_info('actuals: ', df_actuals)
+        a_y_result = model_snaive_wday(
+            a_x, a_date, None, df_actuals=df_actuals)
+        logger_info('a_y result: ', a_y_result)
 
         # TODO: model composition disabled, check that exception is thrown
         # # Model composition

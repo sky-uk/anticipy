@@ -494,11 +494,15 @@ def _f_model_naive(a_x, a_date, params, is_mult=False, df_actuals=None):
     df_out_tmp = pd.DataFrame({'date': a_date, 'x': a_x})
     df_out = (
         # This is not really intended to work with multiple values per sample
-        df_actuals.drop_duplicates('x').merge(df_out_tmp, how='outer')
+        df_actuals.drop_duplicates('x')
+        .merge(df_out_tmp, how='outer')
+        .sort_values('x')
     )
-    df_out['y'] = df_out.y.shift(1).fillna(
-        method='ffill').fillna(
-        method='bfill')
+    df_out['y'] = (
+        df_out.y.shift(1)
+        .fillna(method='ffill')
+        .fillna(method='bfill')
+    )
     df_out = df_out.loc[df_out.x.isin(a_x)]
     # df_out = df_out_tmp.merge(df_out, how='left')
     # TODO: CHECK THAT X,DATE order is preserved
@@ -526,10 +530,10 @@ def _fillna_wday(df):
 
     df_out = (
         df
-            .assign(wday=df.date.dt.weekday)
-            .groupby('wday', as_index=False).apply(add_col_y_out)
-            .sort_values(['x'])
-            .reset_index(drop=True)
+        .assign(wday=df.date.dt.weekday)
+        .groupby('wday', as_index=False).apply(add_col_y_out)
+        .sort_values(['x'])
+        .reset_index(drop=True)
     )
     return df_out
 
@@ -539,32 +543,43 @@ def _f_model_snaive_wday(a_x, a_date, params, is_mult=False, df_actuals=None):
     if df_actuals is None:
         raise ValueError('model_snaive_wday requires a df_actuals argument')
 
+    # df_actuals_model - table with actuals samples,
+    #  adding y_out column with naive model values
     df_actuals_model = _fillna_wday(df_actuals.drop_duplicates('x'))
 
+    # df_last_week - table with naive model values from last actuals week,
+    #  to use in extrapolation
     df_last_week = (
         df_actuals_model
-            .drop_duplicates('wday', keep='last')
+        # Fill null actual values with data from previous weeks
+        .assign(y=df_actuals_model.y.fillna(df_actuals_model.y_out))
+        .drop_duplicates('wday', keep='last')
         [['wday', 'y']]
-            .rename(columns=dict(y='y_out'))
+        .rename(columns=dict(y='y_out'))
     )
 
+    # Generate table with extrapolated samples
     df_out_tmp = pd.DataFrame({'date': a_date, 'x': a_x})
     df_out_tmp['wday'] = df_out_tmp.date.dt.weekday
-
-    df_out_actuals = (
-        df_actuals_model.merge(df_out_tmp, how='left')
-    )
     df_out_extrapolated = (
-        df_out_tmp.loc[~df_out_tmp.date.isin(df_actuals_model.date)].merge(
-            df_last_week).sort_values('date').reset_index(drop=True)
+        df_out_tmp
+        .loc[~df_out_tmp.date.isin(df_actuals_model.date)]
+        .merge(df_last_week, how='left')
+        .sort_values('x')
     )
-
-    df_out = pd.concat([df_out_actuals, df_out_extrapolated], sort=False)
-
-    # Note: the line below causes trouble when samples are filtered from a_x,
-    # a_date due to find_outliers
-    df_out = df_out.loc[df_out.x.isin(a_x)]
-
+    # Filter actuals table - only samples in a_x, a_date
+    df_out_actuals_filtered = (
+        # df_actuals_model.loc[df_actuals_model.x.isin(a_x)]
+        # Using merge rather than simple filtering to account for
+        #  dates with multiple samples
+        df_actuals_model.merge(df_out_tmp, how='inner')
+        .sort_values('x')
+    )
+    df_out = (
+        pd.concat(
+            [df_out_actuals_filtered, df_out_extrapolated],
+            sort=False, ignore_index=True)
+    )
     return df_out.y_out.values
 
 
