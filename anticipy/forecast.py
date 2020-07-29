@@ -224,10 +224,12 @@ def _get_df_fit_model(source, model, weights, actuals_x_range, freq,
                 'params_str',
                 'status',
                 'source_long',
-                'params'],
+                'params',
+                'model_obj'
+            ],
             data=[[
                 source,
-                model,
+                model.name,
                 weights,
                 actuals_x_range,
                 freq,
@@ -239,7 +241,9 @@ def _get_df_fit_model(source, model, weights, actuals_x_range, freq,
                 status,
                 '{}:{}:{}:{}'.format(
                     source, weights, freq, actuals_x_range),
-                params]]))
+                params,
+                model
+            ]]))
     return df_result
 
 
@@ -489,7 +493,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
         status = 'EMPTY_TS'
         df_result = _get_df_fit_model(
             source,
-            model.name,
+            model,
             weights,
             actuals_x_range,
             freq,
@@ -507,7 +511,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
         status = 'TS_TOO_SHORT'
         df_result = _get_df_fit_model(
             source,
-            model.name,
+            model,
             weights,
             actuals_x_range,
             freq,
@@ -523,7 +527,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
         status = 'INPUT_ERR'
         df_result = _get_df_fit_model(
             source,
-            model.name,
+            model,
             weights,
             actuals_x_range,
             freq,
@@ -559,7 +563,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
 
             df_result = _get_df_fit_model(
                 source,
-                model.name,
+                model,
                 weights,
                 actuals_x_range,
                 freq,
@@ -620,7 +624,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
 
             df_result = _get_df_fit_model(
                 source,
-                model.name,
+                model,
                 weights,
                 actuals_x_range,
                 freq,
