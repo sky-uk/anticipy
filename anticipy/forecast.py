@@ -1042,6 +1042,18 @@ def _get_use_calendar(df_y):
     return use_calendar
 
 
+def _get_model_is_add_mult(model, add_mult_in, l_model_add):
+    """Return add_mult string for a model"""
+    # If add_mult_in is add or mult, return that
+    if add_mult_in in ('add', 'mult'):
+        return add_mult_in
+    # Otherwise, need to check if model is in list of additive models
+    if model in l_model_add:
+        return 'add'
+    else:
+        return 'mult'
+
+
 def run_forecast_single(df_y,
                         l_model_trend=None,
                         l_model_season=None,
@@ -1293,11 +1305,15 @@ def run_forecast_single(df_y,
 
     l_model.sort()
     for model in l_model:
-
         dict_fit_model = fit_model(
             model, df_y, freq, source, df_actuals=df_actuals_interpolated)
         df_metadata_tmp = dict_fit_model['metadata']
         df_optimize_info = dict_fit_model['optimize_info']
+
+        # Add add_mult to metadata
+        metadata_add_mult = _get_model_is_add_mult(
+            model, season_add_mult, l_model_add)
+        df_metadata_tmp['add_mult'] = metadata_add_mult
 
         l_df_metadata += [df_metadata_tmp]
         l_df_optimize_info += [df_optimize_info]
