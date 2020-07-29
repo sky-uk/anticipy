@@ -799,7 +799,8 @@ class TestForecastModel(PandasTest):
         # - get list of steps
         # - if a step is in a filled gap, move to next sample
 
-    def test_fixed_model_creation(self):
+    def test_get_fixed_model(self):
+        logger.info('Test 1 - default settings')
         a_x = np.arange(0, 10)
         a_date = pd.date_range('2014-01-01', periods=10, freq='D')
 
@@ -808,6 +809,10 @@ class TestForecastModel(PandasTest):
         print(model_constant_fixed)
         a2 = model_constant_fixed(a_x, a_date, None)
         self.assert_array_equal(a1, a2)
+
+        logger.info('Test 2 - 0-param model')
+        model_out = get_fixed_model(model_naive, [])
+        self.assertEqual(model_out.name, 'naive')
 
     def test_fix_params_fmodel(self):
         a_x = np.arange(0, 10)

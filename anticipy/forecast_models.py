@@ -1192,6 +1192,8 @@ model_season_fourier_yearly = ForecastModel(
 
 def get_fixed_model(forecast_model, params_fixed, is_mult=False):
     # Generate model with some fixed parameters
+    if forecast_model.n_params == 0:  # Nothing to do
+        return forecast_model
     if len(params_fixed) != forecast_model.n_params:
         err = 'Wrong number of fixed parameters'
         raise ValueError(err)
