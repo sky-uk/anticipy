@@ -142,35 +142,48 @@ class TestForecastPlot(PandasTest):
             self.skipTest('Test skipped as Plotly is not installed...')
 
         path = get_file_path(base_folder, 'test_plotly')
-        forecast_plot.plot_forecast(df_forecast, 'html', path, 900, 600,
+        forecast_plot.plot_forecast(df_forecast, 'html', path, 600, 400,
                                     'Test Plot', show_legend=False,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
+        path = get_file_path(base_folder, 'test_plotly_legend')
+        forecast_plot.plot_forecast(df_forecast, 'html', path, 600, 400,
+                                    'Test Plot', show_legend=True,
+                                    auto_open=False)
+        self.assertTrue(os.path.isfile('{}.html'.format(path)))
+
         path = get_file_path(base_folder, 'test_facet_plotly')
-        forecast_plot.plot_forecast(df_forecast_facet, 'html', path, 1900,
-                                    1200, 'Test Plot', show_legend=False,
+        forecast_plot.plot_forecast(df_forecast_facet, 'html', path, 1200,
+                                    900, 'Test Plot', show_legend=False,
                                     auto_open=False)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
         # Repeat test with prediction intervals
         path = get_file_path(base_folder, 'test_pi_plotly')
-        forecast_plot.plot_forecast(df_forecast_pi, 'html', path, 900, 600,
+        forecast_plot.plot_forecast(df_forecast_pi, 'html', path, 600, 400,
                                     'Test Plot', show_legend=False,
                                     auto_open=False,
                                     include_interval=True)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
         path = get_file_path(base_folder, 'test_pi_facet_plotly')
-        forecast_plot.plot_forecast(df_forecast_pi_facet, 'html', path, 1900,
-                                    1200, 'Test Plot', show_legend=False,
+        forecast_plot.plot_forecast(df_forecast_pi_facet, 'html', path, 1200,
+                                    900, 'Test Plot', show_legend=False,
+                                    auto_open=False,
+                                    include_interval=True)
+        self.assertTrue(os.path.isfile('{}.html'.format(path)))
+
+        path = get_file_path(base_folder, 'test_pi_facet_slider_plotly')
+        forecast_plot.plot_forecast(df_forecast_pi_facet, 'html', path, 1200,
+                                    900, 'Test Plot', show_legend=False,
                                     auto_open=False,
                                     include_interval=True)
         self.assertTrue(os.path.isfile('{}.html'.format(path)))
 
         # Test the case where a 'None' or an empty path is provided
         self.assertTrue(forecast_plot.plot_forecast(df_forecast_pi_facet,
-                                                    'html', None, 1900, 1200,
+                                                    'html', None, 1200, 900,
                                                     'Test Plot',
                                                     show_legend=False,
                                                     auto_open=False))
