@@ -195,7 +195,7 @@ class TestForecastModel(PandasTest):
         test_model('spike', model_spike, [10., 4., 6.],
                    np.array(4 * [1.] + 2 * [10.] + 4 * [1.]), [True])
 
-        test_model('decay', model_decay, [10., -1000., 0., 0.],
+        test_model('decay', model_decay, [10., -1000., 0.],
                    np.array([10.] + 9 * [0.]))
 
         test_model(
