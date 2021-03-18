@@ -747,6 +747,10 @@ def _f_model_decay(a_x, a_date, params, is_mult=False, **kwargs):
     return y
 
 
+def _f_validate_input_decay(a_x, a_y, a_date):
+    assert (a_y > 0).all()
+
+
 def f_init_params_decay(a_x=None, a_y=None, a_date=None, is_mult=False):
     if a_y is None:
         return np.array([0, 0, 0])
@@ -764,7 +768,8 @@ def f_bounds_decay(a_x=None, a_y=None, a_date=None):
 
 model_decay = ForecastModel('decay', 3, _f_model_decay,
                             f_init_params=f_init_params_decay,
-                            f_bounds=f_bounds_decay)
+                            f_bounds=f_bounds_decay,
+                            l_f_validate_input=_f_validate_input_decay)
 
 
 # - Step function: :math:`Y = {0, if x < A | B, if x >= A}`
