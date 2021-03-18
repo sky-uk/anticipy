@@ -552,7 +552,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
                 i_date,
                 a_weights,
                 df_actuals=df_actuals)
-            runtime_res = datetime.now() - time_start
+            fit_time = (datetime.now() - time_start).total_seconds()
             cost = 0.5 * np.nansum(a_residuals ** 2)
             is_fit = True
             params = np.array([])
@@ -572,7 +572,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
                 aic_c,
                 params,
                 status,
-                fit_time=runtime_res
+                fit_time=fit_time
             )
 
             dict_result_df = {
