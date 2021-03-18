@@ -266,6 +266,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
             opacity=0.8,
             legendgroup='actuals',
             showlegend=is_first_source,
+            hovertemplate="%{x|%Y-%m-%d} : %{y:.4g}"
         )
 
         fig.add_trace(actuals, x, y)
@@ -279,6 +280,7 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
             mode='lines+markers',
             legendgroup='forecast',
             showlegend=is_first_source,
+            hovertemplate="%{x|%Y-%m-%d} : %{y:.4g}"
         )
 
         fig.add_trace(forecast, x, y)
@@ -297,7 +299,9 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                     line=dict(color='#F8766D', width=0),
                     mode='lines',
                     showlegend=False,
-                    legendgroup='forecast')
+                    legendgroup='forecast',
+                    hovertemplate="%{x|%Y-%m-%d} : %{y:.4g}"
+                )
 
                 fig.add_trace(q_low, x, y)
 
@@ -305,13 +309,15 @@ def _plotly_forecast_create(df_fcast, subplots, sources, nrows, ncols,
                     x=df_fcast.loc[source_filt & ~df_fcast['is_actuals']].date,
                     y=df_fcast.loc[source_filt & ~df_fcast['is_actuals']]
                     [str_q_hi],
-                    name="{}% PI".format(100-pi_q),
+                    name="{}% PI".format(100 - pi_q),
                     fill='tonexty',
                     fillcolor='rgba(248,118,109,0.2)',
                     line=dict(color='#F8766D', width=0),
                     mode='lines',
                     showlegend=False,
-                    legendgroup='forecast')
+                    legendgroup='forecast',
+                    hovertemplate="%{x|%Y-%m-%d} : %{y:.4g}"
+                )
                 fig.add_trace(q_hi, x, y)
 
         y += 1
