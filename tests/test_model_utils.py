@@ -124,7 +124,7 @@ class TestModelUtils(PandasTest):
                 0.9 * pd.Timedelta(365, 'D'))
 
             # Check that all actuals values are in extrapolated series
-            self.assertEquals(np.setdiff1d(ts.index, s_x.index).size, 0)
+            self.assertEqual(np.setdiff1d(ts.index, s_x.index).size, 0)
 
         ts = l_df_y[0]
         model = l_models[0]
@@ -144,7 +144,7 @@ class TestModelUtils(PandasTest):
         logger_info('a_x index', s_x.head(3).index)
         self.assertIsInstance(s_x.index, pd.DatetimeIndex)
         logger_info('t_values len', len(s_x))
-        self.assertEquals(len(s_x), 10 + 3.0 * 52)
+        self.assertEqual(len(s_x), 10 + 3.0 * 52)
 
         # Test with freq='D'
         l_df_y = [
@@ -211,7 +211,7 @@ class TestModelUtils(PandasTest):
         logger_info('t_values_index', s_x.index)
         self.assertIsInstance(s_x.index, pd.DatetimeIndex)
         logger_info('t_values len', len(s_x))
-        self.assertEquals(len(s_x), 10 + 3.0 * 365)
+        self.assertEqual(len(s_x), 10 + 3.0 * 365)
 
     def test_get_aic_c(self):
 

@@ -372,7 +372,7 @@ class TestForecastModel(PandasTest):
                     dict_params[key]),
                 dict_expected_add[key])
             logger.info('Initial guess: %s', model.f_init_params(a_x, a_y))
-            self.assertEquals(len(initial_guess), model.n_params)
+            self.assertEqual(len(initial_guess), model.n_params)
 
         for key in dict_model.keys():
             test_model_1(key)
@@ -390,7 +390,7 @@ class TestForecastModel(PandasTest):
                 dict_params[key1],
                 dict_params[key2])
             logger.info('Initial guess: %s', initial_guess)
-            self.assertEquals(len(initial_guess), model.n_params)
+            self.assertEqual(len(initial_guess), model.n_params)
             model_output = model(a_x, a_date, np.concatenate(
                 [dict_params[key1], dict_params[key2]]))
             logger.info('Model output: %s', model_output)
@@ -417,7 +417,7 @@ class TestForecastModel(PandasTest):
                 dict_params[key1],
                 dict_params[key2])
             logger.info('Initial guess: %s', initial_guess)
-            self.assertEquals(len(initial_guess), model.n_params)
+            self.assertEqual(len(initial_guess), model.n_params)
             model_output = model(a_x, a_date, np.concatenate(
                 [dict_params[key1], dict_params[key2]]))
             logger.info('Model output: %s', model_output)
@@ -466,7 +466,7 @@ class TestForecastModel(PandasTest):
             logger.info('Testing model %s, - name: %s', key1, model.name)
             logger.info('Parameters: %s', dict_params[key1])
             logger.info('Initial guess: %s', initial_guess)
-            self.assertEquals(len(initial_guess), model.n_params)
+            self.assertEqual(len(initial_guess), model.n_params)
             self.assert_array_equal(model(a_x, a_date,
                                           dict_params[key1]),
                                     dict_expected[key1])
@@ -481,7 +481,7 @@ class TestForecastModel(PandasTest):
             logger.info('Testing model %s, - name: %s', key1, model.name)
             logger.info('Parameters: %s', dict_params[key1])
             logger.info('Initial guess: %s', initial_guess)
-            self.assertEquals(model, model_original)
+            self.assertEqual(model, model_original)
 
         for key in dict_model.keys():
             test_model_2_mult_null(key)
@@ -526,7 +526,7 @@ class TestForecastModel(PandasTest):
             logger.info('Testing model: %s', model.name)
             logger.info('Parameters: %s', params)
             logger.info('Initial guess: %s', initial_guess)
-            self.assertEquals(len(initial_guess), model.n_params)
+            self.assertEqual(len(initial_guess), model.n_params)
             self.assert_array_equal(model(a_x, a_date, params),
                                     expected)
 
@@ -583,7 +583,7 @@ class TestForecastModel(PandasTest):
             logger.info('Testing model: %s', model.name)
             logger.info('Bounds: %s', bounds)
             logger.info('Expected: %s', expected)
-            self.assertEquals(params, len(bounds[0]))
+            self.assertEqual(params, len(bounds[0]))
             self.assertTupleEqual(bounds, expected)
 
         for model_name, model_obj in dict_model.items():
@@ -821,7 +821,7 @@ class TestForecastModel(PandasTest):
         a1 = model_linear(a_x, a_date, np.array([10., -1.]))
         model_linear_fixed = fix_params_fmodel(model_linear, [10., np.NaN])
         logger_info('model_linear_fixed:', model_linear_fixed)
-        self.assertEquals(model_linear_fixed.n_params, 1)
+        self.assertEqual(model_linear_fixed.n_params, 1)
         a2 = model_linear_fixed(a_x, a_date, params=[-1.])
         self.assert_array_equal(a1, a2)
 
@@ -938,7 +938,7 @@ class TestForecastModel(PandasTest):
         model_result = simplify_model(model_dummy)
         logger_info('model_dummy', model_dummy)
         logger_info('result:', model_result)
-        self.assertEquals(model_dummy, model_result)
+        self.assertEqual(model_dummy, model_result)
 
         # Test 2: min and max bounds match - model transformed into fixed model
         model_dummy = Namespace()
@@ -950,7 +950,7 @@ class TestForecastModel(PandasTest):
         model_result = simplify_model(model_dummy)
         logger_info('model_dummy', model_dummy)
         logger_info('result:', model_result)
-        self.assertEquals(model_result.n_params, 0)
+        self.assertEqual(model_result.n_params, 0)
 
     def test_validate_initial_guess(self):
         result = validate_initial_guess(
@@ -1004,7 +1004,7 @@ class TestForecastModel(PandasTest):
         def assert_list_func_equal(l_result, l_expected):
             # can't sort lists of functions, so we need to brute force the
             # equality test
-            self.assertEquals(len(l_result), len(l_expected))
+            self.assertEqual(len(l_result), len(l_expected))
             for result in l_result:
                 self.assertIn(result, l_expected)
 
@@ -1037,7 +1037,7 @@ class TestForecastModel(PandasTest):
     def test_get_model_from_calendars(self):
         model_calendar = get_model_from_calendars(CalendarChristmasUK())
         logger_info('model_calendar:', model_calendar)
-        self.assertEquals(model_calendar.n_params, 1)
+        self.assertEqual(model_calendar.n_params, 1)
         logger_info('parameters:', model_calendar.n_params)
 
         model_calendar = get_model_from_calendars(
@@ -1045,7 +1045,7 @@ class TestForecastModel(PandasTest):
             'calendar2'
         )
         logger_info('model_calendar:', model_calendar)
-        self.assertEquals(model_calendar.n_params, 2)
+        self.assertEqual(model_calendar.n_params, 2)
         logger_info('parameters:', model_calendar.n_params)
 
     def test_get_model_from_date_list(self):

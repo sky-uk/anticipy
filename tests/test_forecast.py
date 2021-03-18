@@ -1175,7 +1175,7 @@ class TestForecast(PandasTest):
             extrapolate_years=1.0)
         logger_info('df_y_forecast', df_y_forecast.tail(1))
         logger_info('Result length:', df_y_forecast.index.size)
-        self.assertEquals(df_y_forecast.index.size, 53)
+        self.assertEqual(df_y_forecast.index.size, 53)
 
         df_y_forecast = extrapolate_model(
             forecast_models.model_constant,
@@ -1186,7 +1186,7 @@ class TestForecast(PandasTest):
             extrapolate_years=1.0)
         logger_info('df_y_forecast', df_y_forecast.tail(1))
         logger_info('Result length:', df_y_forecast.index.size)
-        self.assertEquals(df_y_forecast.index.size, 365 * 2)
+        self.assertEqual(df_y_forecast.index.size, 365 * 2)
 
         df_y_forecast = extrapolate_model(
             forecast_models.model_constant,
@@ -1197,7 +1197,7 @@ class TestForecast(PandasTest):
             extrapolate_years=1.0)
         logger_info('df_y_forecast', df_y_forecast.tail(1))
         logger_info('Result length:', df_y_forecast.index.size)
-        self.assertEquals(df_y_forecast.index.size, 12 * 2)
+        self.assertEqual(df_y_forecast.index.size, 12 * 2)
 
         df_y_forecast = extrapolate_model(
             forecast_models.model_constant,
@@ -1208,7 +1208,7 @@ class TestForecast(PandasTest):
             extrapolate_years=10.0)
         logger_info('df_y_forecast', df_y_forecast.tail(20))
         logger_info('Result length:', df_y_forecast.index.size)
-        self.assertEquals(df_y_forecast.index.size, 20)
+        self.assertEqual(df_y_forecast.index.size, 20)
 
         # TODO: Test other time frequencies, e.g. Q, H, Y.
 
@@ -1282,8 +1282,8 @@ class TestForecast(PandasTest):
             self.assertTrue(df_metadata.is_best_fit.all())
             self.assertTrue((df_data.is_best_fit | df_data.is_actuals).all())
             # The following may not be true if a model doesn't converge
-            self.assertEquals(df_metadata.index.size, n_sources)
-            self.assertEquals(
+            self.assertEqual(df_metadata.index.size, n_sources)
+            self.assertEqual(
                 df_data.loc[~df_data.is_actuals].drop_duplicates(
                     'source_long').index.size, n_sources)
 
@@ -2463,7 +2463,7 @@ class TestForecast(PandasTest):
 
         len_forecast = df_data.loc[~df_data.is_actuals].index.size
         # First sample shouldn't be included due to weight=0
-        self.assertEquals(len_forecast, 19)
+        self.assertEqual(len_forecast, 19)
 
         # Since fit is perfect, prediction interval should be equal to point
         # forecast
@@ -2505,7 +2505,7 @@ class TestForecast(PandasTest):
 
         len_forecast = df_data.loc[~df_data.is_actuals].index.size
         # First 5 samples shouldn't be included due to weight=0
-        self.assertEquals(len_forecast, 15)
+        self.assertEqual(len_forecast, 15)
 
         # # Since fit is perfect, prediction interval should be equal to
         # point forecast
@@ -2519,17 +2519,17 @@ class TestForecast(PandasTest):
         # Initial test - what happens with single sample input?
         a_date = pd.a_date = pd.date_range('2014-01-01', periods=1, freq='H')
         result = detect_freq(a_date)
-        # self.assertEquals(result, 'H')
+        # self.assertEqual(result, 'H')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=24 * 7, freq='H')
         result = detect_freq(a_date)
-        self.assertEquals(result, 'H')
+        self.assertEqual(result, 'H')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 365, freq='D')
         result = detect_freq(a_date)
-        self.assertEquals(result, 'D')
+        self.assertEqual(result, 'D')
 
         l_freq_wday = [
             'W-MON',
@@ -2543,27 +2543,27 @@ class TestForecast(PandasTest):
             a_date = pd.a_date = pd.date_range(
                 '2014-01-01', periods=4 * 52, freq=freq_wday)
             result = detect_freq(a_date)
-            self.assertEquals(result, freq_wday)
+            self.assertEqual(result, freq_wday)
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 12, freq='M')
         result = detect_freq(a_date)
-        self.assertEquals(result, 'M')
+        self.assertEqual(result, 'M')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 12, freq='MS')
         result = detect_freq(a_date)
-        self.assertEquals(result, 'MS')
+        self.assertEqual(result, 'MS')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 12, freq='Q')
         result = detect_freq(a_date)
-        self.assertEquals(result, 'Q')
+        self.assertEqual(result, 'Q')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 12, freq='Y')
         result = detect_freq(a_date)
-        self.assertEquals(result, 'Y')
+        self.assertEqual(result, 'Y')
 
         # Test with input dataframe
 
@@ -2571,43 +2571,43 @@ class TestForecast(PandasTest):
             '2014-01-01', periods=24 * 7, freq='H')
         df_y = pd.DataFrame({'date': a_date})
         result = detect_freq(df_y)
-        self.assertEquals(result, 'H')
+        self.assertEqual(result, 'H')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 365, freq='D')
         df_y = pd.DataFrame({'date': a_date})
         result = detect_freq(df_y)
-        self.assertEquals(result, 'D')
+        self.assertEqual(result, 'D')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 12, freq='M')
         df_y = pd.DataFrame({'date': a_date})
         result = detect_freq(df_y)
-        self.assertEquals(result, 'M')
+        self.assertEqual(result, 'M')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 12, freq='Q')
         df_y = pd.DataFrame({'date': a_date})
         result = detect_freq(df_y)
-        self.assertEquals(result, 'Q')
+        self.assertEqual(result, 'Q')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 12, freq='Y')
         df_y = pd.DataFrame({'date': a_date})
         result = detect_freq(df_y)
-        self.assertEquals(result, 'Y')
+        self.assertEqual(result, 'Y')
 
         a_date = pd.a_date = pd.date_range(
             '2014-01-01', periods=4 * 12, freq='YS')
         df_y = pd.DataFrame({'date': a_date})
         result = detect_freq(df_y)
-        self.assertEquals(result, 'YS')
+        self.assertEqual(result, 'YS')
 
         # Test with sparse input series
         a_date = pd.to_datetime(['2018-08-01', '2018-08-09'])
         df_y = pd.DataFrame({'date': a_date})
         result = detect_freq(df_y)
-        self.assertEquals(result, 'D')
+        self.assertEqual(result, 'D')
 
     # TODO: ADD TEST WITH NULL VALUES, E.G. MODEL_NAIVE_WDAY
     def test_get_pi(self):
@@ -3198,7 +3198,7 @@ class TestForecast(PandasTest):
         df_data = dict_forecast2.get('data')
         logger_info('df_data:', df_data)
         # Output only includes actuals due to no fit
-        self.assertEquals(df_data.index.size, 14)
+        self.assertEqual(df_data.index.size, 14)
 
     def test_run_forecast_linalgerror(self):
         # Testing a dataset that raises a linalgerror from run_forecast()

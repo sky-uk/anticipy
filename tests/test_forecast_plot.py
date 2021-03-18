@@ -100,7 +100,7 @@ class TestForecastPlot(PandasTest):
             df_forecast, 'png', path, 900, 600,
             'Test Plot', show_legend=False,
             auto_open=False)
-        self.assertEquals(result, 0)
+        self.assertEqual(result, 0)
         self.assertTrue(os.path.isfile('{}.png'.format(path)))
 
         path = get_file_path(base_folder, 'test_facet_mpl')
