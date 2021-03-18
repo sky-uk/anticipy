@@ -1270,8 +1270,11 @@ def run_forecast_single(df_y,
     else:  # both
         l_model = list(set(l_model_add + l_model_mult))
     # logger_info('debug l_Model',l_model)
-    if l_model_naive is not None:
-        l_model = l_model_naive + l_model
+    if l_model_naive is None:
+        # Default naive model. To force no naive models, use l_model_naive=[]
+        l_model_naive = [forecast_models.model_snaive_wday] if freq == 'D' \
+            else [forecast_models.model_naive]
+    l_model = l_model_naive + l_model
 
     # exclude samples with weight = 0
     df_y = df_y.loc[df_y.weight > 0]

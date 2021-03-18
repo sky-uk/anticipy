@@ -1446,14 +1446,6 @@ class TestForecast(PandasTest):
         l_model_season2 = [
             forecast_models.model_season_wday_2,
             forecast_models.model_null]
-        #
-        # # # Test input with source column, multiple sources
-        # self._test_run_forecast_basic_tests_new_api(df_y=df_y3, include_all_fits=True, # noqa
-        #                                             l_model_trend=l_model_trend2, l_model_season=l_model_season2) # noqa
-        # self._test_run_forecast_basic_tests_new_api(df_y=df_y3b, include_all_fits=True, # noqa
-        #                                             l_model_trend=l_model_trend2, l_model_season=l_model_season2, # noqa
-        #                                             col_name_y='y_test', col_name_date='date_test', # noqa
-        # col_name_source='source_test', col_name_weight='weight_test')
 
         # New test - forecast length
         logger.info('Testing Output Length')
@@ -1462,14 +1454,18 @@ class TestForecast(PandasTest):
             df_y=df_y1,
             include_all_fits=False,
             l_model_trend=l_model_trend1b,
-            source_id='source1')
+            source_id='source1',
+            l_model_naive=[]
+        )
         logger.info('Testing Output Length - df_y2')
         self._test_run_forecast_check_length_new_api(
             df_y=df_y2,
             include_all_fits=False,
             l_model_trend=l_model_trend2,
             l_model_season=l_model_season2,
-            source_id='source2')
+            source_id='source2',
+            l_model_naive=[]
+        )
 
     def test_runforecast(self):
         for freq in ['D',
@@ -2312,8 +2308,9 @@ class TestForecast(PandasTest):
             season_add_mult='add',
             simplify_output=False,
             include_all_fits=True,
-            l_model_trend=[
-                forecast_models.model_linear])
+            l_model_trend=[forecast_models.model_linear],
+            l_model_naive=[]
+        )
         df_metadata = dict_result['metadata']
 
         l_model_expected = sorted(
@@ -2331,8 +2328,9 @@ class TestForecast(PandasTest):
             season_add_mult='both',
             simplify_output=False,
             include_all_fits=True,
-            l_model_trend=[
-                forecast_models.model_linear])
+            l_model_trend=[forecast_models.model_linear],
+            l_model_naive=[]
+        )
         df_metadata = dict_result['metadata']
 
         l_model_expected = np.array([
@@ -2369,8 +2367,9 @@ class TestForecast(PandasTest):
             season_add_mult='auto',
             simplify_output=False,
             include_all_fits=True,
-            l_model_trend=[
-                forecast_models.model_linear])
+            l_model_trend=[forecast_models.model_linear],
+            l_model_naive=[]
+        )
         df_metadata = dict_result['metadata']
 
         l_model_expected = sorted(
@@ -2397,8 +2396,9 @@ class TestForecast(PandasTest):
             season_add_mult='auto',
             simplify_output=False,
             include_all_fits=True,
-            l_model_trend=[
-                forecast_models.model_linear])
+            l_model_trend=[forecast_models.model_linear],
+            l_model_naive=[]
+        )
         df_metadata = dict_result['metadata']
 
         l_model_expected = sorted(
@@ -2417,7 +2417,9 @@ class TestForecast(PandasTest):
             df_y=df1,
             l_model_trend=[
                 forecast_models.model_linear],
-            extrapolate_years=10. / 365)
+            extrapolate_years=10. / 365,
+            l_model_naive=[]
+        )
 
         df_forecast = dict_result['forecast']
         df_data = dict_result['data']
@@ -2444,7 +2446,9 @@ class TestForecast(PandasTest):
             df_y=df1b,
             l_model_trend=[
                 forecast_models.model_linear],
-            extrapolate_years=10. / 365)
+            extrapolate_years=10. / 365,
+            l_model_naive=[]
+        )
 
         df_forecast = dict_result['forecast']
         df_data = dict_result['data']
@@ -2484,7 +2488,9 @@ class TestForecast(PandasTest):
             df_y=df1c,
             l_model_trend=[
                 forecast_models.model_ramp],
-            extrapolate_years=10. / 365)
+            extrapolate_years=10. / 365,
+            l_model_naive=[]
+        )
 
         df_forecast = dict_result['forecast']
         df_data = dict_result['data']
