@@ -32,10 +32,16 @@ from anticipy import model_utils
 # -- Globals
 logger = logging.getLogger(__name__)
 
-dict_fourier = {  # Default configuration for fourier-based models
+# Fourier model configuration
+_dict_fourier_config = {  # Default configuration for fourier-based models
     'period': 365.25,  # days in year
     'harmonics': 10  # TODO: evaluate different harmonics values
 }
+_FOURIER_PERIOD = 365.25
+_FOURIER_HARMONICS = 10  # TODO: evaluate different harmonics values
+_FOURIER_K = (2.0 * np.pi / _FOURIER_PERIOD)
+_FOURIER_I = np.arange(1, _FOURIER_HARMONICS + 1)
+_FOURIER_DATE_ORIGIN = datetime(1970, 1, 1)
 
 
 # -- Functions
@@ -140,9 +146,41 @@ def _get_f_concat_2_bounds(forecast_model1, forecast_model2):
 
 
 def _f_validate_input_default(a_x, a_y, a_date):
-    # Default input validation funciton for a ForecastModel. Always returns
+    # Default input validation function for a ForecastModel. Always returns
     # True
     return True
+
+
+def _as_list(l):
+    return l if isinstance(l, (list,)) else [l]
+
+
+# Functions used to initialize cache variables in a ForecastModel
+def _f_init_cache_a_month(a_x, a_date):
+    return a_date.month - 1
+
+
+def _f_init_cache_a_weekday(a_x, a_date):
+    return a_date.weekday
+
+
+def _f_init_cache_a_t_fourier(a_x, a_date):
+    # convert to days since epoch
+    t = (a_date - _FOURIER_DATE_ORIGIN).days.values
+    i = np.arange(1, _FOURIER_HARMONICS + 1)
+    a_tmp = _FOURIER_K * i.reshape(i.size, 1) * t
+    y = np.concatenate([np.sin(a_tmp), np.cos(a_tmp)])
+    return y
+
+
+# Dictionary to store functions used to initialize cache variables
+# in a ForecastModel
+# This is shared across all ForecastModel instances
+_dict_f_cache = dict(
+    a_month=_f_init_cache_a_month,
+    a_weekday=_f_init_cache_a_weekday,
+    a_t_fourier=_f_init_cache_a_t_fourier
+)
 
 
 # -- Classes
@@ -313,7 +351,10 @@ class ForecastModel:
             f_model,
             f_init_params=None,
             f_bounds=None,
-            l_f_validate_input=None):
+            l_f_validate_input=None,
+            l_cache_vars=None,
+            dict_f_cache=None,
+    ):
         """
         Create ForecastModel
 
@@ -345,10 +386,17 @@ class ForecastModel:
         if l_f_validate_input is None:
             self.l_f_validate_input = [_f_validate_input_default]
         else:
-            if not isinstance(l_f_validate_input, (list,)):
-                self.l_f_validate_input = [l_f_validate_input]
-            else:
-                self.l_f_validate_input = l_f_validate_input
+            self.l_f_validate_input = _as_list(l_f_validate_input)
+
+        if l_cache_vars is None:
+            self.l_cache_vars = []
+        else:
+            self.l_cache_vars = _as_list(l_cache_vars)
+
+        if dict_f_cache is None:
+            self.dict_f_cache = dict()
+        else:
+            self.dict_f_cache = dict_f_cache
 
         # TODO - REMOVE THIS - ASSUME NORMALIZED INPUT
         def _get_f_init_params_validated(f_init_params):
@@ -388,13 +436,21 @@ class ForecastModel:
         f_bounds = _get_f_concat_2_bounds(self, forecast_model)
         l_f_validate_input = list(
             set(self.l_f_validate_input + forecast_model.l_f_validate_input))
+        # Combine both dicts
+        dict_f_cache = self.dict_f_cache.copy()
+        dict_f_cache.update(forecast_model.dict_f_cache)
+        l_cache_vars = list(
+            set(self.l_cache_vars + forecast_model.l_cache_vars))
         return ForecastModel(
             name,
             n_params,
             f_model,
             f_init_params,
             f_bounds=f_bounds,
-            l_f_validate_input=l_f_validate_input)
+            l_f_validate_input=l_f_validate_input,
+            l_cache_vars=l_cache_vars,
+            dict_f_cache=dict_f_cache
+        )
 
     def __radd__(self, other):
         return self.__add__(other)
@@ -412,13 +468,21 @@ class ForecastModel:
         f_bounds = _get_f_concat_2_bounds(self, forecast_model)
         l_f_validate_input = list(
             set(self.l_f_validate_input + forecast_model.l_f_validate_input))
+        # Combine both dicts
+        dict_f_cache = self.dict_f_cache.copy()
+        dict_f_cache.update(forecast_model.dict_f_cache)
+        l_cache_vars = list(
+            set(self.l_cache_vars + forecast_model.l_cache_vars))
         return ForecastModel(
             name,
             n_params,
             f_model,
             f_init_params,
             f_bounds=f_bounds,
-            l_f_validate_input=l_f_validate_input)
+            l_f_validate_input=l_f_validate_input,
+            l_cache_vars=l_cache_vars,
+            dict_f_cache=dict_f_cache
+        )
 
     def __rmul__(self, other):
         return self.__mul__(other)
@@ -447,6 +511,23 @@ class ForecastModel:
         except AssertionError:
             return False
         return True
+
+    def init_cache(self, a_x, a_date):
+        dict_cache_vars = dict()
+        for k in self.l_cache_vars:
+            f = _dict_f_cache.get(k)
+            if f:
+                dict_cache_vars[k] = f(a_x, a_date)
+            else:
+                logger.warning('Cache function not found: %s', k)
+        # Search vars defined in internal cache function dictionary
+        for k in self.dict_f_cache:
+            f = self.dict_f_cache.get(k)
+            if f:
+                dict_cache_vars[k] = f(a_x, a_date)
+            else:
+                logger.warning('Cache function not found: %s', k)
+        return dict_cache_vars
 
 
 # - Null model: 0
@@ -1068,11 +1149,17 @@ model_ramp = ForecastModel(
 
 # - Weekday seasonality
 
-def _f_model_season_wday(a_x, a_date, params, is_mult=False, **kwargs):
+def _f_model_season_wday(
+        a_x, a_date, params, is_mult=False,
+        # cache variables
+        a_weekday=None,
+        **kwargs):
     # Weekday seasonality model, 6 params
     # params_long[0] is default series value,
     params_long = np.concatenate([[float(is_mult)], params])
-    return params_long[a_date.weekday]
+    if a_weekday is None:
+        a_weekday = _f_init_cache_a_weekday(a_x, a_date)
+    return params_long[a_weekday]
 
 
 def _f_validate_input_season_wday(a_x, a_y, a_date):
@@ -1084,7 +1171,9 @@ model_season_wday = ForecastModel(
     'season_wday',
     6,
     _f_model_season_wday,
-    l_f_validate_input=_f_validate_input_season_wday)
+    l_f_validate_input=_f_validate_input_season_wday,
+    l_cache_vars=['a_weekday']
+)
 
 
 # - Month seasonality
@@ -1108,18 +1197,26 @@ def _f_init_params_season_month(
             return l_params_mult
 
 
-def _f_model_season_month(a_x, a_date, params, is_mult=False, **kwargs):
+def _f_model_season_month(
+        a_x, a_date, params, is_mult=False,
+        # cache variables
+        a_month=None,
+        **kwargs):
     # Month of December is taken as default level, has no parameter
     # params_long[0] is default series value
     params_long = np.concatenate([[float(is_mult)], params])
-    return params_long[a_date.month - 1]
+    if a_month is None:
+        a_month = _f_init_cache_a_month(a_x, a_date)
+    return params_long[a_month]
 
 
 model_season_month = ForecastModel(
     'season_month',
     11,
     _f_model_season_month,
-    _f_init_params_season_month)
+    _f_init_params_season_month,
+    l_cache_vars=['a_month']
+)
 
 model_season_month_old = ForecastModel(
     'season_month_old', 11, _f_model_season_month)
@@ -1130,28 +1227,12 @@ def _f_model_yearly_season_fourier(
         a_date,
         params,
         is_mult=False,
+        # cache params
+        a_t_fourier=None,
         **kwargs):
-    # Infer the time series frequency to calculate the Fourier parameters
-
-    period = dict_fourier['period']
-    harmonics = dict_fourier['harmonics']
-
-    return _f_model_season_fourier(a_date, params, period, harmonics, is_mult)
-
-
-date_origin = datetime(1970, 1, 1)
-
-
-def _f_model_season_fourier(a_date, params, period, harmonics, is_mult=False):
-    # convert to days since epoch
-    t = (a_date - date_origin).days.values
-    i = np.arange(1, harmonics + 1)
-    a_tmp = i.reshape(i.size, 1) * t
-    k = (2.0 * np.pi / period)
-    y = np.concatenate([np.sin(k * a_tmp), np.cos(k * a_tmp)])
-
-    # now multiply by the params
-    y = np.matmul(params, y)
+    if a_t_fourier is None:
+        a_t_fourier = _f_init_cache_a_t_fourier(None, a_date)
+    y = np.matmul(params, a_t_fourier)
     return y
 
 
@@ -1171,7 +1252,7 @@ def _f_init_params_fourier_n_params(
 
 
 def _f_init_params_fourier(a_x=None, a_y=None, a_date=None, is_mult=False):
-    n_params = 2 * dict_fourier['harmonics']
+    n_params = 2 * _dict_fourier_config['harmonics']
     return _f_init_params_fourier_n_params(
         n_params, a_x=a_x, a_y=a_y, a_date=a_date, is_mult=is_mult)
 
@@ -1181,16 +1262,18 @@ def _f_init_bounds_fourier_nparams(n_params, a_x=None, a_y=None, a_date=None):
 
 
 def _f_init_bounds_fourier_yearly(a_x=None, a_y=None, a_date=None):
-    n_params = 2 * dict_fourier['harmonics']
+    n_params = 2 * _dict_fourier_config['harmonics']
     return _f_init_bounds_fourier_nparams(n_params, a_x, a_y, a_date)
 
 
 model_season_fourier_yearly = ForecastModel(
     name='season_fourier_yearly',
-    n_params=2 * dict_fourier['harmonics'],
+    n_params=2 * _dict_fourier_config.get('harmonics'),
     f_model=_f_model_yearly_season_fourier,
     f_init_params=_f_init_params_fourier,
-    f_bounds=_f_init_bounds_fourier_yearly)
+    f_bounds=_f_init_bounds_fourier_yearly,
+    l_cache_vars='a_t_fourier'
+)
 
 
 def get_fixed_model(forecast_model, params_fixed, is_mult=False):
@@ -1366,36 +1449,6 @@ def create_fixed_spike_ignored(x, duration):
 
 # Dummy variable models
 
-def get_model_dummy(name, dummy, **kwargs):
-    """
-    Generate a model based on a dummy variable.
-
-    :param name: Name of the model
-    :type name: basestring
-    :param dummy:
-      | Can be a function or a list-like.
-      | If a function, it must be of the form f_dummy(a_x, a_date),
-      | and return a numpy array of floats
-      | with the same length as a_x and values that are either 0 or 1.
-      | If a list-like of numerics, it will be converted to a f_dummy function
-      | as described above, which will have values of 1 when a_x has one of
-      | the values in the list, and 0 otherwise. If a list-like of date-likes,
-      | it will be converted to a f_dummy function as described above, which
-      | will have values of 1 when a_date has one of the values in the list,
-      | and 0 otherwise.
-    :type dummy: function, or list-like of numerics or datetime-likes
-    :param kwargs:
-    :type kwargs:
-    :return:
-      | A model that returns A when dummy is 1, and 0 (or 1 if is_mult==True)
-      | otherwise.
-    :rtype: ForecastModel
-
-
-    """
-    return ForecastModel(name, 1, get_f_model_dummy(dummy), **kwargs)
-
-
 def _validate_f_dummy(f_dummy):
     # Ensures that behaviour of f_dummy matches specs
     # Must return array of floats, same length as a_x, with values either 0.
@@ -1413,44 +1466,29 @@ def _validate_f_dummy(f_dummy):
                 '2018-01-01', '2018-01-10')))
 
 
-def get_f_model_dummy(dummy):
+def _get_f_dummy(dummy):
     """
-    Generate a model function for a dummy variable defined by f_dummy
+    Get a function that generates a mask array from a dummy variable
 
-    :param dummy: dummy variable
-    :type dummy: function or list-like of numerics or dates
+    :param dummy: dummy variable, that can be used to generate a mask array
+    :type dummy: function, pandas Holiday/Calendar,
+        or list-like of numerics or dates
     :return: model function based on dummy variable, to use on a ForecastModel
     :rtype: function
     """
-
     if callable(dummy):  # If dummy is a function, use it
         f_dummy = dummy
     elif isinstance(dummy, Holiday):
-        f_dummy = get_f_dummy_from_holiday(dummy)
+        f_dummy = _get_f_dummy_from_holiday(dummy)
     elif isinstance(dummy, AbstractHolidayCalendar):
-        f_dummy = get_f_dummy_from_calendar(dummy)
+        f_dummy = _get_f_dummy_from_calendar(dummy)
     else:
         # If dummy is a list, convert to function
-        f_dummy = get_f_dummy_from_list(dummy)
-
-    _validate_f_dummy(f_dummy)
-
-    def f_model_check(a_x, a_date, params, is_mult=False, **kwargs):
-        # Uses internal f_check to assign 0 or 1 to each sample
-        # If f_dummy(x)==1, return A
-        # If f_dummy(x)==0, return 0 (or 1 if is_mult)
-        [A] = params
-        mask = f_dummy(a_x, a_date)
-        if not is_mult:
-            a_result = A * mask
-        else:
-            a_result = (A) * mask + 1
-        return a_result
-
-    return f_model_check
+        f_dummy = _get_f_dummy_from_list(dummy)
+    return f_dummy
 
 
-def get_f_dummy_from_list(list_check):
+def _get_f_dummy_from_list(list_check):
     """
     Generate a f_dummy function that defines a dummy variable, can be used
     for dummy models
@@ -1487,7 +1525,7 @@ def get_f_dummy_from_list(list_check):
                 'date-like values: %s', list_check)
 
 
-def get_f_dummy_from_calendar(calendar):
+def _get_f_dummy_from_calendar(calendar):
     # Generate dummy model function from a pandas HolidayCalendar
 
     def f_dummy_calendar(a_x, a_date, **kwargs):
@@ -1502,7 +1540,7 @@ def get_f_dummy_from_calendar(calendar):
     return f_dummy_calendar
 
 
-def get_f_dummy_from_holiday(holiday):
+def _get_f_dummy_from_holiday(holiday):
     def f_dummy_holiday(a_x, a_date, **kwargs):
         # TODO: If we can pass dict_cal as an argument,
         #       use pre-loaded list of dates for performance
@@ -1516,6 +1554,70 @@ def get_f_dummy_from_holiday(holiday):
         return np.isin(a_date, list_check_date).astype(float)
 
     return f_dummy_holiday
+
+
+def _get_f_model_dummy(f_dummy, mask_name):
+    """
+    Generate a model function for a dummy variable defined by f_dummy
+
+    :param dummy: dummy variable, that can be used to generate a mask array
+    :type dummy: function, pandas Holiday/Calendar,
+        or list-like of numerics or dates
+    :return: model function based on dummy variable, to use on a ForecastModel
+    :rtype: function
+    """
+
+    def f_model_check(a_x, a_date, params, is_mult=False, **kwargs):
+        # Uses internal f_check to assign 0 or 1 to each sample
+        # If f_dummy(x)==1, return A
+        # If f_dummy(x)==0, return 0 (or 1 if is_mult)
+        a_mask = kwargs.get(mask_name)
+        if a_mask is None:
+            a_mask = f_dummy(a_x, a_date)
+        [A] = params
+        if not is_mult:
+            a_result = A * a_mask
+        else:
+            a_result = (A) * a_mask + 1
+        return a_result
+
+    return f_model_check
+
+
+def get_model_dummy(name, dummy, **kwargs):
+    """
+    Generate a model based on a dummy variable.
+
+    :param name: Name of the model
+    :type name: basestring
+    :param dummy:
+      | Can be a function or a list-like.
+      | If a function, it must be of the form f_dummy(a_x, a_date),
+      | and return a numpy array of floats
+      | with the same length as a_x and values that are either 0 or 1.
+      | If a list-like of numerics, it will be converted to a f_dummy function
+      | as described above, which will have values of 1 when a_x has one of
+      | the values in the list, and 0 otherwise. If a list-like of date-likes,
+      | it will be converted to a f_dummy function as described above, which
+      | will have values of 1 when a_date has one of the values in the list,
+      | and 0 otherwise.
+    :type dummy: function, or list-like of numerics or datetime-likes
+    :param kwargs:
+    :type kwargs:
+    :return:
+      | A model that returns A when dummy is 1, and 0 (or 1 if is_mult==True)
+      | otherwise.
+    :rtype: ForecastModel
+
+
+    """
+    mask_name = 'mask_' + name
+    f_dummy = _get_f_dummy(dummy)
+    _validate_f_dummy(f_dummy)
+    f_model_dummy = _get_f_model_dummy(f_dummy, mask_name)
+    dict_f_cache = {mask_name: f_dummy}
+    return ForecastModel(
+        name, 1, f_model_dummy, dict_f_cache=dict_f_cache, **kwargs)
 
 
 model_season_wday_2 = get_model_dummy(
@@ -1643,7 +1745,9 @@ def get_model_from_calendars(l_calendar, name=None):
         name,
         len(l_model_dummy),
         _f_model_calendar,
-        _f_init_params_calendar
+        _f_init_params_calendar,
+        l_cache_vars=f_model_sum.l_cache_vars,
+        dict_f_cache=f_model_sum.dict_f_cache
     )
     return model_calendar
 

@@ -162,6 +162,10 @@ class TestForecastModel(PandasTest):
             logger.info('params: %s', params)
             self.assertTrue(validate_initial_guess(params, bounds))
 
+            # Test cache
+            dict_cache_vars = model.init_cache(a_x, a_date)
+            logger.info('cache_vars: %s', dict_cache_vars)
+
         test_model('constant', model_constant, [42],
                    np.full(10, 42.))
 
@@ -373,6 +377,9 @@ class TestForecastModel(PandasTest):
                 dict_expected_add[key])
             logger.info('Initial guess: %s', model.f_init_params(a_x, a_y))
             self.assertEqual(len(initial_guess), model.n_params)
+            # Test cache
+            dict_cache_vars = model.init_cache(a_x, a_date)
+            logger.info('cache_vars: %s', dict_cache_vars)
 
         for key in dict_model.keys():
             test_model_1(key)
@@ -398,6 +405,9 @@ class TestForecastModel(PandasTest):
                 model_output,
                 dict_expected_add[key1] +
                 dict_expected_add[key2])
+            # Test cache
+            dict_cache_vars = model.init_cache(a_x, a_date)
+            logger.info('cache_vars: %s', dict_cache_vars)
 
         for key1, key2 in itertools.product(
                 dict_model.keys(), dict_model.keys()):
@@ -425,6 +435,9 @@ class TestForecastModel(PandasTest):
                 model_output,
                 dict_expected_mult[key1] *
                 dict_expected_mult[key2])
+            # Test cache
+            dict_cache_vars = model.init_cache(a_x, a_date)
+            logger.info('cache_vars: %s', dict_cache_vars)
 
         for key1, key2 in itertools.product(
                 dict_model.keys(), dict_model.keys()):
@@ -1033,6 +1046,67 @@ class TestForecastModel(PandasTest):
         self.assertTrue(
             model_season_wday.validate_input(
                 None, None, a_date_complete))
+
+    def test_model_l_cache_vars(self):
+        a_date = pd.date_range('2020-01-01', '2020-06-01', freq='M')
+        a_x = np.arange(0, a_date.size)
+
+        # table: model - expected cache vars
+        df_models = pd.DataFrame(
+            columns=['model', 'l_cache_vars_expected'],
+            data=[
+                [model_linear, []],
+                [model_season_wday, 'a_weekday'],
+                [model_season_month, 'a_month'],
+                [model_season_fourier_yearly, 'a_t_fourier'],
+                [model_linear + model_season_wday, 'a_weekday'],
+                [model_season_wday * model_season_month,
+                 ['a_month', 'a_weekday']]
+            ]
+        )
+        for i, row in df_models.iterrows():
+            model = row.model
+            l_cache_vars = model.l_cache_vars
+            expected = forecast_models._as_list(row.l_cache_vars_expected)
+            logger.info('Model: %s, l_cache: %s, expected: %s',
+                        model, l_cache_vars, expected)
+            self.assertListEqual(l_cache_vars, expected)
+            dict_cache_vars = model.init_cache(a_x, a_date)
+            logger_info('dict cache vars: ', dict_cache_vars)
+
+    def test_model_dict_f_cache(self):
+        a_date = pd.date_range('2020-01-01', '2020-06-01', freq='M')
+        a_x = np.arange(0, a_date.size)
+
+        model_datelist = get_model_from_datelist(
+            'datelist',
+            ['2018-01-01', '2018-01-02'],
+            ['2018-12-25', '2019-12-25']
+        )
+
+        # table: model - expected cache functions
+        df_models = pd.DataFrame(
+            columns=['model', 'l_cache_vars_expected'],
+            data=[
+                [model_linear, []],
+                [model_calendar_uk, []],
+                [model_calendar_us, []],
+                [model_calendar_ita, []],
+                [model_datelist, []],
+                [model_season_wday_2, []]
+            ]
+        )
+        for i, row in df_models.iterrows():
+            model = row.model
+            dict_f_cache = model.dict_f_cache
+            expected = forecast_models._as_list(row.l_cache_vars_expected)
+            logger.info('Model: %s, l_cache: %s, expected: %s',
+                        model, dict_f_cache, expected)
+            # self.assertListEqual(dict_f_cache, expected)
+            dict_cache_vars = model.init_cache(a_x, a_date)
+            logger_info('dict cache vars: ', dict_cache_vars)
+
+            ## todo: doesn't work
 
     def test_get_model_from_calendars(self):
         model_calendar = get_model_from_calendars(CalendarChristmasUK())

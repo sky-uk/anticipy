@@ -413,6 +413,48 @@ class TestForecast(PandasTest):
             logger_info('result:', df_result)
             self.assertTrue(df_result.success.any())
 
+    def test_optimize_least_squares_cache(self):
+        a_date = pd.date_range('2020-01-01', '2022-01-01')
+        # logger_info('a_date', a_date)
+        a_x = np.arange(0, a_date.size)
+        # logger_info('a_x', a_x)
+        a_y = a_date.month * 10 + a_date.weekday
+        logger_info('a_y', a_y)
+
+        l_models = [
+            forecast_models.model_season_month,
+            forecast_models.model_season_wday,
+            forecast_models.model_season_month +
+            forecast_models.model_season_wday,
+            forecast_models.model_season_fourier_yearly,
+            forecast_models.model_calendar_uk
+        ]
+        dict_t_summary = dict()
+        l_df_result = []
+        for model in l_models:
+            time_start = datetime.now()
+            df_result_cache = optimize_least_squares(
+                model, a_x, a_y, a_date)
+            fit_time_cache = (datetime.now() - time_start).total_seconds()
+            time_start = datetime.now()
+            df_result_no_cache = optimize_least_squares(
+                model, a_x, a_y, a_date, use_cache=False)
+            fit_time_no_cache = (datetime.now() - time_start).total_seconds()
+
+            l_df_result += [
+                df_result_cache.assign(model=str(model), is_cache=True),
+                df_result_no_cache.assign(model=str(model), is_cache=False),
+            ]
+            dict_t_summary[str(model)] = [fit_time_cache, fit_time_no_cache]
+
+        df_result = pd.concat(l_df_result, ignore_index=True)
+
+        logger_info('result summary: ', df_result)
+
+        df_t_summary = pd.DataFrame(dict_t_summary).T
+        df_t_summary.columns = ['t_cache', 't_no_cache']
+        logger_info('time summary: ', df_t_summary)
+
     def test_fit_model(self):
         # Input dataframes must have an y column, and may have columns x,date,
         # weight
@@ -516,7 +558,8 @@ class TestForecast(PandasTest):
                 model,
                 add_weight)
             dict_fit_model = fit_model(
-                model, df_y, source=source, df_actuals=df_y)
+                model, df_y, source=source, df_actuals=df_y
+            )
             return dict_fit_model
             # logger_info('Result: ',result)
 
@@ -3209,3 +3252,57 @@ class TestForecast(PandasTest):
                                    include_all_fits=True)
         df_metadata = dict_result['metadata']
         logger_info('df_metadata', df_metadata)
+
+    def test_run_forecast_cache(self):
+        a_date = pd.date_range('2020-01-01', '2022-01-01')
+        a_x = np.arange(0, a_date.size)
+        a_y = a_date.month * 10 + a_date.weekday
+        df_in = pd.DataFrame(data=dict(date=a_date, x=a_x, y=a_y))
+
+        l_models = [
+            forecast_models.model_season_month,
+            forecast_models.model_season_wday,
+            forecast_models.model_season_month +
+            forecast_models.model_season_wday,
+            forecast_models.model_season_fourier_yearly,
+            forecast_models.model_calendar_uk,
+            forecast_models.model_season_month +
+            forecast_models.model_calendar_uk,
+        ]
+
+        def run_fcast(use_cache=True):
+            dict_result = run_forecast(
+                simplify_output=False,
+                include_all_fits=True,
+                df_y=df_in,
+                l_model_trend=l_models,
+                l_model_season=[],
+                l_model_naive=[],
+                l_model_calendar=[],
+                extrapolate_years=2.,
+                use_cache=use_cache
+            )
+            return dict_result
+
+        dict_result_cache = run_fcast(True)
+        dict_result_no_cache = run_fcast(False)
+
+        df_metadata = (
+            pd.concat([
+                dict_result_cache.get('metadata').assign(use_cache=True),
+                dict_result_no_cache.get('metadata').assign(use_cache=False),
+            ], ignore_index=True)
+                .sort_values(['model', 'use_cache'])
+        )
+        df_optimize = (
+            pd.concat([
+                dict_result_cache.get('optimize_info').assign(use_cache=True),
+                dict_result_no_cache.get('optimize_info').assign(
+                    use_cache=False),
+            ], ignore_index=True)
+                .sort_values(['model', 'use_cache'])
+        )
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize)
+        df_fit_time = df_metadata[['model', 'use_cache', 'fit_time']]
+        logger_info('df_fit_time:', df_fit_time)

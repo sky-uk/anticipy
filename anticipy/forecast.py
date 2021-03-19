@@ -61,7 +61,9 @@ def get_residuals(
         a_y,
         a_date,
         a_weights=None,
-        df_actuals=None):
+        df_actuals=None,
+        **kwargs
+):
     """
     Given a time series, a model function and a set of parameters,
     get the residuals
@@ -90,7 +92,8 @@ def get_residuals(
     # We do not check this with asserts due to performance - this function is
     # in the optimization loop
 
-    y_predicted = model(a_x, a_date, params, df_actuals=df_actuals)
+    y_predicted = model(a_x, a_date, params, df_actuals=df_actuals,
+                        **kwargs)
     residuals = (a_y - y_predicted)
     if a_weights is not None:  # Do this only if different residual weights
         residuals = residuals * a_weights
@@ -104,7 +107,10 @@ def optimize_least_squares(
         a_y,
         a_date,
         a_weights=None,
-        df_actuals=None):
+        df_actuals=None,
+        # Testing parameters
+        use_cache=True
+):
     """
     Given a time series and a model function, find the set of
     parameters that minimises residuals
@@ -122,6 +128,8 @@ def optimize_least_squares(
     :param df_actuals: The original dataframe with actuals data.
                        Not required for regression but used by naive models
     :type df_actuals: pandas DataFrame
+    :param use_cache: If true, save some model variables to cache when fitting
+    :type use_cache: bool
     :return:
         | table(success, params, cost, optimality,
         |       iterations, status, jac_evals, message):
@@ -153,15 +161,20 @@ def optimize_least_squares(
     if np.all(filter_null_residuals):
         filter_null_residuals = None
 
+    dict_cache_vars = model.init_cache(a_x, a_date) if use_cache else dict()
+    dict_kwargs = dict(
+        a_weights=a_weights,
+        df_actuals=df_actuals,
+        **dict_cache_vars
+    )
+
     # Set up arguments for get_residuals
     f_model_args = (model, a_x, a_y, a_date)
     try:
         result = scipy.optimize.least_squares(
             get_residuals, initial_guess,
             args=f_model_args,
-            kwargs={
-                'a_weights': a_weights,
-                'df_actuals': df_actuals},
+            kwargs=dict_kwargs,
             # method='lm',
             method='trf',
             x_scale='jac',
@@ -398,7 +411,9 @@ def normalize_df(df_y,
     return df_result
 
 
-def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
+def fit_model(model, df_y, freq='W', source='test', df_actuals=None,
+              # Testing parameters
+              use_cache=True):
     """
     Given a time series and a model, optimize model parameters and return
 
@@ -418,6 +433,9 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
     :param df_actuals: The original dataframe with actuals data.
         Not required for regression but used by naive models
     :type df_actuals: pandas DataFrame
+    :type df_actuals: pandas DataFrame
+    :param use_cache: If true, save some model variables to cache when fitting
+    :type use_cache: bool
     :return: table (source, model_name, y_weights , freq, is_fit, aic_c,
         params)
     :rtype: pandas.DataFrame
@@ -609,7 +627,9 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None):
         else:
             time_start = datetime.now()
             df_result_optimize = optimize_least_squares(
-                model, a_x, a_y, i_date, a_weights, df_actuals=df_actuals)
+                model, a_x, a_y, i_date, a_weights, df_actuals=df_actuals,
+                use_cache=use_cache
+            )
             runtime = datetime.now() - time_start
             cost = df_result_optimize.cost.iloc[0]
             is_fit = df_result_optimize.success.iloc[0]
@@ -804,7 +824,9 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                  l_model_calendar=None,
                  n_cum=1,
                  pi_q1=5,
-                 pi_q2=20
+                 pi_q2=20,
+                 # Testing parameters
+                 use_cache=True
                  ):
     """
     Generate forecast for one or more input time series
@@ -874,6 +896,8 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
     :type pi_q1: int
     :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
     :type pi_q2: int
+    :param use_cache: If true, save some model variables to cache when fitting
+    :type use_cache: bool
     :return:
         | With simplify_output=False, returns a dictionary with 4 dataframes:
         | - forecast: output time series with prediction interval
@@ -917,7 +941,8 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                                    l_model_calendar=l_model_calendar,
                                    n_cum=n_cum,
                                    pi_q1=pi_q1,
-                                   pi_q2=pi_q2
+                                   pi_q2=pi_q2,
+                                   use_cache=use_cache
                                    )
     else:
         for src_tmp in df_y.source.drop_duplicates():
@@ -941,7 +966,8 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                 l_model_calendar=l_model_calendar,
                 n_cum=n_cum,
                 pi_q1=pi_q1,
-                pi_q2=pi_q2
+                pi_q2=pi_q2,
+                use_cache=use_cache
             )
             l_dict_result += [dict_result_tmp]
     # Generate output
@@ -1070,7 +1096,9 @@ def run_forecast_single(df_y,
                         l_model_calendar=None,
                         n_cum=1,
                         pi_q1=5,
-                        pi_q2=20
+                        pi_q2=20,
+                        # Testing parameters
+                        use_cache=True
                         ):
     """
     Generate forecast for one input time series
@@ -1124,8 +1152,11 @@ def run_forecast_single(df_y,
     :type n_cum: int
     :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
     :type pi_q1: int
-    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :param pi_q2: Percentile for inner prediction interval
+        (defaults to 20%-80%)
     :type pi_q2: int
+    :param use_cache: If true, save some model variables to cache when fitting
+    :type use_cache: bool
     :return:
         | With simplify_output=False, returns a dictionary with 4 dataframes:
         | - forecast: output time series with prediction interval
@@ -1309,7 +1340,9 @@ def run_forecast_single(df_y,
     l_model.sort()
     for model in l_model:
         dict_fit_model = fit_model(
-            model, df_y, freq, source, df_actuals=df_actuals_interpolated)
+            model, df_y, freq, source, df_actuals=df_actuals_interpolated,
+            use_cache=use_cache
+        )
         df_metadata_tmp = dict_fit_model['metadata']
         df_optimize_info = dict_fit_model['optimize_info']
 
@@ -1395,7 +1428,9 @@ def run_l_forecast(l_fcast_input,
                    col_name_source='source',
                    extrapolate_years=0, season_add_mult='add',
                    include_all_fits=False,
-                   find_outliers=False):
+                   find_outliers=False,
+                   use_cache=True
+                   ):
     """
     Generate forecasts for a list of SolverConfig objects, each including
     a time series, model functions, and other configuration parameters.
@@ -1428,6 +1463,8 @@ def run_l_forecast(l_fcast_input,
     :param freq: 'W' or 'D' . Sampling frequency of the output forecast:
         weekly or daily.
     :type freq: str
+    :param use_cache: If true, save some model variables to cache when fitting
+    :type use_cache: bool
     :return:
         | dict(data,metadata)
         | data: dataframe(date, source, model, y)
@@ -1459,7 +1496,9 @@ def run_l_forecast(l_fcast_input,
             season_add_mult,
             include_all_fits,
             simplify_output=False,
-            find_outliers=find_outliers)
+            find_outliers=find_outliers,
+            use_cache=use_cache
+        )
         l_dict_result += [dict_result]
 
     # Generate output
