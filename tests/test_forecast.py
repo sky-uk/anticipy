@@ -1515,6 +1515,18 @@ class TestForecast(PandasTest):
                      'W']:
             self._test_run_forecast(freq=freq)
 
+    def test_run_forecast_metadata(self):
+        df1 = pd.DataFrame({'y': np.arange(0, 10.)}, index=pd.date_range(
+            '2014-01-01', periods=10, freq='D'))
+        dict_result = run_forecast(
+            simplify_output=False, df_y=df1, l_model_trend=[
+                forecast_models.model_linear])
+
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        logger_info('metadata.fit_time dtype', df_metadata.fit_time.dtype)
+        self.assertTrue(pd.api.types.is_numeric_dtype(df_metadata.fit_time))
+
     def test_run_forecast_simple_linear_model(self):
         df1 = pd.DataFrame({'y': np.arange(0, 10.)}, index=pd.date_range(
             '2014-01-01', periods=10, freq='D'))

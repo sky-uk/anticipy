@@ -630,7 +630,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None,
                 model, a_x, a_y, i_date, a_weights, df_actuals=df_actuals,
                 use_cache=use_cache
             )
-            runtime = datetime.now() - time_start
+            fit_time = (datetime.now() - time_start).total_seconds()
             cost = df_result_optimize.cost.iloc[0]
             is_fit = df_result_optimize.success.iloc[0]
             params = df_result_optimize.params.iloc[0]
@@ -653,7 +653,7 @@ def fit_model(model, df_y, freq='W', source='test', df_actuals=None,
                 aic_c,
                 params,
                 status,
-                runtime
+                fit_time
             )
 
             df_result_optimize['source'] = source
