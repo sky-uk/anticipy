@@ -1070,7 +1070,7 @@ class TestForecastModel(PandasTest):
             expected = forecast_models._as_list(row.l_cache_vars_expected)
             logger.info('Model: %s, l_cache: %s, expected: %s',
                         model, l_cache_vars, expected)
-            self.assertListEqual(l_cache_vars, expected)
+            self.assertSetEqual(set(l_cache_vars), set(expected))
             dict_cache_vars = model.init_cache(a_x, a_date)
             logger_info('dict cache vars: ', dict_cache_vars)
 
