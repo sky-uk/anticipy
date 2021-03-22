@@ -295,6 +295,15 @@ def _get_empty_df_result_optimize(
                                []]])
 
 
+def _get_normalized_x_from_date(s_date):
+    """Get column of days since Monday of first date"""
+    date_start = s_date.iloc[0]
+    # Convert to Monday
+    date_start = date_start - pd.to_timedelta(date_start.weekday(), unit='D')
+    s_x = (s_date - date_start).dt.days
+    return s_x
+
+
 def normalize_df(df_y,
                  col_name_y='y',
                  col_name_weight='weight',
@@ -377,16 +386,8 @@ def normalize_df(df_y,
 
         if col_name_x not in df_y_tmp.columns:
             if col_name_date in df_y_tmp.columns:
-                # Need to extract numeric index from a_date
-                df_date_interp = (
-                    df_y_tmp[[col_name_date]]
-                        .drop_duplicates()
-                        .pipe(model_utils.interpolate_df, interpolate_y=False)
-                        .rename_axis(col_name_x)
-                        .reset_index())
-                df_y_tmp = (
-                    df_date_interp.merge(df_y_tmp)
-                )
+                df_y_tmp[col_name_x] = _get_normalized_x_from_date(
+                    df_y_tmp[col_name_date])
             else:  # With no date, extract column x from a numeric index
                 df_y_tmp[col_name_x] = df_y_tmp.index
 

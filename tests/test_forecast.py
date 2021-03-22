@@ -86,9 +86,12 @@ class TestForecast(PandasTest):
             self.assert_frame_equal(df_out, df_expected)
 
         a_y = np.full(10, 0.0)
-        a_x = np.arange(0, 10).astype(np.int64)
-        a_x2 = np.tile(np.arange(0, 5), 2).astype(np.int64)
+        a_x_in = np.arange(0, 10).astype(np.int64)
+        a_x = a_x_in + 2
+        a_x2_in = np.tile(np.arange(0, 5), 2).astype(np.int64)
+        a_x2 = a_x2_in + 2
         a_x2_out = np.repeat(np.arange(0, 5), 2).astype(np.int64)
+        a_x2_repeat = a_x2_out + 2
         a_source = ['s1'] * 5 + ['s2'] * 5
         a_weight = np.full(10, 1.0)
         a_date = pd.date_range('2014-01-01', periods=10, freq='D')
@@ -100,32 +103,30 @@ class TestForecast(PandasTest):
                 freq='D'),
             2)
 
-        logger_info('DEBUG: ', a_date2)
-
-        # Test 0: Empty input
-
+        logger.info('Test 0: Empty input')
         self.assertIsNone(normalize_df(pd.DataFrame))
 
-        # Test 1: Output with x,y columns
-        df_expected = pd.DataFrame({'y': a_y, 'x': a_x, })[['x', 'y']]
+        logger.info('Test 1: Output with x,y columns')
+        df_expected = pd.DataFrame({'y': a_y, 'x': a_x_in, })[['x', 'y']]
 
         l_input = [
             [pd.DataFrame({'y': a_y}), {}],
-            [pd.DataFrame({'y': a_y, 'x': a_x}), {}],
-            [pd.DataFrame({'y_test': a_y, 'x_test': a_x}),
+            [pd.DataFrame({'y': a_y, 'x': a_x_in}), {}],
+            [pd.DataFrame({'y_test': a_y, 'x_test': a_x_in}),
              {'col_name_y': 'y_test', 'col_name_x': 'x_test'}]
         ]
         for df, kwargs in l_input:
             run_test(df, df_expected, **kwargs)
 
-        # Test 2: Output with x,y,weight columns
-        df_expected = pd.DataFrame({'y': a_y, 'x': a_x, 'weight': a_weight})[
+        logger.info('Test 2: Output with x,y,weight columns')
+        df_expected = \
+        pd.DataFrame({'y': a_y, 'x': a_x_in, 'weight': a_weight})[
             ['x', 'y', 'weight']]
 
         l_input = [
             [pd.DataFrame({'y': a_y, 'weight': a_weight}), {}],
-            [pd.DataFrame({'y': a_y, 'x': a_x, 'weight': a_weight}), {}],
-            [pd.DataFrame({'y_test': a_y, 'x_test': a_x,
+            [pd.DataFrame({'y': a_y, 'x': a_x_in, 'weight': a_weight}), {}],
+            [pd.DataFrame({'y_test': a_y, 'x_test': a_x_in,
                            'weight_test': a_weight}),
              {'col_name_y': 'y_test', 'col_name_x': 'x_test',
               'col_name_weight': 'weight_test'}]
@@ -133,18 +134,18 @@ class TestForecast(PandasTest):
         for df, kwargs in l_input:
             run_test(df, df_expected, **kwargs)
 
-        # Test 3: Output with x,y,weight,date columns
-        df_expected = pd.DataFrame({'y': a_y, 'x': a_x, 'weight': a_weight,
+        logger.info('Test 3: Output with x,y,weight,date columns')
+        logger.info('Test 3a: Input includes x')
+        # If x column is present, it is preserved - otherwise, we create it
+        # from date column
+        df_expected = pd.DataFrame({'y': a_y, 'x': a_x_in, 'weight': a_weight,
                                     'date': a_date})[
             ['date', 'x', 'y', 'weight']]
 
         l_input = [
-            [pd.DataFrame({'y': a_y, 'weight': a_weight, 'date': a_date}),
-             {}],
-            [pd.DataFrame({'y': a_y, 'weight': a_weight}, index=a_date), {}],
-            [pd.DataFrame({'y': a_y, 'x': a_x, 'weight': a_weight,
+            [pd.DataFrame({'y': a_y, 'x': a_x_in, 'weight': a_weight,
                            'date': a_date}), {}],
-            [pd.DataFrame({'y_test': a_y, 'x_test': a_x,
+            [pd.DataFrame({'y_test': a_y, 'x_test': a_x_in,
                            'weight_test': a_weight, 'date_test': a_date}),
              {'col_name_y': 'y_test', 'col_name_x': 'x_test',
               'col_name_weight': 'weight_test',
@@ -153,12 +154,25 @@ class TestForecast(PandasTest):
         for df, kwargs in l_input:
             run_test(df, df_expected, **kwargs)
 
-        # Test 4: Input series
-        df_expected = pd.DataFrame({'y': a_y, 'x': a_x, })[['x', 'y']]
+        logger.info('Test 3b: Input has no x')
+        df_expected = pd.DataFrame({'y': a_y, 'x': a_x, 'weight': a_weight,
+                                    'date': a_date})[
+            ['date', 'x', 'y', 'weight']]
+
+        l_input = [
+            [pd.DataFrame({'y': a_y, 'weight': a_weight, 'date': a_date}),
+             {}],
+            [pd.DataFrame({'y': a_y, 'weight': a_weight}, index=a_date), {}],
+        ]
+        for df, kwargs in l_input:
+            run_test(df, df_expected, **kwargs)
+
+        logger.info('Test 4: Input series')
+        df_expected = pd.DataFrame({'y': a_y, 'x': a_x_in, })[['x', 'y']]
 
         l_input = [
             [pd.Series(a_y, name='y'), {}],
-            [pd.Series(a_y, name='y', index=a_x), {}],
+            [pd.Series(a_y, name='y', index=a_x_in), {}],
             [pd.Series(a_y, name='y_test'), {'col_name_y': 'y_test'}],
             # [pd.DataFrame({'y_test': a_y, 'x_test': a_x}),
             #   {'col_name_y':'y_test','col_name_x':'x_test'}]
@@ -166,7 +180,8 @@ class TestForecast(PandasTest):
         for df, kwargs in l_input:
             run_test(df, df_expected, **kwargs)
 
-        # Test 5: Input series with datetimeindex
+        logger.info('Test 5: Input series with datetimeindex')
+        # If input is series with datetimeindex, create x from date
         df_expected = pd.DataFrame({'y': a_y, 'x': a_x, 'date': a_date})[
             ['date', 'x', 'y']]
 
@@ -180,7 +195,8 @@ class TestForecast(PandasTest):
         for df, kwargs in l_input:
             run_test(df, df_expected, **kwargs)
 
-        # Test 6: Input df, output with x, y, weight, date, source columns
+        logger.info('Test 6: Input df, output with x, y,'
+                    ' weight, date, source columns')
         df_expected = (
             pd.DataFrame({'y': a_y, 'x': a_x2, 'source': a_source,
                           'weight': a_weight, 'date': a_date2})
@@ -194,9 +210,21 @@ class TestForecast(PandasTest):
             # added back with multindex
             # [pd.DataFrame({'y': a_y, 'weight': a_weight},index = a_date),
             #   {}],
-            [pd.DataFrame({'y': a_y, 'x': a_x2, 'weight': a_weight,
+        ]
+        for df, kwargs in l_input:
+            run_test(df, df_expected, **kwargs)
+
+        logger.info('Test 6b - input includes x column')
+        df_expected = (
+            pd.DataFrame({'y': a_y, 'x': a_x2_in, 'source': a_source,
+                          'weight': a_weight, 'date': a_date2})
+            [['date', 'source', 'x', 'y', 'weight']]
+        )
+
+        l_input = [
+            [pd.DataFrame({'y': a_y, 'x': a_x2_in, 'weight': a_weight,
                            'source': a_source, 'date': a_date2}), {}],
-            [pd.DataFrame({'y_test': a_y, 'x_test': a_x2,
+            [pd.DataFrame({'y_test': a_y, 'x_test': a_x2_in,
                            'weight_test': a_weight, 'date_test': a_date2,
                            'source_test': a_source}),
              {'col_name_y': 'y_test', 'col_name_x': 'x_test',
@@ -207,9 +235,9 @@ class TestForecast(PandasTest):
         for df, kwargs in l_input:
             run_test(df, df_expected, **kwargs)
 
-        # Test 7: Input df has multiple values per date per source
+        logger.info('Test 7: Input df has multiple values per date per source')
         df_expected = (
-            pd.DataFrame({'y': a_y, 'x': a_x2_out, 'weight': a_weight,
+            pd.DataFrame({'y': a_y, 'x': a_x2_repeat, 'weight': a_weight,
                           'date': a_date2_out})
             [['date', 'x', 'y', 'weight']]
         )
@@ -217,12 +245,21 @@ class TestForecast(PandasTest):
         l_input = [
             [pd.DataFrame({'y': a_y, 'weight': a_weight, 'date': a_date2}),
              {}],
-            # Datetime index not supported with source - could be added back
-            # with multindex
+        ]
+        for df, kwargs in l_input:
+            run_test(df, df_expected, **kwargs)
+        logger.info('Test 7b - Input includes x column')
+        df_expected = (
+            pd.DataFrame({'y': a_y, 'x': a_x2_out, 'weight': a_weight,
+                          'date': a_date2_out})
+            [['date', 'x', 'y', 'weight']]
+        )
+
+        l_input = [
             [pd.DataFrame(
-                {'y': a_y, 'x': a_x2, 'weight': a_weight, 'date': a_date2}),
+                {'y': a_y, 'x': a_x2_in, 'weight': a_weight, 'date': a_date2}),
                 {}],
-            [pd.DataFrame({'y_test': a_y, 'x_test': a_x2,
+            [pd.DataFrame({'y_test': a_y, 'x_test': a_x2_in,
                            'weight_test': a_weight, 'date_test': a_date2,
                            }),
              {'col_name_y': 'y_test', 'col_name_x': 'x_test',
@@ -233,10 +270,10 @@ class TestForecast(PandasTest):
         for df, kwargs in l_input:
             run_test(df, df_expected, **kwargs)
 
-        # Test 8: input df has date column in string form
+        logger.info('Test 8: input df has date column in string form')
         a_date_str = a_date2.astype(str)
         df_expected = (
-            pd.DataFrame({'y': a_y, 'x': a_x2, 'source': a_source,
+            pd.DataFrame({'y': a_y, 'x': a_x2_in + 2, 'source': a_source,
                           'weight': a_weight, 'date': a_date2})
             [['date', 'source', 'x', 'y', 'weight']]
         )
@@ -244,9 +281,22 @@ class TestForecast(PandasTest):
         l_input = [
             [pd.DataFrame({'y': a_y, 'weight': a_weight, 'date': a_date_str,
                            'source': a_source}), {}],
-            [pd.DataFrame({'y': a_y, 'x': a_x2, 'weight': a_weight,
+        ]
+        for df, kwargs in l_input:
+            run_test(df, df_expected, **kwargs)
+
+        logger.info('Test 8b - input has x column')
+        a_date_str = a_date2.astype(str)
+        df_expected = (
+            pd.DataFrame({'y': a_y, 'x': a_x2_in, 'source': a_source,
+                          'weight': a_weight, 'date': a_date2})
+            [['date', 'source', 'x', 'y', 'weight']]
+        )
+
+        l_input = [
+            [pd.DataFrame({'y': a_y, 'x': a_x2_in, 'weight': a_weight,
                            'source': a_source, 'date': a_date_str}), {}],
-            [pd.DataFrame({'y_test': a_y, 'x_test': a_x2,
+            [pd.DataFrame({'y_test': a_y, 'x_test': a_x2_in,
                            'weight_test': a_weight, 'date_test': a_date_str,
                            'source_test': a_source}),
              {'col_name_y': 'y_test', 'col_name_x': 'x_test',
@@ -259,16 +309,16 @@ class TestForecast(PandasTest):
 
         # Test 9: unordered input df
 
-        df_expected = pd.DataFrame({'y': a_y, 'x': a_x, })[['x', 'y']]
+        df_expected = pd.DataFrame({'y': a_y, 'x': a_x_in, })[['x', 'y']]
 
         l_input = [
             [pd.DataFrame({'y': a_y[::-1]}), {}],
-            [pd.DataFrame({'y': a_y[::-1], 'x': a_x[::-1]}), {}],
+            [pd.DataFrame({'y': a_y[::-1], 'x': a_x_in[::-1]}), {}],
         ]
         for df, kwargs in l_input:
             run_test(df, df_expected, **kwargs)
 
-        # Test 10: candy production dataset
+        logger.info('Test 10: candy production dataset')
         path_candy = os.path.join(base_folder, 'candy_production.csv')
         df_candy_raw = pd.read_csv(path_candy)
         df_candy = df_candy_raw.pipe(
@@ -277,23 +327,21 @@ class TestForecast(PandasTest):
             col_name_date='observation_date')
         logger_info('df_candy:', df_candy.tail())
 
-        # Test 11: test_normalize.csv
-
+        logger.info('Test 11: test_normalize.csv')
         path_file = os.path.join(base_folder, 'test_normalize.csv')
         df_test_raw = pd.read_csv(path_file)
         df_test = df_test_raw.pipe(normalize_df, )
         logger_info('df_test:', df_test.x.diff().loc[df_test.x.diff() > 1.0])
-        self.assertFalse((df_test.x.diff() > 1.0).any())
+        self.assertFalse((df_test.x.diff() > 31.0).any())
 
-        # Test 11b: test_normalize.csv, with gaps
-
+        logger.info('Test 11b: test_normalize.csv, with gaps')
         path_file = os.path.join(base_folder, 'test_normalize.csv')
         df_test_raw = pd.read_csv(path_file)
         df_test_raw = pd.concat([df_test_raw.head(10), df_test_raw.tail(10)])
         df_test = df_test_raw.pipe(normalize_df, )
         logger_info('df_test:', df_test)
         logger_info('df_test:', df_test.x.diff().loc[df_test.x.diff() > 1.0])
-        self.assertTrue((df_test.x.max() == 43))
+        self.assertTrue((df_test.x.max() == 1311))
 
     def test_forecast_input(self):
         y_values1 = pd.DataFrame(
