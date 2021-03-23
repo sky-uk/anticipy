@@ -1678,8 +1678,12 @@ def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1,
                                       df_forecast.is_best_fit].copy()
     else:
         df_forecast = df_forecast.copy()
-    freq = detect_freq(df_forecast)
-    freq_days = _get_days_from_freq(freq)
+    # Date column may hold integer data from x column, if input had no date
+    if pd.api.types.is_numeric_dtype(df_forecast.date):
+        freq_days = 1
+    else:
+        freq = detect_freq(df_forecast)
+        freq_days = _get_days_from_freq(freq)
     # Adjust n_cum by sampling frequency
     n_cum_raw = n_cum  # For debugging purposes
     n_cum = int(n_cum / freq_days)
