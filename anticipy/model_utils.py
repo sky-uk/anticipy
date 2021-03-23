@@ -115,6 +115,15 @@ dict_dateoffset_input = dict(
 )
 
 
+def get_normalized_x_from_date(s_date):
+    """Get column of days since Monday of first date"""
+    date_start = s_date.iloc[0]
+    # Convert to Monday
+    date_start = date_start - pd.to_timedelta(date_start.weekday(), unit='D')
+    s_x = (s_date - date_start).dt.days
+    return s_x
+
+
 def get_s_x_extrapolate(
         date_start_actuals,
         date_end_actuals,
@@ -155,32 +164,31 @@ def get_s_x_extrapolate(
     The number of additional samples for the forecast period is
     time_resolution * extrapolate_years, rounded down
     """
-    if isinstance(
-            date_start_actuals,
-            str) or isinstance(
-            date_start_actuals,
-            datetime):  # Use dates if available
+    if isinstance(date_start_actuals, str) or \
+            isinstance(date_start_actuals, datetime):  # Use dates if available
         date_start_actuals = pd.to_datetime(date_start_actuals)
         date_end_actuals = pd.to_datetime(date_end_actuals)
 
         if freq is None:  # Default frequency
             freq = 'W'
 
-        freq_short = freq[0:1]      # Changes e.g. W-MON to W
-        # freq_units_per_year = 52.0 if freq_short=='W' else 365.0   # Todo:
-        # change to dict to support more frequencies
+        freq_short = freq[0:1]  # Changes e.g. W-MON to W
+        # freq_units_per_year = 52.0 if freq_short=='W' else 365.0
+        # Todo: change to dict to support more frequencies
         freq_units_per_year = dict_freq_units_per_year.get(freq_short, 365.0)
         extrapolate_units = extrapolate_years * freq_units_per_year
         offset_input = {dict_dateoffset_input.get(freq_short):
-                        extrapolate_units}
+                            extrapolate_units}
         date_end_forecast = date_end_actuals + \
-            pd.DateOffset(**offset_input)
+                            pd.DateOffset(**offset_input)
 
         index = pd.date_range(
             date_start_actuals,
             date_end_forecast,
             freq=freq,
             name='date')
+        a_x = get_normalized_x_from_date(pd.Series(index)).values
+        s_x = pd.Series(index=index, data=a_x)
     else:
         # Otherwise, use numeric index
         # we extrapolate future samples equal to 100*extrapolate_years
@@ -190,12 +198,11 @@ def get_s_x_extrapolate(
                 date_end_actuals +
                 100 *
                 extrapolate_years))
-
-    s_x = pd.Series(
-        index=index,
-        data=np.arange(
-            x_start_actuals,
-            x_start_actuals + index.size)) + shifted_origin
+        s_x = pd.Series(
+            index=index,
+            data=np.arange(
+                x_start_actuals,
+                x_start_actuals + index.size)) + shifted_origin
     if model_requires_scaling(model):
         s_x = s_x / scaling_factor
 

@@ -23,6 +23,7 @@ import scipy
 from numpy.linalg import LinAlgError
 from scipy import optimize
 from datetime import datetime
+import math
 
 # -- Private Imports
 from anticipy import forecast_models, model_utils
@@ -295,15 +296,6 @@ def _get_empty_df_result_optimize(
                                []]])
 
 
-def _get_normalized_x_from_date(s_date):
-    """Get column of days since Monday of first date"""
-    date_start = s_date.iloc[0]
-    # Convert to Monday
-    date_start = date_start - pd.to_timedelta(date_start.weekday(), unit='D')
-    s_x = (s_date - date_start).dt.days
-    return s_x
-
-
 def normalize_df(df_y,
                  col_name_y='y',
                  col_name_weight='weight',
@@ -386,7 +378,7 @@ def normalize_df(df_y,
 
         if col_name_x not in df_y_tmp.columns:
             if col_name_date in df_y_tmp.columns:
-                df_y_tmp[col_name_x] = _get_normalized_x_from_date(
+                df_y_tmp[col_name_x] = model_utils.get_normalized_x_from_date(
                     df_y_tmp[col_name_date])
             else:  # With no date, extract column x from a numeric index
                 df_y_tmp[col_name_x] = df_y_tmp.index
@@ -823,9 +815,10 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                  verbose=None,
                  l_model_naive=None,
                  l_model_calendar=None,
-                 n_cum=1,
+                 n_cum=None,
                  pi_q1=5,
                  pi_q2=20,
+                 pi_widening_freq='Y',
                  # Testing parameters
                  use_cache=True
                  ):
@@ -895,8 +888,14 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
     :type n_cum: int
     :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
     :type pi_q1: int
-    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :param pi_q2: Percentile for inner prediction interval
+        (defaults to 20%-80%)
     :type pi_q2: int
+    :param pi_widening_freq: Specifies the frequency with which the prediction
+        interval widens: Y (yearly), M (monthly), W (weekly), D (daily).
+        This parameters is deprecated - use pi_widening_freq
+        instead
+    :type pi_widening_freq: str
     :param use_cache: If true, save some model variables to cache when fitting
     :type use_cache: bool
     :return:
@@ -943,6 +942,7 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                                    n_cum=n_cum,
                                    pi_q1=pi_q1,
                                    pi_q2=pi_q2,
+                                   pi_widening_freq=pi_widening_freq,
                                    use_cache=use_cache
                                    )
     else:
@@ -968,6 +968,7 @@ def run_forecast(df_y, l_model_trend=None, l_model_season=None,
                 n_cum=n_cum,
                 pi_q1=pi_q1,
                 pi_q2=pi_q2,
+                pi_widening_freq=pi_widening_freq,
                 use_cache=use_cache
             )
             l_dict_result += [dict_result_tmp]
@@ -1098,6 +1099,7 @@ def run_forecast_single(df_y,
                         n_cum=1,
                         pi_q1=5,
                         pi_q2=20,
+                        pi_widening_freq=None,
                         # Testing parameters
                         use_cache=True
                         ):
@@ -1149,13 +1151,16 @@ def run_forecast_single(df_y,
         to handle holidays and calendar-based events
     :type l_model_calendar: list of ForecastModel
     :param n_cum: Used for widening prediction interval. Interval widens every
-        n_sims samples.
+        n_sims samples. This parameters is deprecated - use pi_widening_freq
+        instead
     :type n_cum: int
     :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
     :type pi_q1: int
     :param pi_q2: Percentile for inner prediction interval
         (defaults to 20%-80%)
     :type pi_q2: int
+    :param widening_freq: Specifies the frequency with which the prediction
+        interval widens: Y (yearly), M (monthly), W (weekly), D (daily).
     :param use_cache: If true, save some model variables to cache when fitting
     :type use_cache: bool
     :return:
@@ -1409,7 +1414,8 @@ def run_forecast_single(df_y,
                               df_data.is_actuals].reset_index(drop=True)
 
     df_forecast = df_data.pipe(get_pi, n_sims=100, n_cum=n_cum,
-                               pi_q1=pi_q1, pi_q2=pi_q2)
+                               pi_q1=pi_q1, pi_q2=pi_q2,
+                               widening_freq=pi_widening_freq)
     dict_result = {
         'forecast': df_forecast,
         'data': df_data,
@@ -1556,8 +1562,19 @@ class ForecastInput:
                    weights_y_values, date_start_actuals)
 
 
-def get_pi(df_forecast, n_sims=100, n_cum=1,
-           pi_q1=5, pi_q2=20):
+def _get_days_from_freq(freq):
+    if freq.startswith('Y'):
+        return 365
+    elif freq.startswith('M'):
+        return 30
+    elif freq.startswith('W'):
+        return 7
+    else:
+        return 1
+
+
+def get_pi(df_forecast, n_sims=100, n_cum=None,
+           pi_q1=5, pi_q2=20, widening_freq='Y'):
     """
     Generate prediction intervals for a table with multiple forecasts,
     using bootstrapped residuals.
@@ -1567,12 +1584,17 @@ def get_pi(df_forecast, n_sims=100, n_cum=1,
     :param n_sims: Number of bootstrapped samples for prediction interval
     :type n_sims: int
     :param n_cum: Used for widening prediction interval. Interval widens every
-        n_sims samples.
+        n_sims samples. This parameters is deprecated - use widening_freq
+        instead
     :type n_cum: int
     :param pi_q1: Percentile for outer prediction interval (defaults to 5%-95%)
     :type pi_q1: int
-    :param pi_q2: Percentile for inner prediction interval (defaults to 20%-80%)
+    :param pi_q2: Percentile for inner prediction interval
+        (defaults to 20%-80%)
     :type pi_q2: int
+    :param widening_freq: Specifies the frequency with which the prediction
+        interval widens: Y (yearly), M (monthly), W (weekly), D (daily).
+    :type widening_freq: str
     :return:
         | Forecast time series table with added columns:
         | - q5: 5% percentile of prediction interval
@@ -1583,13 +1605,19 @@ def get_pi(df_forecast, n_sims=100, n_cum=1,
 
     Based on https://otexts.org/fpp2/prediction-intervals.html
     """
+    if n_cum is not None:
+        logger.info('get_pi: parameter n_cum is deprecated, '
+                    'please use widening_freq instead')
+    else:
+        n_cum = _get_days_from_freq(widening_freq)
+
     if 'source' in df_forecast.columns and df_forecast.source.nunique() > 1:
         df_result = (
             df_forecast.groupby('source', as_index=False)
-            .apply(_get_pi_single_source,
-                   n_sims=n_sims, n_cum=n_cum, pi_q1=pi_q1, pi_q2=pi_q2)
-            .sort_values(['source', 'is_actuals', 'date'])
-            .reset_index(drop=True)
+                .apply(_get_pi_single_source,
+                       n_sims=n_sims, n_cum=n_cum, pi_q1=pi_q1, pi_q2=pi_q2)
+                .sort_values(['source', 'is_actuals', 'date'])
+                .reset_index(drop=True)
         )
     else:
         df_result = _get_pi_single_source(
@@ -1650,6 +1678,13 @@ def _get_pi_single_source(df_forecast, n_sims=100, n_cum=1,
                                       df_forecast.is_best_fit].copy()
     else:
         df_forecast = df_forecast.copy()
+    freq = detect_freq(df_forecast)
+    freq_days = _get_days_from_freq(freq)
+    # Adjust n_cum by sampling frequency
+    n_cum_raw = n_cum  # For debugging purposes
+    n_cum = int(n_cum / freq_days)
+    if n_cum < 1:  # Avoid divide by 0
+        n_cum = 1
 
     if 'source' in df_forecast.columns:
         l_cols = ['date', 'source']

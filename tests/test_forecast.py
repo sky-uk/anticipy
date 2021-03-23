@@ -1850,6 +1850,7 @@ class TestForecast(PandasTest):
         logger_info('df_forecast', df_forecast)
 
     def test_run_forecast_naive2(self):
+        logger.info('Test 1 - run forecast with naive model, find outliers')
         # Test 1: run forecast with  naive model, find_outliers,
         # season_add_mult = 'add', weekly samples
         path_df_naive = os.path.join(base_folder, 'df_test_naive.csv')
@@ -1887,7 +1888,7 @@ class TestForecast(PandasTest):
         df_forecast = dict_result['forecast']
         logger_info('df_forecast', df_forecast.loc[
             (df_forecast.date > '2017-12-01') & (
-                df_forecast.date < '2018-02-01')])
+                    df_forecast.date < '2018-02-01')])
 
         # After first spike, naive forecast and actuals start matching,
         # only if season_add_mult='both'
@@ -1897,8 +1898,8 @@ class TestForecast(PandasTest):
             df_data.loc[(df_data.date == '2018-01-07') &
                         (df_data.model == 'actuals')].y.iloc[0])
 
-        # Test 2: run forecast with  naive model, find_outliers,
-        # season_add_mult = 'both', weekly samples
+        logger.info('Test 2 - run forecast with  naive model, find_outliers,'
+                    'season_add_mult = \'both\', weekly samples')
         # path_df_naive = os.path.join(base_folder, 'df_test_naive.csv')
         # df_test_naive = pd.read_csv(path_df_naive)
 
@@ -1944,7 +1945,7 @@ class TestForecast(PandasTest):
             df_data.loc[(df_data.date == '2018-01-07') &
                         (df_data.model == 'actuals')].y.iloc[0])
 
-        # Test 3 - multiple model_naive runs
+        logger.info('Test 3 - multiple model_naive runs')
         path_df_naive = os.path.join(base_folder, 'df_test_naive.csv')
         df_test_naive = pd.read_csv(path_df_naive)
 
@@ -2781,7 +2782,6 @@ class TestForecast(PandasTest):
 
         check_result(df_result)
 
-        # Test 2 - 2 sources
         logger.info('Test 2 - 2 sources')
         df1b = df1.copy()
         df1b.source = 's2'
@@ -2818,8 +2818,7 @@ class TestForecast(PandasTest):
             ['source', 'model']).head(1))
         logger_info('df_result3:', df_result.groupby(
             ['source', 'model']).tail(1))
-        #
-        # Test 4 - Input has null values at the end
+
         logger.info('Test 4 - Input with nulls at end')
         a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
         a_y_actuals = np.arange(0, 10.)
@@ -2875,8 +2874,8 @@ class TestForecast(PandasTest):
                                                     'is_actuals',
                                                     'model',
                                                     'y']])
+
         logger.info('Test 4b - Input with nulls at end, weight column')
-        # Test 4b - Input with null values at the end, weight column
         df_weight = (pd.DataFrame({'date': a_date,
                                    'y': 1,
                                    'source': 's1',
@@ -2915,7 +2914,6 @@ class TestForecast(PandasTest):
         check_result(df_result_b)
         check_result(df_result_b_withnull)
 
-        # Test 4C - Input has null values at the start of actuals series
         logger.info('Test 4c - Input with nulls at start')
         a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
         a_y_actuals = np.arange(0, 10.)
@@ -2963,10 +2961,10 @@ class TestForecast(PandasTest):
         logger_info('df_result with null:', df_result_withnull.groupby(
             ['source', 'model']).tail(100))
         # todo - add proper expected value, uncomment assert
-        # self.assert_frame_equal(df_result[['date', 'source', 'is_actuals', 'model', 'y']],  # noqa
+        # self.assert_frame_equal(df_result[['date', 'source', 'is_actuals',
+        # 'model', 'y']],
         # df_result_withnull[['date', 'source', 'is_actuals', 'model', 'y']])
 
-        # Test 4D - Input has null values at the start of forecast series
         logger.info('Test 4d - Input with nulls at start of forecast')
         a_date_actuals = pd.date_range('2014-01-01', periods=10, freq='W')
         a_y_actuals = np.arange(0, 10.)
@@ -3008,9 +3006,11 @@ class TestForecast(PandasTest):
             ['source', 'model']).tail(100))
         logger_info('df_result with null:', df_result_withnull.groupby(
             ['source', 'model']).tail(100))
-        # Prediction intervals are random, so we need to exclude them from comparison  # noqa
-        # self.assert_frame_equal(df_result[['date', 'source', 'is_actuals', 'model', 'y']],  # noqa
-        #                         df_result_withnull[['date', 'source', 'is_actuals', 'model', 'y']])  # noqa
+        # Prediction intervals are random,
+        # so we need to exclude them from comparison
+        # self.assert_frame_equal(
+        # df_result[['date', 'source', 'is_actuals', 'model', 'y']],
+        #  df_result_withnull[['date', 'source', 'is_actuals', 'model', 'y']])
         # TODO: ADD VALID CHECK -
 
     def test_get_pi_gap(self):
