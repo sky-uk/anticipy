@@ -1670,7 +1670,25 @@ class TestForecast(PandasTest):
         df_forecast = dict_result['forecast']
         logger_info('df_forecast', df_forecast)
 
-        logger.info('Test 3b: weight column, season_add_mult = \'both\'')
+        logger.info('Test 3b - initial sample is 0-weight, '
+                    'extrapolate_years=0')
+        df1.weight[0:2] = 0.
+        logger_info('df1:', df1)
+
+        dict_result = run_forecast(
+            simplify_output=False, df_y=df1,
+            l_model_trend=[forecast_models.model_naive],
+            extrapolate_years=0)
+
+        df_data = dict_result['data']
+        df_metadata = dict_result['metadata']
+        df_optimize_info = dict_result['optimize_info']
+
+        logger_info('df_metadata:', df_metadata)
+        logger_info('df_optimize_info:', df_optimize_info)
+        logger_info('df_data:', df_data.groupby(['source', 'model']).tail(60))
+
+        logger.info('Test 3c: weight column, season_add_mult = \'both\'')
 
         df1 = pd.DataFrame(
             {'y': np.arange(0, 10.),

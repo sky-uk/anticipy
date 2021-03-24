@@ -128,9 +128,8 @@ def get_s_x_extrapolate(
         date_start_actuals,
         date_end_actuals,
         model=None,
-        freq='W',
+        freq=None,
         extrapolate_years=2.5,
-        shifted_origin=0,
         scaling_factor=100.0,
         x_start_actuals=0.):
     """
@@ -155,6 +154,8 @@ def get_s_x_extrapolate(
     :param scaling_factor: Value used for scaling a_x for certain model
         functions
     :type scaling_factor: float
+    :param x_start_actuals: numeric index for the first actuals sample
+    :type x_start_actuals: int
     :return: Series of floats with DateTimeIndex. To be used as (a_date, a_x)
         input for a model function.
     :rtype: pandas.Series
@@ -169,8 +170,17 @@ def get_s_x_extrapolate(
         date_start_actuals = pd.to_datetime(date_start_actuals)
         date_end_actuals = pd.to_datetime(date_end_actuals)
 
+        weekday_adjustment = date_start_actuals.weekday()
+        expected_freq = dict_wday_name.get(weekday_adjustment)
         if freq is None:  # Default frequency
-            freq = 'W'
+            freq = expected_freq
+        else:
+            if freq.startswith('W'):
+                assert expected_freq == freq, \
+                    'Error: with weekly frequency, freq ' \
+                    'parameter must match weekday of date_start_actuals:' \
+                    ' {} - {} , {}' \
+                        .format(freq, expected_freq, date_start_actuals)
 
         freq_short = freq[0:1]  # Changes e.g. W-MON to W
         # freq_units_per_year = 52.0 if freq_short=='W' else 365.0
@@ -182,13 +192,16 @@ def get_s_x_extrapolate(
         date_end_forecast = date_end_actuals + \
                             pd.DateOffset(**offset_input)
 
-        index = pd.date_range(
+        i_date = pd.date_range(
             date_start_actuals,
             date_end_forecast,
             freq=freq,
             name='date')
-        a_x = get_normalized_x_from_date(pd.Series(index)).values
-        s_x = pd.Series(index=index, data=a_x)
+        s_date = pd.Series(i_date)
+
+        # Get days passed since date_start, then add x_start_actuals
+        s_x = (s_date - date_start_actuals).dt.days + x_start_actuals
+        s_x.index = i_date
     else:
         # Otherwise, use numeric index
         # we extrapolate future samples equal to 100*extrapolate_years
@@ -202,10 +215,9 @@ def get_s_x_extrapolate(
             index=index,
             data=np.arange(
                 x_start_actuals,
-                x_start_actuals + index.size)) + shifted_origin
+                x_start_actuals + index.size)) + x_start_actuals
     if model_requires_scaling(model):
         s_x = s_x / scaling_factor
-
     return s_x
 
 

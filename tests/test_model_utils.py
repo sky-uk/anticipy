@@ -51,7 +51,7 @@ class TestModelUtils(PandasTest):
             logger.info('f_model: %s', model)
             logger_info('a_x', a_x)
 
-    def test_get_a_x_date_extrapolate(self):
+    def test_get_s_x_extrapolate(self):
         # TODO: TEST Output size, scenarios with different frequencies
         l_df_y = [
             # Single ts
@@ -74,9 +74,6 @@ class TestModelUtils(PandasTest):
         ]
         l_time_resolutions = [
             # Default config
-            'W-SUN',
-            'W',
-            'W-MON',
             'D',
             'MS',
             'YS'
@@ -128,7 +125,7 @@ class TestModelUtils(PandasTest):
 
         ts = l_df_y[0]
         model = l_models[0]
-        time_resolution = l_time_resolutions[0]
+        time_resolution = None  # Default - weekly frequency
         s_x = get_s_x_extrapolate(
             ts.index.min(),
             ts.index.max(),
@@ -212,6 +209,35 @@ class TestModelUtils(PandasTest):
         self.assertIsInstance(s_x.index, pd.DatetimeIndex)
         logger_info('t_values len', len(s_x))
         self.assertEqual(len(s_x), 10 + 3.0 * 365)
+
+    def test_get_s_x_extrapolate_gap(self):
+        # Test get_s_x_extrapolate with a gap at the start of actuals
+
+        """
+        Context - see #201
+        There is a problem caused when:
+        - Actuals data has 0-weight samples at the start
+        """
+        logger.info('Test 1 - default settings')
+        x_start_actuals = 100
+        s_x = get_s_x_extrapolate(
+            '2021-03-06', '2021-04-30',
+            extrapolate_years=1.0 / 365,  # 1 day
+            x_start_actuals=x_start_actuals
+        )
+        logger_info('s_x:', s_x)
+        self.assertEqual(s_x.iloc[0], x_start_actuals)
+
+        logger.info('Test 2 - daily freq')
+        x_start_actuals = 100
+        s_x = get_s_x_extrapolate(
+            '2021-03-06', '2021-03-10',
+            extrapolate_years=1.0 / 365,  # 1 day
+            x_start_actuals=x_start_actuals,
+            freq='D'
+        )
+        logger_info('s_x:', s_x)
+        self.assertEqual(s_x.iloc[0], x_start_actuals)
 
     def test_get_aic_c(self):
 
