@@ -1758,7 +1758,7 @@ model_calendar_us = get_model_from_calendars(USFederalHolidayCalendar(),
                                              'calendar_us')
 # Calendar for Italy
 model_calendar_ita = get_model_from_calendars(
-    [CalendarChristmasIta(), CalendarBankHolIta()], 'calendar_uk')
+    [CalendarChristmasIta(), CalendarBankHolIta()], 'calendar_ita')
 
 
 def get_model_from_datelist(name=None, *args):
